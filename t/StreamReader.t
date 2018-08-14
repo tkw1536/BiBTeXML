@@ -1,4 +1,4 @@
-use Test::More tests => 3;
+use Test::More tests => 4;
 
 use File::Basename;
 use File::Spec;
@@ -22,7 +22,7 @@ subtest 'String Hello world' => sub {
     reads($reader,  "3rd character", "l",  1, 3, 0);
     reads($reader,  "4th character", "l",  1, 4, 0);
     reads($reader,  "5th character", "o",  1, 5, 0);
-    reads($reader,  "6th character", "\r", 1, 6, 0);
+    reads($reader,  "6th character", "\n", 1, 6, 0);
 
     peeks($reader,  "7th character", "w",  1, 6, 0);
     reads($reader,  "7th character", "w",  2, 1, 0);
@@ -31,8 +31,22 @@ subtest 'String Hello world' => sub {
     reads($reader,  "9th character", "r",  2, 3, 0);
     reads($reader, "10th character", "l",  2, 4, 0);
     reads($reader, "11th character", "d",  2, 5, 0);
-    reads($reader, "12th character", "\r", 2, 6, 0);
+    reads($reader, "12th character", "\n", 2, 6, 0);
     reads($reader, "13th character", undef,  3, 0, 1);
+
+    $reader->finalize;
+};
+
+
+subtest 'String aaaaab' => sub {
+    plan tests => 2;
+
+    # creating a reader from a string should work
+    my $reader = BibTeXML::Common::StreamReader->new();
+    $reader->openString("aaaaab");
+
+    readsWhile($reader, "read while 'a's", sub { return $_[0] =~ /a/; }, 'aaaaa');
+    reads($reader, "fhe final b",  "b", 1, 6, 0);
 
     $reader->finalize;
 };
@@ -42,7 +56,7 @@ subtest 'File Hello World' => sub {
 
     # creating a reader from a string should work
     my $reader = BibTeXML::Common::StreamReader->new();
-    my $path = File::Spec->join(dirname(__FILE__), 'fixtures', 'helloworld.txt');
+    my $path = File::Spec->join(dirname(__FILE__), 'fixtures', 'streamreader', 'helloworld.txt');
     $reader->openFile($path, "utf-8");
 
     peeks($reader,  "1st character", "h",  0, 0, 0);
@@ -54,7 +68,7 @@ subtest 'File Hello World' => sub {
     reads($reader,  "3rd character", "l",  1, 3, 0);
     reads($reader,  "4th character", "l",  1, 4, 0);
     reads($reader,  "5th character", "o",  1, 5, 0);
-    reads($reader,  "6th character", "\r", 1, 6, 0);
+    reads($reader,  "6th character", "\n", 1, 6, 0);
 
     peeks($reader,  "7th character", "w",  1, 6, 0);
     reads($reader,  "7th character", "w",  2, 1, 0);
@@ -63,7 +77,7 @@ subtest 'File Hello World' => sub {
     reads($reader,  "9th character", "r",  2, 3, 0);
     reads($reader, "10th character", "l",  2, 4, 0);
     reads($reader, "11th character", "d",  2, 5, 0);
-    reads($reader, "12th character", "\r", 2, 6, 0);
+    reads($reader, "12th character", "\n", 2, 6, 0);
     reads($reader, "13th character", undef,  3, 0, 1);
 
     $reader->finalize;
@@ -78,7 +92,7 @@ sub reads {
     subtest "read $name" => sub {
         plan tests => 4;
         
-        my $gchar = $reader->readChar;
+        my ($gchar) = $reader->readChar;
         my ($gline, $gcol, $geof) = $reader->getPosition;
 
         is($gchar, $echar, "getChar");
@@ -93,7 +107,7 @@ sub peeks {
     my ($reader, $name, $echar, $eline, $ecol, $eeof) = @_;
     subtest "peek $name" => sub {
         plan tests => 4;
-        my $gchar = $reader->peekChar;
+        my ($gchar) = $reader->peekChar;
         my ($gline, $gcol, $geof) = $reader->getPosition;
 
         is($gchar, $echar, "getChar");
@@ -101,4 +115,11 @@ sub peeks {
         is($gcol, $ecol, "colNo");
         is($geof, $eeof, "eof");
     };
+}
+
+sub readsWhile {
+    my ($reader, $name, $pred, $echars) = @_;
+
+    my ($gchars) = $reader->readCharWhile($pred);
+    is($gchars, $echars, $name);
 }
