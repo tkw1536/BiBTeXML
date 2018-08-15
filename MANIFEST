@@ -26,8 +26,8 @@ lib/BibTeXML/Bibliography/BibTag.pm
 # Test Suite.
 #==================================================
 t/01_StreamReader.t
-t/02_BibParser.t
-t/03_BibParser_kwarcbib.t
+t/10_BibParser.t
+t/11_BibParser_kwarcbib.t
 
 t/fixtures/streamreader/helloworld.txt
 

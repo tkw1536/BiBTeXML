@@ -15,6 +15,13 @@ use BibTeXML::Bibliography::BibString;
 use BibTeXML::Bibliography::BibTag;
 use BibTeXML::Bibliography::BibEntry;
 
+use base qw(Exporter);
+our @EXPORT = (
+  qw( &readFile &readEntry &readQuote ),
+  qw( &readLiteral &readBrace &readQuote ),
+  qw( &getLocationString),
+);
+
 # ======================================================================= #
 # Characters & General Stuff
 # ======================================================================= #
