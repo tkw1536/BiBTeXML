@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  BibTeXML::Core::BibEntry                                           | #
+# |  BibTeXML::Bibliography::BibEntry                                   | #
 # | Representation for .bib file entries                                | #
 # |=====================================================================| #
 # | Part of BibTeXML                                                    | #
@@ -7,7 +7,7 @@
 # | Tom Wiesing <tom.wiesing@gmail.com>                                 | #
 # \=====================================================================/ #
 
-package BibTeXML::Core::BibEntry;
+package BibTeXML::Bibliography::BibEntry;
 use strict;
 use warnings;
 

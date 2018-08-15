@@ -5,7 +5,7 @@ use File::Spec;
 
 # we should be able to read the module
 require_ok("BibTeXML::Common::StreamReader");
-require_ok("BibTeXML::Core::BibParser");
+require_ok("BibTeXML::Bibliography::BibParser");
 
 subtest 'readLiteral' => sub {
   plan tests => 5;
@@ -25,7 +25,7 @@ subtest 'readLiteral' => sub {
     $reader->eatChar;
 
     # ensure that it actually
-    my ($result) = BibTeXML::Core::BibParser::readLiteral($reader);
+    my ($result) = BibTeXML::Bibliography::BibParser::readLiteral($reader);
     ok($result->equals($expected), $name);
 
     $reader->finalize;
@@ -49,7 +49,7 @@ subtest 'readBrace' => sub {
     $reader->openString(" $input ");
     $reader->eatChar;
 
-    my ($result) = BibTeXML::Core::BibParser::readBrace($reader);
+    my ($result) = BibTeXML::Bibliography::BibParser::readBrace($reader);
     ok($result->equals($expected), $name);
 
     $reader->finalize;
@@ -72,7 +72,7 @@ subtest 'readQuote' => sub {
     $reader->openString(" $input ");
     $reader->eatChar;
 
-    my ($result) = BibTeXML::Core::BibParser::readQuote($reader);
+    my ($result) = BibTeXML::Bibliography::BibParser::readQuote($reader);
     ok($result->equals($expected), $name);
 
     $reader->finalize;
@@ -104,7 +104,7 @@ subtest 'readTag' => sub {
     $reader->openString(" $input, "); # the comma simulates the next value 
     $reader->eatChar;
 
-    my ($result) = BibTeXML::Core::BibParser::readTag($reader);
+    my ($result) = BibTeXML::Bibliography::BibParser::readTag($reader);
 
     if (defined($expected)) {
       ok($result->equals($expected), $name);
@@ -132,7 +132,7 @@ subtest 'readEntry' => sub {
     my $reader = BibTeXML::Common::StreamReader->new();
     $reader->openFile("$path.bib", 'utf-8');
 
-    my ($result) = BibTeXML::Core::BibParser::readEntry($reader);
+    my ($result) = BibTeXML::Bibliography::BibParser::readEntry($reader);
     ok($result->equals(slurp("$path.txt")), $input);
     $reader->finalize;
   }

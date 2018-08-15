@@ -5,7 +5,7 @@ use File::Spec;
 
 # require
 require_ok("BibTeXML::Common::StreamReader");
-require_ok("BibTeXML::Core::BibParser");
+require_ok("BibTeXML::Bibliography::BibParser");
 
 
 # create an input file
@@ -15,7 +15,7 @@ $reader->openFile($path, "utf-8");
 
 # parse kwarc.bib and measure the time it takes
 my $start = time;
-my ($results, $errors) = BibTeXML::Core::BibParser::readFile($reader);
+my ($results, $errors) = BibTeXML::Bibliography::BibParser::readFile($reader);
 my $duration = time - $start;
 diag("parsed kwarc.bib in $duration seconds");
 
