@@ -146,3 +146,5 @@ subtest 'readEntry' => sub {
     return $file_content;
   }
 };
+
+1;

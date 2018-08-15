@@ -123,3 +123,5 @@ sub readsWhile {
     my ($gchars) = $reader->readCharWhile($pred);
     is($gchars, $echars, $name);
 }
+
+1;

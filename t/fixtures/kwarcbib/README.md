@@ -1,0 +1,1 @@
+This folder contains kwarc.bib, a large real-world .bib file we use for testing and benchmarking. 
