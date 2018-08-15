@@ -20,30 +20,17 @@ use BibTeXML::Bibliography::BibEntry;
 # Characters & General Stuff
 # ======================================================================= #
 
-use constant {
-  CHAR_BEGIN_ENTRY => '@',
-
-  CHAR_OPEN_BRACE  => '{',
-  CHAR_CLOSE_BRACE => '}',
-
-  CHAR_QUOTE  => '"',
-
-  CHAR_EQUALS => '=',
-  CHAR_CONCAT    => '#',
-  CHAR_COMMA  => ',',
-};
-
 # checks that a character is not a special literal
 sub isNotSpecialLiteral {
   my ($char) = @_;
-  return ($char ne CHAR_OPEN_BRACE) && ($char ne CHAR_CLOSE_BRACE) && ($char ne CHAR_EQUALS) && ($char ne CHAR_CONCAT) && ($char ne CHAR_COMMA);
+  return ($char ne '{') && ($char ne '}') && ($char ne '=') && ($char ne '#') && ($char ne ',');
 }
 
 # checks that a character does not terminate a space character
 # and is also not a space
 sub isNotSpecialSpaceLiteral {
   my ($char) = @_;
-  return ($char =~ /[^\s]/) && ($char ne CHAR_OPEN_BRACE) && ($char ne CHAR_CLOSE_BRACE) && ($char ne CHAR_EQUALS) && ($char ne CHAR_CONCAT) && ($char ne CHAR_COMMA);
+  return ($char =~ /[^\s]/) && ($char ne '{') && ($char ne '}') && ($char ne '=') && ($char ne '#') && ($char ne ',');
 }
 
 # format an error message for the user
@@ -95,7 +82,7 @@ sub readEntry {
       # if the previous character was a space (perhaps linebreak)
       # then start an entry with an '@' sign.
       if ($prev =~ /\s/) {
-        return !($_[0] eq CHAR_BEGIN_ENTRY);
+        return !($_[0] eq '@');
       }
 
       # else keep reading chars
@@ -109,7 +96,7 @@ sub readEntry {
   my ($sr, $sc) = $reader->getPosition;
   my ($at) = $reader->readChar;
   return undef, undef unless defined($at);
-  return undef, 'expected to find an "@"' . getLocationString($reader) unless $at eq CHAR_BEGIN_ENTRY;
+  return undef, 'expected to find an "@"' . getLocationString($reader) unless $at eq '@';
 
   # read the type
   my ($type, $typeError) = readLiteral($reader);
@@ -118,7 +105,7 @@ sub readEntry {
 
   # read opening brace (for tags)
   my ($obrace) = $reader->readChar;
-  return undef, 'expected an "{"'. getLocationString($reader) unless defined($obrace) && $obrace eq CHAR_OPEN_BRACE;
+  return undef, 'expected an "{"'. getLocationString($reader) unless defined($obrace) && $obrace eq '{';
 
   my @tags = ();
 
@@ -132,11 +119,11 @@ sub readEntry {
     # if we have a comma, we just need the next tag
     # TODO: Ignores multiple following commas
     # TODO: What happens if we have a comma in the first position?
-    if($char eq CHAR_COMMA){
+    if($char eq ','){
         $reader->eatChar;
     
     # if we have a closing brace, we are done
-    } elsif($char eq CHAR_CLOSE_BRACE){
+    } elsif($char eq '}'){
         $reader->eatChar;
         last;
     
@@ -173,7 +160,7 @@ sub readTag {
   my ($char) = $reader->peekChar;
   return undef, 'Unexpected end of input while reading tag' . getLocationString($reader) unless defined($char);
 
-  if($char eq CHAR_CLOSE_BRACE or $char eq CHAR_COMMA){
+  if($char eq '}' or $char eq ','){
     return undef, undef;
   }
 
@@ -188,11 +175,11 @@ sub readTag {
   my $hadEqualSign    = 0;
   
   # read until we encounter a , or a closing brace
-  while ($char ne CHAR_COMMA && $char ne CHAR_CLOSE_BRACE) {
+  while ($char ne ',' && $char ne '}') {
 
     # if we have an equals sign, remember that we had one
     # and allow only strings next (i.e. the value)
-    if ($char eq CHAR_EQUALS){
+    if ($char eq '='){
       return undef, 'Unexpected "="' . getLocationString($reader) unless $mayEqualNext;
       $reader->eatChar;
       
@@ -203,7 +190,7 @@ sub readTag {
       $mayEqualNext = 0;
     
     # if we have a concat, allow only strings (i.e. the value) next
-    } elsif ($char eq CHAR_CONCAT){
+    } elsif ($char eq '#'){
       return undef, 'Unexpected "#"' . getLocationString($reader) unless $mayConcatNext;
       $reader->eatChar;
 
@@ -212,7 +199,7 @@ sub readTag {
       $mayEqualNext  = 0;
     
     # if we had a quote, allow only a concat next
-    } elsif ($char eq CHAR_QUOTE){
+    } elsif ($char eq '"'){
       return undef, 'Unexpected \'"\'' . getLocationString($reader) unless $mayStringNext;
 
       ($value, $valueError) = readQuote($reader);
@@ -224,7 +211,7 @@ sub readTag {
       $mayEqualNext  = 0;
 
     # if we had a brace, allow only a concat next
-    } elsif ($char eq CHAR_OPEN_BRACE){
+    } elsif ($char eq '{'){
       return undef, 'Unexpected \'{\'' . getLocationString($reader) unless $mayStringNext;
 
       ($value, $valueError) = readBrace($reader);
@@ -310,7 +297,7 @@ sub readBrace {
 
   # read the first bracket, or die if we are at the end
   my ($char, $line, $col, $eof)  = $reader->readChar;
-  return undef, 'expected to find an "{"' . getLocationString($reader) unless defined($char) && $char eq CHAR_OPEN_BRACE;
+  return undef, 'expected to find an "{"' . getLocationString($reader) unless defined($char) && $char eq '{';
 
   # record the starting position of the bracket
   my ($sr, $sc) = ($line, $col);
@@ -327,9 +314,9 @@ sub readBrace {
     return undef, 'Unexpected end of input in quote' . getLocationString($reader) if $eof;
     
     # keep count of what level we are in
-    if ($char eq CHAR_OPEN_BRACE) {
+    if ($char eq '{') {
       $level++;
-    } elsif ($char eq CHAR_CLOSE_BRACE) {
+    } elsif ($char eq '}') {
       $level--;
     }
   }
@@ -345,7 +332,7 @@ sub readQuote {
 
   # read the first quote, or die if we are at the end
   my ($char, $line, $col, $eof)  = $reader->readChar;
-  return undef, 'expected to find an \'"\'' . getLocationString($reader) unless defined($char) && $char eq CHAR_QUOTE;
+  return undef, 'expected to find an \'"\'' . getLocationString($reader) unless defined($char) && $char eq '"';
 
   # record the starting position of the bracket
   my ($sr, $sc) = ($line, $col);
@@ -357,11 +344,11 @@ sub readQuote {
     return undef, 'Unexpected end of input in quote' . getLocationString($reader) if $eof;
 
     # if we find a {, or a }, keep track of levels, and don't do anything inside
-    if($char eq CHAR_QUOTE) {
+    if($char eq '"') {
       last unless $level;
-    } elsif ($char eq CHAR_OPEN_BRACE) {
+    } elsif ($char eq '{') {
       $level++;
-    } elsif ($char eq CHAR_CLOSE_BRACE) {
+    } elsif ($char eq '}') {
       $level--;
     }
 
