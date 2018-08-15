@@ -1,0 +1,9 @@
+INSTALL Notes for BibTeXML
+ 	perl Makefile.PL
+	make
+	make test
+	make install
+
+REQUIREMENTS
+    - A sufficiently new Perl supporting Unicode: 5.10.1
+    - Test::More

@@ -1,0 +1,8 @@
+~$
+^\#
+^\.
+^Makefile$
+^Makefile.old$
+\.bak$
+($|/)TAGS$
+^pm_to_blib$

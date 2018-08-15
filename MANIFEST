@@ -1,0 +1,42 @@
+#==================================================
+# Base
+#==================================================
+CHANGES
+Makefile.PL
+MANIFEST			This list of files
+MANIFEST.SKIP
+README.md
+INSTALL
+LICENSE
+
+#==================================================
+# Common Modules
+#==================================================
+lib/BibTeXML/Common/StreamReader.pm
+
+#==================================================
+# Bibliography
+#==================================================
+lib/BibTeXML/Bibliography/BibEntry.pm
+lib/BibTeXML/Bibliography/BibParser.pm
+lib/BibTeXML/Bibliography/BibString.pm
+lib/BibTeXML/Bibliography/BibTag.pm
+
+#==================================================
+# Test Suite.
+#==================================================
+t/01_StreamReader.t
+t/02_BibParser.t
+t/03_BibParser_kwarcbib.t
+
+t/fixtures/streamreader/helloworld.txt
+
+t/fixtures/bibparser/01_preamble.bib
+t/fixtures/bibparser/01_preamble.txt
+t/fixtures/bibparser/02_string.bib
+t/fixtures/bibparser/02_string.txt
+t/fixtures/bibparser/03_article.bib
+t/fixtures/bibparser/03_article.txt
+
+t/fixtures/kwarcbib/kwarc.bib
+t/fixtures/kwarcbib/README.md
