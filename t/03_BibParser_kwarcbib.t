@@ -7,7 +7,6 @@ use File::Spec;
 require_ok("BibTeXML::Common::StreamReader");
 require_ok("BibTeXML::Bibliography::BibParser");
 
-
 # create an input file
 my $reader = BibTeXML::Common::StreamReader->new();
 my $path = File::Spec->join(dirname(__FILE__), 'fixtures', 'kwarcbib', 'kwarc.bib');
@@ -21,6 +20,6 @@ diag("parsed kwarc.bib in $duration seconds");
 
 # check that we did not make any errors
 is(scalar(@$results), 6994, 'parses correct number of entries from kwarc.bib');
-is(scalar(@$errors), 0, 'does not produce any errors parsing kwarc.bib');
+is(scalar(@$errors),  0,    'does not produce any errors parsing kwarc.bib');
 
 1;

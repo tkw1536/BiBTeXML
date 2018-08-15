@@ -15,7 +15,6 @@ use BibTeXML::Bibliography::BibString;
 use BibTeXML::Bibliography::BibTag;
 use BibTeXML::Bibliography::BibEntry;
 
-
 # ======================================================================= #
 # Characters & General Stuff
 # ======================================================================= #
@@ -44,18 +43,18 @@ sub getLocationString {
 # Parsing a file
 # ======================================================================= #
 
-# parses an entire .bib file into a collection of entries. 
+# parses an entire .bib file into a collection of entries.
 # return [@entries], [@errors]
 sub readFile {
   my ($reader) = @_;
 
   my @entries = ();
-  my @errors = ();
+  my @errors  = ();
 
   my ($entry, $error) = readEntry($reader);
-  
-  while(defined($entry) || defined($error)){
-    if(defined($entry)){
+
+  while (defined($entry) || defined($error)) {
+    if (defined($entry)) {
       push(@entries, $entry);
     } else {
       push(@errors, $error);
@@ -90,8 +89,6 @@ sub readEntry {
       return 1;
   });
 
-
-
   # read an @ sign
   my ($sr, $sc) = $reader->getPosition;
   my ($at) = $reader->readChar;
@@ -105,13 +102,13 @@ sub readEntry {
 
   # read opening brace (for tags)
   my ($obrace) = $reader->readChar;
-  return undef, 'expected an "{"'. getLocationString($reader) unless defined($obrace) && $obrace eq '{';
+  return undef, 'expected an "{"' . getLocationString($reader) unless defined($obrace) && $obrace eq '{';
 
   my @tags = ();
 
   my ($char, $tag, $tagError);
 
-  while(1){
+  while (1) {
     $reader->eatSpaces;
     ($char) = $reader->peekChar;
     return undef, 'Unexpected end of input while reading entry' . getLocationString($reader) unless defined($char);
@@ -119,26 +116,25 @@ sub readEntry {
     # if we have a comma, we just need the next tag
     # TODO: Ignores multiple following commas
     # TODO: What happens if we have a comma in the first position?
-    if($char eq ','){
-        $reader->eatChar;
-    
-    # if we have a closing brace, we are done
-    } elsif($char eq '}'){
-        $reader->eatChar;
-        last;
-    
-    # else push a tag (if we have one)
+    if ($char eq ',') {
+      $reader->eatChar;
+
+      # if we have a closing brace, we are done
+    } elsif ($char eq '}') {
+      $reader->eatChar;
+      last;
+
+      # else push a tag (if we have one)
     } else {
-        ($tag, $tagError) = readTag($reader);
-        return $tag, $tagError if defined($tagError);
-        push(@tags, $tag) if defined($tag);
+      ($tag, $tagError) = readTag($reader);
+      return $tag, $tagError if defined($tagError);
+      push(@tags, $tag) if defined($tag);
     }
   }
 
   my ($er, $ec) = $reader->getPosition;
   return BibTeXML::Bibliography::BibEntry->new($type, [@tags], [$sr, $sc, $er, $ec]);
 }
-
 
 # ======================================================================= #
 # Parsing a Tag
@@ -156,73 +152,73 @@ sub readTag {
 
   # if we only have a closing brace
   # we may have tried to read a closing brace
-  # so return undef and also no error. 
+  # so return undef and also no error.
   my ($char) = $reader->peekChar;
   return undef, 'Unexpected end of input while reading tag' . getLocationString($reader) unless defined($char);
 
-  if($char eq '}' or $char eq ','){
+  if ($char eq '}' or $char eq ',') {
     return undef, undef;
   }
 
   # STATE: What we are allowed to read next
-  my $mayStringNext   = 1;
-  my $mayConcatNext   = 0;
-  my $mayEqualNext    = 0;
+  my $mayStringNext = 1;
+  my $mayConcatNext = 0;
+  my $mayEqualNext  = 0;
 
   # results and if we had an error
   my @content = ();
   my ($value, $valueError);
-  my $hadEqualSign    = 0;
-  
+  my $hadEqualSign = 0;
+
   # read until we encounter a , or a closing brace
   while ($char ne ',' && $char ne '}') {
 
     # if we have an equals sign, remember that we had one
     # and allow only strings next (i.e. the value)
-    if ($char eq '='){
+    if ($char eq '=') {
       return undef, 'Unexpected "="' . getLocationString($reader) unless $mayEqualNext;
       $reader->eatChar;
-      
+
       $hadEqualSign = 1;
 
       $mayStringNext = 1;
       $mayConcatNext = 0;
-      $mayEqualNext = 0;
-    
-    # if we have a concat, allow only strings (i.e. the value) next
-    } elsif ($char eq '#'){
+      $mayEqualNext  = 0;
+
+      # if we have a concat, allow only strings (i.e. the value) next
+    } elsif ($char eq '#') {
       return undef, 'Unexpected "#"' . getLocationString($reader) unless $mayConcatNext;
       $reader->eatChar;
 
       $mayStringNext = 1;
       $mayConcatNext = 0;
       $mayEqualNext  = 0;
-    
-    # if we had a quote, allow only a concat next
-    } elsif ($char eq '"'){
+
+      # if we had a quote, allow only a concat next
+    } elsif ($char eq '"') {
       return undef, 'Unexpected \'"\'' . getLocationString($reader) unless $mayStringNext;
 
       ($value, $valueError) = readQuote($reader);
       return $value, $valueError unless defined($value);
       push(@content, $value);
-      
+
       $mayStringNext = 0;
       $mayConcatNext = 1;
       $mayEqualNext  = 0;
 
-    # if we had a brace, allow only a concat next
-    } elsif ($char eq '{'){
+      # if we had a brace, allow only a concat next
+    } elsif ($char eq '{') {
       return undef, 'Unexpected \'{\'' . getLocationString($reader) unless $mayStringNext;
 
       ($value, $valueError) = readBrace($reader);
       return $value, $valueError unless defined($value);
       push(@content, $value);
-      
+
       $mayStringNext = 0;
       $mayConcatNext = 0;
-      $mayEqualNext = !$hadEqualSign;
-    
-    # if we have a literal, allow concat and equals next (unless we already had)
+      $mayEqualNext  = !$hadEqualSign;
+
+      # if we have a literal, allow concat and equals next (unless we already had)
     } else {
       return undef, 'Unexpected start of literal' . getLocationString($reader) unless $mayStringNext;
 
@@ -232,7 +228,7 @@ sub readTag {
 
       $mayStringNext = 0;
       $mayConcatNext = 1;
-      $mayEqualNext = !$hadEqualSign;
+      $mayEqualNext  = !$hadEqualSign;
     }
 
     ($er, $ec) = $reader->getPosition;
@@ -244,7 +240,7 @@ sub readTag {
 
   # if we had an equal sign, shift that value
   my $name;
-  $name = shift(@content) if($hadEqualSign);
+  $name = shift(@content) if ($hadEqualSign);
 
   return BibTeXML::Bibliography::BibTag->new($name, [@content], [($sr, $sc, $er, $ec)]);
 }
@@ -296,7 +292,7 @@ sub readBrace {
   my ($reader) = @_;
 
   # read the first bracket, or die if we are at the end
-  my ($char, $line, $col, $eof)  = $reader->readChar;
+  my ($char, $line, $col, $eof) = $reader->readChar;
   return undef, 'expected to find an "{"' . getLocationString($reader) unless defined($char) && $char eq '{';
 
   # record the starting position of the bracket
@@ -308,11 +304,11 @@ sub readBrace {
   $char = '';
 
   while ($level) {
-    # add the previous character, and read the next one. 
+    # add the previous character, and read the next one.
     $result .= $char;
     ($char, $line, $col, $eof) = $reader->readChar;
     return undef, 'Unexpected end of input in quote' . getLocationString($reader) if $eof;
-    
+
     # keep count of what level we are in
     if ($char eq '{') {
       $level++;
@@ -320,7 +316,7 @@ sub readBrace {
       $level--;
     }
   }
-  
+
   # we can add a +1 here, because we did not read a \n
   return BibTeXML::Bibliography::BibString->new('BRACKET', $result, [($sr, $sc, $line, $col + 1)]);
 }
@@ -331,7 +327,7 @@ sub readQuote {
   my ($reader) = @_;
 
   # read the first quote, or die if we are at the end
-  my ($char, $line, $col, $eof)  = $reader->readChar;
+  my ($char, $line, $col, $eof) = $reader->readChar;
   return undef, 'expected to find an \'"\'' . getLocationString($reader) unless defined($char) && $char eq '"';
 
   # record the starting position of the bracket
@@ -344,7 +340,7 @@ sub readQuote {
     return undef, 'Unexpected end of input in quote' . getLocationString($reader) if $eof;
 
     # if we find a {, or a }, keep track of levels, and don't do anything inside
-    if($char eq '"') {
+    if ($char eq '"') {
       last unless $level;
     } elsif ($char eq '{') {
       $level++;
@@ -354,7 +350,7 @@ sub readQuote {
 
     $result .= $char;
   }
-  
+
   # we can add a +1 here, because we did not read a \n
   return BibTeXML::Bibliography::BibString->new('QUOTE', $result, [($sr, $sc, $line, $col + 1)]);
 }

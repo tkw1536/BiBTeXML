@@ -14,9 +14,9 @@ use warnings;
 sub new {
   my ($class, $type, $tags, $source) = @_;
   return bless {
-    type => $type,    # a bibstring
-    tags => $tags,    # a bibstring
-    source => $source # an array of tags
+    type   => $type,     # a bibstring
+    tags   => $tags,     # a bibstring
+    source => $source    # an array of tags
   }, $class;
 }
 
@@ -42,8 +42,8 @@ sub evaluate {
 }
 
 sub stringify {
-  my ($self)  = @_;
-  my ($type)  = $self->getType->stringify;
+  my ($self) = @_;
+  my ($type) = $self->getType->stringify;
   my @tags = map { $_->stringify; } @{ $self->getTags };
   my $tagStr = '[' . join(',', @tags) . ']';
 
@@ -52,9 +52,9 @@ sub stringify {
 }
 
 sub equals {
-    my ($self, $other) = @_;
-    $other = ref $other ? $other->stringify : $other;
-    return $self->stringify eq $other; 
+  my ($self, $other) = @_;
+  $other = ref $other ? $other->stringify : $other;
+  return $self->stringify eq $other;
 }
 
 1;

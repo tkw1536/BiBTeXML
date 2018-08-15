@@ -49,7 +49,7 @@ sub openFile {
   # reset the state
   $$self{lineno} = 0;
   $$self{colno}  = 0;
-  $$self{line}  = '';
+  $$self{line}   = '';
   $$self{nchars} = 0;
 
   return 1; }
@@ -60,7 +60,7 @@ sub openString {
   # reset the state
   $$self{lineno} = 0;
   $$self{colno}  = 0;
-  $$self{line}  = '';
+  $$self{line}   = '';
   $$self{nchars} = 0;
 
   $$self{string} = $string;
@@ -82,7 +82,7 @@ sub finalize {
   $$self{buffer} = [];
   $$self{lineno} = 0;
   $$self{colno}  = 0;
-  $$self{line}  = '';
+  $$self{line}   = '';
   $$self{nchars} = 0;
   return; }
 
@@ -102,7 +102,7 @@ sub readChar {
 
   # if we have some pushback, restore the state of it and return
   my $pushback = $$self{pushback};
-  if(defined($pushback)) {
+  if (defined($pushback)) {
     my ($char, $lineno, $colno, $at_eof) = @$pushback;
     $$self{pushback} = undef;
 
@@ -116,23 +116,23 @@ sub readChar {
   # don't bother trying
   return undef, $lineNo, $colNo, $eof if $$self{at_eof};
 
-  # if we still have characters left in the line, return those. 
+  # if we still have characters left in the line, return those.
   if ($colNo < $$self{nchars}) {
     return substr($$self{line}, $$self{colno}++, 1), $lineNo, $colNo, $eof;
-  
-  # else read the next line
+
+    # else read the next line
   } else {
     my $line = $self->readNextLine;
 
     # no more lines ...
     if (!defined($line)) {
       $$self{at_eof} = 1;
-      $$self{colno} = 0;
+      $$self{colno}  = 0;
       $$self{lineno}++;
       return undef, $lineNo, $colNo, $eof;
     }
 
-    $$self{line} = $line;
+    $$self{line}   = $line;
     $$self{nchars} = length $line;
 
     $$self{lineno}++;
@@ -149,8 +149,8 @@ sub eatChar {
   my ($self) = @_;
 
   # if we had some pushback
-  # we just need to clear it. 
-  if(defined($$self{pushback})) {
+  # we just need to clear it.
+  if (defined($$self{pushback})) {
     $$self{pushback} = undef;
     return;
   }
@@ -158,7 +158,7 @@ sub eatChar {
   # if we are at the end of the file, return
   return if $$self{at_eof};
 
-  # if we have characters, increase and return. 
+  # if we have characters, increase and return.
   if ($$self{colno} < $$self{nchars}) {
     $$self{colno}++;
     return;
@@ -168,12 +168,12 @@ sub eatChar {
     # no more lines ...
     if (!defined($line)) {
       $$self{at_eof} = 1;
-      $$self{colno} = 0;
+      $$self{colno}  = 0;
       $$self{lineno}++;
       return;
     }
 
-    $$self{line} = $line;
+    $$self{line}   = $line;
     $$self{nchars} = length $line;
 
     $$self{lineno}++;
@@ -190,16 +190,16 @@ sub unreadChar {
   # it is sufficient to revert the counter
   # and we do not need to use (potentially expensive) pushback
   my $nextLineNo = $$self{lineno};
-  if($nextLineNo eq $lineNo){
+  if ($nextLineNo eq $lineNo) {
     $$self{colno} = $colNo;
-  
-  # else we need to revert the current state onto pushback
-  # because we can not undo the ->readLine
+
+    # else we need to revert the current state onto pushback
+    # because we can not undo the ->readLine
   } else {
     $$self{pushback} = [($char, $nextLineNo, $$self{colno}, $$self{at_eof})];
-    $$self{lineno} = $lineNo;
-    $$self{colno}  = $colNo;
-    $$self{at_eof} = $eof;
+    $$self{lineno}   = $lineNo;
+    $$self{colno}    = $colNo;
+    $$self{at_eof}   = $eof;
   }
 }
 
@@ -210,7 +210,7 @@ sub peekChar {
 
   # if we have some pushback, return that immediatly
   # and do not call anything else
-  return @{$$self{pushback}} if defined($$self{pushback});
+  return @{ $$self{pushback} } if defined($$self{pushback});
 
   # read our current state
   my $lineNo = $$self{lineno};
@@ -236,16 +236,16 @@ sub peekChar {
 # and return the chars that were read
 sub readCharWhile {
   my ($self, $pred) = @_;
-  
+
   my ($char, $colno, $lineno, $eof) = $self->readChar;
   my $chars = '';
 
-  if(defined($char)) {
+  if (defined($char)) {
     # read while we are not at the end of the input
     # and are stil ok w.r.t the filter
     while (&{$pred}($char)) {
       $chars .= $char if defined($char);
-      ($char, $colno, $lineno, $eof) = $self->readChar; 
+      ($char, $colno, $lineno, $eof) = $self->readChar;
       last if $eof;
     }
   }
@@ -260,14 +260,14 @@ sub readCharWhile {
 # like readCharWhile, but doesn't return anything
 sub eatCharWhile {
   my ($self, $pred) = @_;
-  
+
   my ($char, $colno, $lineno, $eof) = $self->readChar;
   return unless defined($char);
-  
+
   # read while we are not at the end of the input
   # and are stil ok w.r.t the filter
   while (&{$pred}($char)) {
-    ($char, $colno, $lineno, $eof) = $self->readChar; 
+    ($char, $colno, $lineno, $eof) = $self->readChar;
     last if $eof;
   }
 
@@ -308,8 +308,8 @@ sub getPosition {
 sub readNextLine {
   my ($self) = @_;
 
-  unless (@{ $$self{buffer} }){
-    return unless $$self{IN}; # if we did not have an open file, return undef
+  unless (@{ $$self{buffer} }) {
+    return unless $$self{IN};    # if we did not have an open file, return undef
     my $fh   = \*{ $$self{IN} };
     my $line = <$fh>;
     if (!defined $line) {

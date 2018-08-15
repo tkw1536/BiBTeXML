@@ -76,9 +76,9 @@ sub stringify {
 }
 
 sub equals {
-    my ($self, $other) = @_;
-    $other = ref $other ? $other->stringify : $other;
-    return $self->stringify eq $other; 
+  my ($self, $other) = @_;
+  $other = ref $other ? $other->stringify : $other;
+  return $self->stringify eq $other;
 }
 
 1;

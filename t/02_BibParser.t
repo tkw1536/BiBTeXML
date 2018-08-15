@@ -10,10 +10,10 @@ require_ok("BibTeXML::Bibliography::BibParser");
 subtest 'readLiteral' => sub {
   plan tests => 5;
 
-  doesReadLiteral('empty',             ',',                     'BibString[LITERAL, "", from=1:1, to=1:1]');
-  doesReadLiteral('space',             'hello world',           'BibString[LITERAL, "hello world", from=1:1, to=1:12]');
-  doesReadLiteral('with an @ sign',    'hello@world',           'BibString[LITERAL, "hello@world", from=1:1, to=1:12]');
-  doesReadLiteral('with an " sign',    'hello"world',           'BibString[LITERAL, "hello"world", from=1:1, to=1:12]');
+  doesReadLiteral('empty', ',',           'BibString[LITERAL, "", from=1:1, to=1:1]');
+  doesReadLiteral('space', 'hello world', 'BibString[LITERAL, "hello world", from=1:1, to=1:12]');
+  doesReadLiteral('with an @ sign', 'hello@world', 'BibString[LITERAL, "hello@world", from=1:1, to=1:12]');
+  doesReadLiteral('with an " sign', 'hello"world', 'BibString[LITERAL, "hello"world", from=1:1, to=1:12]');
   doesReadLiteral('surrounding space', 'hello  world     ', 'BibString[LITERAL, "hello  world", from=1:1, to=1:13]');
 
   sub doesReadLiteral {
@@ -35,11 +35,11 @@ subtest 'readLiteral' => sub {
 subtest 'readBrace' => sub {
   plan tests => 5;
 
-  doesReadBrace('empty braces',        '{}',               'BibString[BRACKET, "", from=1:1, to=1:3]');
-  doesReadBrace('simple braces',       '{hello}',          'BibString[BRACKET, "hello", from=1:1, to=1:8]');
-  doesReadBrace('nested braces',       '{hello{world}}',   'BibString[BRACKET, "hello{world}", from=1:1, to=1:15]');
-  doesReadBrace('brace with open \\',  '{hello \{world}}', 'BibString[BRACKET, "hello \{world}", from=1:1, to=1:17]');
-  doesReadBrace('brace with close \\', '{hello world\}}',  'BibString[BRACKET, "hello world\", from=1:1, to=1:15]');
+  doesReadBrace('empty braces',  '{}',      'BibString[BRACKET, "", from=1:1, to=1:3]');
+  doesReadBrace('simple braces', '{hello}', 'BibString[BRACKET, "hello", from=1:1, to=1:8]');
+  doesReadBrace('nested braces', '{hello{world}}', 'BibString[BRACKET, "hello{world}", from=1:1, to=1:15]');
+  doesReadBrace('brace with open \\', '{hello \{world}}', 'BibString[BRACKET, "hello \{world}", from=1:1, to=1:17]');
+  doesReadBrace('brace with close \\', '{hello world\}}', 'BibString[BRACKET, "hello world\", from=1:1, to=1:15]');
 
   sub doesReadBrace {
     my ($name, $input, $expected) = @_;
@@ -59,10 +59,10 @@ subtest 'readBrace' => sub {
 subtest 'readQuote' => sub {
   plan tests => 4;
 
-  doesReadQuote('empty quotes',       '""',                'BibString[QUOTE, "", from=1:1, to=1:3]');
-  doesReadQuote('simple quote',       '"hello"',           'BibString[QUOTE, "hello", from=1:1, to=1:8]');
-  doesReadQuote('with { s',           '"{\"}"',            'BibString[QUOTE, "{\"}", from=1:1, to=1:7]');
-  doesReadQuote('quote with spaces',  '"hello world"',      'BibString[QUOTE, "hello world", from=1:1, to=1:14]');
+  doesReadQuote('empty quotes', '""',      'BibString[QUOTE, "", from=1:1, to=1:3]');
+  doesReadQuote('simple quote', '"hello"', 'BibString[QUOTE, "hello", from=1:1, to=1:8]');
+  doesReadQuote('with { s',     '"{\"}"',  'BibString[QUOTE, "{\"}", from=1:1, to=1:7]');
+  doesReadQuote('quote with spaces', '"hello world"', 'BibString[QUOTE, "hello world", from=1:1, to=1:14]');
 
   sub doesReadQuote {
     my ($name, $input, $expected) = @_;
@@ -83,25 +83,24 @@ subtest 'readTag' => sub {
   plan tests => 9;
 
   # value only
-  doesReadTag('empty tag',                  '');
-  doesReadTag('literal value',              'value',              'BibTag[name=, content=[BibString[LITERAL, "value", from=1:1, to=1:6]], from=1:1, to=1:6]');
-  doesReadTag('quoted value',               '"value"',            'BibTag[name=, content=[BibString[QUOTE, "value", from=1:1, to=1:8]], from=1:1, to=1:8]');
-  doesReadTag('braced value',               '{value}',            'BibTag[name=, content=[BibString[BRACKET, "value", from=1:1, to=1:8]], from=1:1, to=1:8]');
-  doesReadTag('concated literals',          'value1 # value2',    'BibTag[name=, content=[BibString[LITERAL, "value1", from=1:1, to=1:7],BibString[LITERAL, "value2", from=1:10, to=1:16]], from=1:1, to=1:16]');
-  doesReadTag('concated quote and literal', '"value1" # value2',  'BibTag[name=, content=[BibString[QUOTE, "value1", from=1:1, to=1:9],BibString[LITERAL, "value2", from=1:12, to=1:18]], from=1:1, to=1:18]');
-  
-  # name = value
-  doesReadTag('simple name',              'name = value',  'BibTag[name=BibString[LITERAL, "name", from=1:1, to=1:5], content=[BibString[LITERAL, "value", from=1:8, to=1:13]], from=1:1, to=1:13]');
-  doesReadTag('simple name (compact)',    'name=value',    'BibTag[name=BibString[LITERAL, "name", from=1:1, to=1:5], content=[BibString[LITERAL, "value", from=1:6, to=1:11]], from=1:1, to=1:11]');
-  doesReadTag('name + concat value',      'name=a#"b"',    'BibTag[name=BibString[LITERAL, "name", from=1:1, to=1:5], content=[BibString[LITERAL, "a", from=1:6, to=1:7],BibString[QUOTE, "b", from=1:8, to=1:11]], from=1:1, to=1:11]');
+  doesReadTag('empty tag', '');
+  doesReadTag('literal value', 'value', 'BibTag[name=, content=[BibString[LITERAL, "value", from=1:1, to=1:6]], from=1:1, to=1:6]');
+  doesReadTag('quoted value', '"value"', 'BibTag[name=, content=[BibString[QUOTE, "value", from=1:1, to=1:8]], from=1:1, to=1:8]');
+  doesReadTag('braced value', '{value}', 'BibTag[name=, content=[BibString[BRACKET, "value", from=1:1, to=1:8]], from=1:1, to=1:8]');
+  doesReadTag('concated literals', 'value1 # value2', 'BibTag[name=, content=[BibString[LITERAL, "value1", from=1:1, to=1:7],BibString[LITERAL, "value2", from=1:10, to=1:16]], from=1:1, to=1:16]');
+  doesReadTag('concated quote and literal', '"value1" # value2', 'BibTag[name=, content=[BibString[QUOTE, "value1", from=1:1, to=1:9],BibString[LITERAL, "value2", from=1:12, to=1:18]], from=1:1, to=1:18]');
 
+  # name = value
+  doesReadTag('simple name', 'name = value', 'BibTag[name=BibString[LITERAL, "name", from=1:1, to=1:5], content=[BibString[LITERAL, "value", from=1:8, to=1:13]], from=1:1, to=1:13]');
+  doesReadTag('simple name (compact)', 'name=value', 'BibTag[name=BibString[LITERAL, "name", from=1:1, to=1:5], content=[BibString[LITERAL, "value", from=1:6, to=1:11]], from=1:1, to=1:11]');
+  doesReadTag('name + concat value', 'name=a#"b"', 'BibTag[name=BibString[LITERAL, "name", from=1:1, to=1:5], content=[BibString[LITERAL, "a", from=1:6, to=1:7],BibString[QUOTE, "b", from=1:8, to=1:11]], from=1:1, to=1:11]');
 
   sub doesReadTag {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
     my $reader = BibTeXML::Common::StreamReader->new();
-    $reader->openString(" $input, "); # the comma simulates the next value 
+    $reader->openString(" $input, ");    # the comma simulates the next value
     $reader->eatChar;
 
     my ($result) = BibTeXML::Bibliography::BibParser::readTag($reader);

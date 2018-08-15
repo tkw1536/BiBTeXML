@@ -15,9 +15,9 @@ use List::Util qw(reduce);
 sub new {
   my ($class, $name, $content, $source) = @_;
   return bless {
-    name      => $name,         # name of the tag (may be omitted)
-    content   => $content,      # the content of the tag (list, required)
-    source    => $source,       # a source
+    name    => $name,       # name of the tag (may be omitted)
+    content => $content,    # the content of the tag (list, required)
+    source  => $source,     # a source
   }, $class;
 }
 
@@ -61,8 +61,8 @@ sub evaluate {
 }
 
 sub stringify {
-  my ($self)  = @_;
-  my ($name)  = $self->getName;
+  my ($self) = @_;
+  my ($name) = $self->getName;
   $name = defined($name) ? $name->stringify : '';
   my @content = map { $_->stringify; } @{ $self->getContent };
   my $contains = '[' . join(',', @content) . ']';
@@ -72,9 +72,9 @@ sub stringify {
 }
 
 sub equals {
-    my ($self, $other) = @_;
-    $other = ref $other ? $other->stringify : $other;
-    return $self->stringify eq $other; 
+  my ($self, $other) = @_;
+  $other = ref $other ? $other->stringify : $other;
+  return $self->stringify eq $other;
 }
 
 1;
