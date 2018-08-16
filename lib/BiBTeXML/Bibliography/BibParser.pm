@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  BibTeXML::Bibliography::BibParser                                  | #
+# |  BiBTeXML::Bibliography::BibParser                                  | #
 # | A Parser for .bib files                                             | #
 # |=====================================================================| #
 # | Part of BibTeXML                                                    | #
@@ -7,13 +7,13 @@
 # | Tom Wiesing <tom.wiesing@gmail.com>                                 | #
 # \=====================================================================/ #
 
-package BibTeXML::Bibliography::BibParser;
+package BiBTeXML::Bibliography::BibParser;
 use strict;
 use warnings;
 
-use BibTeXML::Bibliography::BibString;
-use BibTeXML::Bibliography::BibTag;
-use BibTeXML::Bibliography::BibEntry;
+use BiBTeXML::Bibliography::BibString;
+use BiBTeXML::Bibliography::BibTag;
+use BiBTeXML::Bibliography::BibEntry;
 
 use base qw(Exporter);
 our @EXPORT = (
@@ -140,7 +140,7 @@ sub readEntry {
   }
 
   my ($er, $ec) = $reader->getPosition;
-  return BibTeXML::Bibliography::BibEntry->new($type, [@tags], [$sr, $sc, $er, $ec]);
+  return BiBTeXML::Bibliography::BibEntry->new($type, [@tags], [$sr, $sc, $er, $ec]);
 }
 
 # ======================================================================= #
@@ -249,7 +249,7 @@ sub readTag {
   my $name;
   $name = shift(@content) if ($hadEqualSign);
 
-  return BibTeXML::Bibliography::BibTag->new($name, [@content], [($sr, $sc, $er, $ec)]);
+  return BiBTeXML::Bibliography::BibTag->new($name, [@content], [($sr, $sc, $er, $ec)]);
 }
 
 # ======================================================================= #
@@ -290,7 +290,7 @@ sub readLiteral {
 
   # unread the character that isn't part of the special literal and return
   $reader->unreadChar($char, $line, $col, $eof);
-  return BibTeXML::Bibliography::BibString->new('LITERAL', $keyword, [($sr, $sc, $er, $ec)]);
+  return BiBTeXML::Bibliography::BibString->new('LITERAL', $keyword, [($sr, $sc, $er, $ec)]);
 }
 
 # read a string of balanced braces from the input
@@ -325,7 +325,7 @@ sub readBrace {
   }
 
   # we can add a +1 here, because we did not read a \n
-  return BibTeXML::Bibliography::BibString->new('BRACKET', $result, [($sr, $sc, $line, $col + 1)]);
+  return BiBTeXML::Bibliography::BibString->new('BRACKET', $result, [($sr, $sc, $line, $col + 1)]);
 }
 
 # read a quoted quote from reader
@@ -359,6 +359,6 @@ sub readQuote {
   }
 
   # we can add a +1 here, because we did not read a \n
-  return BibTeXML::Bibliography::BibString->new('QUOTE', $result, [($sr, $sc, $line, $col + 1)]);
+  return BiBTeXML::Bibliography::BibString->new('QUOTE', $result, [($sr, $sc, $line, $col + 1)]);
 }
 1;

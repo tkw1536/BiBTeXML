@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  BibTeXML::Common::StreamReader                                     | #
+# |  BiBTeXML::Common::StreamReader                                     | #
 # | A primitive reader for input streams                                | #
 # |=====================================================================| #
 # | Part of BibTeXML                                                    | #
@@ -7,7 +7,7 @@
 # | Tom Wiesing <tom.wiesing@gmail.com>                                 | #
 # \=====================================================================/ #
 
-package BibTeXML::Common::StreamReader;
+package BiBTeXML::Common::StreamReader;
 use strict;
 use warnings;
 

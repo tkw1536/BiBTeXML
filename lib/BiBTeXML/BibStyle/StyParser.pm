@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  BibTeXML::Bibliography::BibParser                                  | #
+# |  BiBTeXML::Bibliography::BibParser                                  | #
 # | A Parser for .bib files                                             | #
 # |=====================================================================| #
 # | Part of BibTeXML                                                    | #
@@ -7,11 +7,11 @@
 # | Tom Wiesing <tom.wiesing@gmail.com>                                 | #
 # \=====================================================================/ #
 
-package BibTeXML::BibStyle::StyParser;
+package BiBTeXML::BibStyle::StyParser;
 use strict;
 use warnings;
 
-use BibTeXML::BibStyle::StyString;
+use BiBTeXML::BibStyle::StyString;
 
 # format an error message for the user
 sub getLocationString {
@@ -35,7 +35,7 @@ sub readArgument {
   return undef, 'expected a non-empty argument' . getLocationString($reader) unless $literal ne "";
   my ($er, $ec) = $reader->getPosition;
 
-  return BibTeXML::BibStyle::StyString->new('ARGUMENT', $literal + 0, [($sr, $sc, $er, $ec)]);
+  return BiBTeXML::BibStyle::StyString->new('ARGUMENT', $literal + 0, [($sr, $sc, $er, $ec)]);
 }
 
 # Reads a literal, delimited by spaces, from the input
@@ -48,7 +48,7 @@ sub readLiteral {
   return undef, 'expected a non-empty literal' . getLocationString($reader) unless $literal;
   my ($er, $ec) = $reader->getPosition;
 
-  return BibTeXML::BibStyle::StyString->new('LITERAL', $literal, [($sr, $sc, $er, $ec)]);
+  return BiBTeXML::BibStyle::StyString->new('LITERAL', $literal, [($sr, $sc, $er, $ec)]);
 }
 
 # read a quoted quote from reader
@@ -82,6 +82,6 @@ sub readQuote {
   }
 
   # we can add a +1 here, because we did not read a \n
-  return BibTeXML::BibStyle::StyString->new('QUOTE', $result, [($sr, $sc, $line, $col + 1)]);
+  return BiBTeXML::BibStyle::StyString->new('QUOTE', $result, [($sr, $sc, $line, $col + 1)]);
 }
 1;

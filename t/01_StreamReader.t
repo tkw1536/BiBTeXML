@@ -4,13 +4,13 @@ use File::Basename;
 use File::Spec;
 
 # we should be able to read the module
-require_ok("BibTeXML::Common::StreamReader");
+require_ok("BiBTeXML::Common::StreamReader");
 
 subtest 'String Hello world' => sub {
   plan tests => 16;
 
   # creating a reader from a string should work
-  my $reader = BibTeXML::Common::StreamReader->new();
+  my $reader = BiBTeXML::Common::StreamReader->new();
   $reader->openString("hello\nworld");
 
   peeks($reader, "1st character", "h", 0, 0, 0);
@@ -41,7 +41,7 @@ subtest 'String aaaaab' => sub {
   plan tests => 2;
 
   # creating a reader from a string should work
-  my $reader = BibTeXML::Common::StreamReader->new();
+  my $reader = BiBTeXML::Common::StreamReader->new();
   $reader->openString("aaaaab");
 
   readsWhile($reader, "read while 'a's", sub { return $_[0] =~ /a/; }, 'aaaaa');
@@ -54,7 +54,7 @@ subtest 'File Hello World' => sub {
   plan tests => 16;
 
   # creating a reader from a string should work
-  my $reader = BibTeXML::Common::StreamReader->new();
+  my $reader = BiBTeXML::Common::StreamReader->new();
   my $path = File::Spec->join(dirname(__FILE__), 'fixtures', 'streamreader', 'helloworld.txt');
   $reader->openFile($path, "utf-8");
 

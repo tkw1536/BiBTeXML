@@ -4,8 +4,8 @@ use File::Basename;
 use File::Spec;
 
 # we should be able to read the module
-require_ok("BibTeXML::Common::StreamReader");
-require_ok("BibTeXML::BibStyle::StyParser");
+require_ok("BiBTeXML::Common::StreamReader");
+require_ok("BiBTeXML::BibStyle::StyParser");
 
 subtest 'readLiteral' => sub {
   plan tests => 2;
@@ -17,11 +17,11 @@ subtest 'readLiteral' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BibTeXML::Common::StreamReader->new();
+    my $reader = BiBTeXML::Common::StreamReader->new();
     $reader->openString(" $input ");
     $reader->eatChar;
 
-    my ($result) = BibTeXML::BibStyle::StyParser::readLiteral($reader);
+    my ($result) = BiBTeXML::BibStyle::StyParser::readLiteral($reader);
     ok($result->equals($expected), $name);
 
     $reader->finalize;
@@ -38,11 +38,11 @@ subtest 'readArgument' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BibTeXML::Common::StreamReader->new();
+    my $reader = BiBTeXML::Common::StreamReader->new();
     $reader->openString(" $input ");
     $reader->eatChar;
 
-    my ($result) = BibTeXML::BibStyle::StyParser::readArgument($reader);
+    my ($result) = BiBTeXML::BibStyle::StyParser::readArgument($reader);
     ok($result->equals($expected), $name);
 
     $reader->finalize;
@@ -61,11 +61,11 @@ subtest 'readQuote' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BibTeXML::Common::StreamReader->new();
+    my $reader = BiBTeXML::Common::StreamReader->new();
     $reader->openString(" $input ");
     $reader->eatChar;
 
-    my ($result) = BibTeXML::BibStyle::StyParser::readQuote($reader);
+    my ($result) = BiBTeXML::BibStyle::StyParser::readQuote($reader);
     ok($result->equals($expected), $name);
 
     $reader->finalize;

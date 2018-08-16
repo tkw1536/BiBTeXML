@@ -1,33 +1,34 @@
 # /=====================================================================\ #
-# |  BibTeXML::Bibliography::BibEntry                                   | #
-# | Representation for .bib file entries                                | #
+# |  BiBTeXML::BibStyle::StyString                                      | #
+# | Representations for files with source refs to a .bst file           | #
 # |=====================================================================| #
 # | Part of BibTeXML                                                    | #
 # |---------------------------------------------------------------------| #
 # | Tom Wiesing <tom.wiesing@gmail.com>                                 | #
 # \=====================================================================/ #
 
-package BibTeXML::Bibliography::BibEntry;
+package BiBTeXML::BibStyle::StyString;
 use strict;
 use warnings;
 
 sub new {
-  my ($class, $type, $tags, $source) = @_;
+  my ($class, $kind, $value, $source) = @_;
   return bless {
-    type   => $type,     # a bibstring
-    tags   => $tags,     # a bibstring
-    source => $source    # an array of tags
+    kind   => $kind || '',
+    value  => $value,
+    source => $source,       # quadruple
   }, $class;
 }
 
-sub getType {
+# known kinds = 'LITERAL', 'QUOTE', 'ARGUMENT', 'BLOCK'
+sub getKind {
   my ($self) = @_;
-  return $$self{type};
+  return $$self{kind};
 }
 
-sub getTags {
+sub getValue {
   my ($self) = @_;
-  return $$self{tags};
+  return $$self{value};
 }
 
 sub getSource {
@@ -35,20 +36,22 @@ sub getSource {
   return $$self{source};
 }
 
-sub evaluate {
-  my ($self, %context) = @_;
-
-  # TODO: Evaluate
-}
-
 sub stringify {
   my ($self) = @_;
-  my ($type) = $self->getType->stringify;
-  my @tags = map { $_->stringify; } @{ $self->getTags };
-  my $tagStr = '[' . join(',', @tags) . ']';
+  my ($kind) = $$self{kind};
+
+  my $value;
+  if ($kind eq 'BRACE') {
+    my @content = map { $_->stringify; } @{ $$self{value} };
+    $value = '[' . join(',', @content) . ']';
+  } elsif ($kind eq 'ARGUMENT') {
+    $value = $$self{value};
+  } else {
+    $value = '"' . $$self{value} . '"';
+  }
 
   my ($sr, $sc, $er, $ec) = @{ $self->getSource };
-  return "BibEntry[type=$type, tags=$tagStr, from=$sr:$sc, to=$er:$ec]";
+  return "StyString[$kind, $value, from=$sr:$sc, to=$er:$ec]";
 }
 
 sub equals {

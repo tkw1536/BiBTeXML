@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  BibTeXML::Bibliography::BibString                                  | #
+# |  BiBTeXML::Bibliography::BibString                                  | #
 # | Representations for files with source refs to a .bib file           | #
 # |=====================================================================| #
 # | Part of BibTeXML                                                    | #
@@ -7,7 +7,7 @@
 # | Tom Wiesing <tom.wiesing@gmail.com>                                 | #
 # \=====================================================================/ #
 
-package BibTeXML::Bibliography::BibString;
+package BiBTeXML::Bibliography::BibString;
 use strict;
 use warnings;
 

@@ -4,8 +4,8 @@ use File::Basename;
 use File::Spec;
 
 # we should be able to read the module
-require_ok("BibTeXML::Common::StreamReader");
-require_ok("BibTeXML::Bibliography::BibParser");
+require_ok("BiBTeXML::Common::StreamReader");
+require_ok("BiBTeXML::Bibliography::BibParser");
 
 subtest 'readLiteral' => sub {
   plan tests => 5;
@@ -20,12 +20,12 @@ subtest 'readLiteral' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BibTeXML::Common::StreamReader->new();
+    my $reader = BiBTeXML::Common::StreamReader->new();
     $reader->openString(" $input}");
     $reader->eatChar;
 
     # ensure that it actually
-    my ($result) = BibTeXML::Bibliography::BibParser::readLiteral($reader);
+    my ($result) = BiBTeXML::Bibliography::BibParser::readLiteral($reader);
     ok($result->equals($expected), $name);
 
     $reader->finalize;
@@ -45,11 +45,11 @@ subtest 'readBrace' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BibTeXML::Common::StreamReader->new();
+    my $reader = BiBTeXML::Common::StreamReader->new();
     $reader->openString(" $input ");
     $reader->eatChar;
 
-    my ($result) = BibTeXML::Bibliography::BibParser::readBrace($reader);
+    my ($result) = BiBTeXML::Bibliography::BibParser::readBrace($reader);
     ok($result->equals($expected), $name);
 
     $reader->finalize;
@@ -68,11 +68,11 @@ subtest 'readQuote' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BibTeXML::Common::StreamReader->new();
+    my $reader = BiBTeXML::Common::StreamReader->new();
     $reader->openString(" $input ");
     $reader->eatChar;
 
-    my ($result) = BibTeXML::Bibliography::BibParser::readQuote($reader);
+    my ($result) = BiBTeXML::Bibliography::BibParser::readQuote($reader);
     ok($result->equals($expected), $name);
 
     $reader->finalize;
@@ -99,11 +99,11 @@ subtest 'readTag' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BibTeXML::Common::StreamReader->new();
+    my $reader = BiBTeXML::Common::StreamReader->new();
     $reader->openString(" $input, ");    # the comma simulates the next value
     $reader->eatChar;
 
-    my ($result) = BibTeXML::Bibliography::BibParser::readTag($reader);
+    my ($result) = BiBTeXML::Bibliography::BibParser::readTag($reader);
 
     if (defined($expected)) {
       ok($result->equals($expected), $name);
@@ -128,10 +128,10 @@ subtest 'readEntry' => sub {
     my $path = File::Spec->join(dirname(__FILE__), 'fixtures', 'bibparser', $input);
 
     # create a new string reader with some dummy input
-    my $reader = BibTeXML::Common::StreamReader->new();
+    my $reader = BiBTeXML::Common::StreamReader->new();
     $reader->openFile("$path.bib", 'utf-8');
 
-    my ($result) = BibTeXML::Bibliography::BibParser::readEntry($reader);
+    my ($result) = BiBTeXML::Bibliography::BibParser::readEntry($reader);
     ok($result->equals(slurp("$path.txt")), $input);
     $reader->finalize;
   }

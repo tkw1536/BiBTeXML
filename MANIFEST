@@ -12,21 +12,21 @@ LICENSE
 #==================================================
 # Common Modules
 #==================================================
-lib/BibTeXML/Common/StreamReader.pm
+lib/BiBTeXML/Common/StreamReader.pm
 
 #==================================================
 # Bibliography
 #==================================================
-lib/BibTeXML/Bibliography/BibEntry.pm
-lib/BibTeXML/Bibliography/BibParser.pm
-lib/BibTeXML/Bibliography/BibString.pm
-lib/BibTeXML/Bibliography/BibTag.pm
+lib/BiBTeXML/Bibliography/BibEntry.pm
+lib/BiBTeXML/Bibliography/BibParser.pm
+lib/BiBTeXML/Bibliography/BibString.pm
+lib/BiBTeXML/Bibliography/BibTag.pm
 
 #==================================================
 # BibStyle
 #==================================================
-lib/BibTeXML/BibStyle/StyParser.pm
-lib/BibTeXML/BibStyle/StyString.pm
+lib/BiBTeXML/BibStyle/StyParser.pm
+lib/BiBTeXML/BibStyle/StyString.pm
 
 #==================================================
 # Test Suite.

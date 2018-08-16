@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  BibTeXML::Bibliography::BibTag                                     | #
+# |  BiBTeXML::Bibliography::BibTag                                     | #
 # | Representation for tags inside .bib entries                         | #
 # |=====================================================================| #
 # | Part of BibTeXML                                                    | #
@@ -7,7 +7,7 @@
 # | Tom Wiesing <tom.wiesing@gmail.com>                                 | #
 # \=====================================================================/ #
 
-package BibTeXML::Bibliography::BibTag;
+package BiBTeXML::Bibliography::BibTag;
 use strict;
 use warnings;
 use List::Util qw(reduce);
