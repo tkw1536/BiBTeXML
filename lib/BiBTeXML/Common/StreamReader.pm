@@ -21,9 +21,9 @@ sub new {
 
     # current line information
     line => '', nchars => 0, colno => 0,
-    lineno => 0, at_eof => 0,
+    lineno => 0, eof => 0,
 
-    # pushback, contains ($char, $line, $col, $at_eof)
+    # pushback, contains ($char, $line, $col, $eof)
     pushback => undef
   }, $class;
 }
@@ -98,23 +98,23 @@ sub readChar {
   # read our current state
   my $lineNo = $$self{lineno};
   my $colNo  = $$self{colno};
-  my $eof    = $$self{at_eof};
+  my $eof    = $$self{eof};
 
   # if we have some pushback, restore the state of it and return
   my $pushback = $$self{pushback};
   if (defined($pushback)) {
-    my ($char, $lineno, $colno, $at_eof) = @$pushback;
+    my ($char, $lineno, $colno, $eof) = @$pushback;
     $$self{pushback} = undef;
 
     $$self{lineno} = $lineno;
     $$self{colno}  = $colno;
-    $$self{at_eof} = $at_eof;
+    $$self{eof} = $eof;
     return $char, $lineNo, $colNo, $eof;
   }
 
   # if we reached the end of the file in a previous run
   # don't bother trying
-  return undef, $lineNo, $colNo, $eof if $$self{at_eof};
+  return undef, $lineNo, $colNo, $eof if $$self{eof};
 
   # if we still have characters left in the line, return those.
   if ($colNo < $$self{nchars}) {
@@ -126,7 +126,7 @@ sub readChar {
 
     # no more lines ...
     if (!defined($line)) {
-      $$self{at_eof} = 1;
+      $$self{eof} = 1;
       $$self{colno}  = 0;
       $$self{lineno}++;
       return undef, $lineNo, $colNo, $eof;
@@ -156,7 +156,7 @@ sub eatChar {
   }
 
   # if we are at the end of the file, return
-  return if $$self{at_eof};
+  return if $$self{eof};
 
   # if we have characters, increase and return.
   if ($$self{colno} < $$self{nchars}) {
@@ -167,7 +167,7 @@ sub eatChar {
 
     # no more lines ...
     if (!defined($line)) {
-      $$self{at_eof} = 1;
+      $$self{eof} = 1;
       $$self{colno}  = 0;
       $$self{lineno}++;
       return;
@@ -196,10 +196,10 @@ sub unreadChar {
     # else we need to revert the current state onto pushback
     # because we can not undo the ->readLine
   } else {
-    $$self{pushback} = [($char, $nextLineNo, $$self{colno}, $$self{at_eof})];
+    $$self{pushback} = [($char, $nextLineNo, $$self{colno}, $$self{eof})];
     $$self{lineno}   = $lineNo;
     $$self{colno}    = $colNo;
-    $$self{at_eof}   = $eof;
+    $$self{eof}   = $eof;
   }
 }
 
@@ -215,7 +215,7 @@ sub peekChar {
   # read our current state
   my $lineNo = $$self{lineno};
   my $colNo  = $$self{colno};
-  my $eof    = $$self{at_eof};
+  my $eof    = $$self{eof};
 
   # if we have reached the end of the line, we can return now
   # and don't even bother trying anything else
@@ -293,10 +293,11 @@ sub eatSpaces {
 # Reading state
 # ===================================================================== #
 
-# returns a triple (line, column, at_eof)
+# returns a triple (line, column, eof)
+# line is one-based, column is zero-based
 sub getPosition {
   my ($self) = @_;
-  return ($$self{lineno}, $$self{colno}, $$self{at_eof});
+  return ($$self{lineno}, $$self{colno}, $$self{eof});
 }
 
 # ===================================================================== #

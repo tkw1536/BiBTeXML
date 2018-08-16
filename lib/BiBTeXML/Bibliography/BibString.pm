@@ -14,58 +14,88 @@ use warnings;
 sub new {
   my ($class, $kind, $value, $source) = @_;
   return bless {
-    kind   => $kind || '',
-    value  => $value,
-    source => $source,       # quadruple
+    kind => $kind || '',    # the kind of string we have (see getKind)
+    value  => $value,       # the value in this string (see getValue)
+    source => $source,      # the source position (see getSource)
   }, $class;
 }
 
-# known kinds = '', 'LITERAL', 'BRACE', 'QUOTE'
+# return a copy of this entry
+sub copy {
+  my ($self) = @_;
+
+  # we need to deep-copy the source
+  my ($sr, $sc, $er, $ec) = @{$$self{source}};
+  return new($$self{kind}, $$self{value}, [($sr, $sc, $er, $ec)]);
+}
+
+# get the kind this BibString represents. One of:
+#   ''          (other)
+#   'LITERAL'   (an unquoted literal from the source file)
+#   'BRACE'     (a braced string from the source file)
+#   'QUOTE'     (a quoted string from the source file)
+#   'EVALUATED' (anything that has been evaluated or concatinated)
 sub getKind {
   my ($self) = @_;
   return $$self{kind};
 }
 
+# get the value of this BiBString, a normal string
 sub getValue {
   my ($self) = @_;
   return $$self{value};
 }
 
+# normalizes the value of this BiBString
+# i.e. turns it into lower-case
+sub normalizeValue {
+  my ($self) = @_;
+  $$self{value} = lc($$self{value});
+}
+
+# get the source position of this string
+# a quadruple ($startRow, $startColumn, $endRow, $endColumn)
+# row-indexes are one-based, column-indexes zero-based
+# the start position is inclusive, the end position is not
+# never includes any whitespace in positioning
 sub getSource {
   my ($self) = @_;
   return $$self{source};
 }
 
+# evaluate this BibString inside of a context
+# i.e. if it is a literal read the value from the context
+# returns 0 iff evaluation failed, and 1 otherwise.
 sub evaluate {
   my ($self, %context) = @_;
 
-  # if we have a literal, we need to substitute values
   if ($$self{kind} eq 'LITERAL') {
-    $$self{kind}  = '';
-    $$self{value} = $context{ $$self{value} };
+    $$self{kind} = 'EVALUATED';
+    my $value = $context{ lc($$self{value}) };
+    return 0 unless defined($value);
+    $$self{value} = $value->getValue;
   }
+
+  return 1;
 }
 
+# appends the value of another BiBString to this one
+# and updates the source ref accordingly
+# DOES NOT do any type checking what-so-ever
 sub append {
-  my ($self, $other, %context) = @_;
+  my ($self, $other) = @_;
 
-  # evaluate self
-  $self->evaluate(%context);
+  # append the value to our own class
+  $$self{kind} = 'EVALUATED';
+  $$self{value} .= $other->getValue;
 
-  # evaluate other
-  $other->evaluate(%context);
-
-  # update values
-  $$self{kind}  = '';
-  $$self{value} = $self->getValue . $other->getValue;
-  # TODO: This concatinates {} as well, which isn't allowed
-
-  my ($sr, $sc) = @{ $self->getSource };
+  # update the source reference
+  my ($sr, $sc) = @{ $$self{source} };
   my ($a, $b, $er, $ec) = @{ $other->getSource };
-
   $$self{source} = [($sr, $sc, $er, $ec)];
 }
 
+# turns this BibString into a string for human-readable presentation
 sub stringify {
   my ($self)  = @_;
   my ($kind)  = $$self{kind};
@@ -75,6 +105,7 @@ sub stringify {
   return "BibString[$kind, \"$value\", from=$sr:$sc, to=$er:$ec]";
 }
 
+# checks if this BibString equals another BibString
 sub equals {
   my ($self, $other) = @_;
   $other = ref $other ? $other->stringify : $other;

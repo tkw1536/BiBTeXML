@@ -115,6 +115,8 @@ subtest 'readTag' => sub {
   }
 };
 
+use Encode;
+
 subtest 'readEntry' => sub {
   plan tests => 3;
 
@@ -139,10 +141,17 @@ subtest 'readEntry' => sub {
   sub slurp {
     my ($path) = @_;
     open my $fh, '<', $path or die "Can't open file $!";
-    my $file_content = do { local $/; <$fh> };
+    my $file_content = do { local $/; binmode $fh; <$fh> };
     close($fh);
     $file_content =~ s/(?:\015\012|\015|\012)/\n/sg;
-    return $file_content;
+    return decode('utf-8', $file_content);
+  }
+
+  sub puts {
+    my ($path, $content) = @_;
+    open my $fh, '>', $path or die "Can't open file $!";
+    print $fh encode('utf-8', $content);
+    close $fh;
   }
 };
 

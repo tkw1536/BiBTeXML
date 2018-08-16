@@ -14,9 +14,9 @@ use warnings;
 sub new {
   my ($class, $kind, $value, $source) = @_;
   return bless {
-    kind   => $kind || '',
+    kind => $kind || '',
     value  => $value,
-    source => $source,       # quadruple
+    source => $source,    # quadruple
   }, $class;
 }
 

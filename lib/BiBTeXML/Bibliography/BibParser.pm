@@ -50,18 +50,30 @@ sub getLocationString {
 # Parsing a file
 # ======================================================================= #
 
-# parses an entire .bib file into a collection of entries.
+# reads an entire .bib file into a collection of entries.
+# if $evaluate is true-ish, evaluates and substitutes all strings
 # return [@entries], [@errors]
 sub readFile {
-  my ($reader) = @_;
+  my ($reader, $evaluate) = @_;
 
   my @entries = ();
   my @errors  = ();
+
+  my %context = ();
+  my ($content, $name);
 
   my ($entry, $error) = readEntry($reader);
 
   while (defined($entry) || defined($error)) {
     if (defined($entry)) {
+      if($evaluate){
+        $entry->evaluate(%context);
+        if($entry->getType->getValue eq 'string'){
+          ($content) = @{$entry->getTags};
+          $context{$content->getName->getValue} = $content->getContent;
+        }
+      }
+
       push(@entries, $entry);
     } else {
       push(@errors, $error);

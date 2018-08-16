@@ -44,5 +44,8 @@ t/fixtures/bibparser/02_string.txt
 t/fixtures/bibparser/03_article.bib
 t/fixtures/bibparser/03_article.txt
 
+t/fixtures/bibfiles/complicated.bib
+t/fixtures/bibfiles/complicated.bib.txt
 t/fixtures/bibfiles/kwarc.bib
+t/fixtures/bibfiles/kwarc.bib.txt
 t/fixtures/bibfiles/README.md
