@@ -34,6 +34,7 @@ lib/BiBTeXML/BibStyle/StyString.pm
 t/01_StreamReader.t
 t/10_BibParser.t
 t/11_BibParser_file.t
+t/20_StyParser.t
 
 t/fixtures/streamreader/helloworld.txt
 

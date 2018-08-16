@@ -50,9 +50,9 @@ sub evaluate {
 
   $$self{type}->normalizeValue;
 
-  my @tags = @{$$self{tags}};
+  my @tags = @{ $$self{tags} };
   my $tag;
-  foreach $tag (@tags){
+  foreach $tag (@tags) {
     $tag->evaluate(%context);
   }
 }

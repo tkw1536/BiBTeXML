@@ -38,7 +38,7 @@ sub getName {
 }
 
 # gets the content of this BiBTag, i.e. either a list of values
-# or a single value. 
+# or a single value.
 sub getContent {
   my ($self) = @_;
   return $$self{content};
@@ -66,11 +66,11 @@ sub evaluate {
   # from the ones that we have
   # DOES NOT DO ANY TYPE CHECKING
   my $cont;
-  foreach $cont (@content){
+  foreach $cont (@content) {
     push(@failed, $cont) unless $cont->evaluate(%context);
     $item->append($cont);
   }
-  
+
   # and set the new content
   $$self{content} = $item;
 
@@ -84,7 +84,7 @@ sub stringify {
   $name = defined($name) ? $name->stringify : '';
 
   my $content = $self->getContent;
-  if(ref $content eq 'ARRAY'){
+  if (ref $content eq 'ARRAY') {
     my @scontent = map { $_->stringify; } @{ $self->getContent };
     $content = '[' . join(',', @scontent) . ']';
   } else {

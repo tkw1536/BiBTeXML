@@ -1,6 +1,6 @@
 # /=====================================================================\ #
 # |  BiBTeXML::Bibliography::BibString                                  | #
-# | Representations for files with source refs to a .bib file           | #
+# | Representations for strings with source refs to a .bib file         | #
 # |=====================================================================| #
 # | Part of BibTeXML                                                    | #
 # |---------------------------------------------------------------------| #
@@ -25,7 +25,7 @@ sub copy {
   my ($self) = @_;
 
   # we need to deep-copy the source
-  my ($sr, $sc, $er, $ec) = @{$$self{source}};
+  my ($sr, $sc, $er, $ec) = @{ $$self{source} };
   return new($$self{kind}, $$self{value}, [($sr, $sc, $er, $ec)]);
 }
 

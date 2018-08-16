@@ -108,7 +108,7 @@ sub readChar {
 
     $$self{lineno} = $lineno;
     $$self{colno}  = $colno;
-    $$self{eof} = $eof;
+    $$self{eof}    = $eof;
     return $char, $lineNo, $colNo, $eof;
   }
 
@@ -126,8 +126,8 @@ sub readChar {
 
     # no more lines ...
     if (!defined($line)) {
-      $$self{eof} = 1;
-      $$self{colno}  = 0;
+      $$self{eof}   = 1;
+      $$self{colno} = 0;
       $$self{lineno}++;
       return undef, $lineNo, $colNo, $eof;
     }
@@ -167,8 +167,8 @@ sub eatChar {
 
     # no more lines ...
     if (!defined($line)) {
-      $$self{eof} = 1;
-      $$self{colno}  = 0;
+      $$self{eof}   = 1;
+      $$self{colno} = 0;
       $$self{lineno}++;
       return;
     }
@@ -199,7 +199,7 @@ sub unreadChar {
     $$self{pushback} = [($char, $nextLineNo, $$self{colno}, $$self{eof})];
     $$self{lineno}   = $lineNo;
     $$self{colno}    = $colNo;
-    $$self{eof}   = $eof;
+    $$self{eof}      = $eof;
   }
 }
 
@@ -246,7 +246,7 @@ sub readCharWhile {
     while (&{$pred}($char)) {
       $chars .= $char if defined($char);
       ($char, $colno, $lineno, $eof) = $self->readChar;
-      last if $eof;
+      last unless defined($char);
     }
   }
 
@@ -268,7 +268,7 @@ sub eatCharWhile {
   # and are stil ok w.r.t the filter
   while (&{$pred}($char)) {
     ($char, $colno, $lineno, $eof) = $self->readChar;
-    last if $eof;
+    last unless defined($char);
   }
 
   # unread whatever is next and put it back on the stack

@@ -58,7 +58,7 @@ sub doesEvalFile {
     my $duration = time - $start;
 
     # check that we did not make any errors
-    if(defined($expectEntries)){
+    if (defined($expectEntries)) {
       is(scalar(@$results), $expectEntries, 'parses correct number of entries from ' . $name);
     } else {
       my @sresults = map { $_->stringify; } @{$results};

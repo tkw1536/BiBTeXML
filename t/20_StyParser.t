@@ -1,4 +1,4 @@
-use Test::More tests => 5;
+use Test::More tests => 7;
 
 use File::Basename;
 use File::Spec;
@@ -8,10 +8,11 @@ require_ok("BiBTeXML::Common::StreamReader");
 require_ok("BiBTeXML::BibStyle::StyParser");
 
 subtest 'readLiteral' => sub {
-  plan tests => 2;
+  plan tests => 3;
 
   doesReadLiteral('simple literal', 'hello#world', 'StyString[LITERAL, "hello#world", from=1:1, to=1:12]');
   doesReadLiteral('ends after first space', 'hello world', 'StyString[LITERAL, "hello", from=1:1, to=1:6]');
+  doesReadLiteral('ends after }', 'hello}world', 'StyString[LITERAL, "hello", from=1:1, to=1:6]');
 
   sub doesReadLiteral {
     my ($name, $input, $expected) = @_;
@@ -28,13 +29,14 @@ subtest 'readLiteral' => sub {
   }
 };
 
-subtest 'readArgument' => sub {
-  plan tests => 2;
+subtest 'readNumber' => sub {
+  plan tests => 3;
 
-  doesReadArgument('simple argument', '#0', 'StyString[ARGUMENT, 0, from=1:1, to=1:3]');
-  doesReadArgument('ends after first space', '#123456 ', 'StyString[ARGUMENT, 123456, from=1:1, to=1:8]');
+  doesReadNumber('simple number', '#0', 'StyString[NUMBER, 0, from=1:1, to=1:3]');
+  doesReadNumber('ends after first space', '#123456 ', 'StyString[NUMBER, 123456, from=1:1, to=1:8]');
+  doesReadNumber('ends after }', '#123456}7', 'StyString[NUMBER, 123456, from=1:1, to=1:8]');
 
-  sub doesReadArgument {
+  sub doesReadNumber {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
@@ -42,7 +44,29 @@ subtest 'readArgument' => sub {
     $reader->openString(" $input ");
     $reader->eatChar;
 
-    my ($result) = BiBTeXML::BibStyle::StyParser::readArgument($reader);
+    my ($result) = BiBTeXML::BibStyle::StyParser::readNumber($reader);
+    ok($result->equals($expected), $name);
+
+    $reader->finalize;
+  }
+};
+
+subtest 'readReference' => sub {
+  plan tests => 3;
+
+  doesReadReference('simple reference', '\'hello@world', 'StyString[REFERENCE, "hello@world", from=1:1, to=1:13]');
+  doesReadReference('ends after first space', "'hello world", 'StyString[REFERENCE, "hello", from=1:1, to=1:7]');
+  doesReadReference('ends with }', "'hello}world", 'StyString[REFERENCE, "hello", from=1:1, to=1:7]');
+
+  sub doesReadReference {
+    my ($name, $input, $expected) = @_;
+
+    # create a new string reader with some dummy input
+    my $reader = BiBTeXML::Common::StreamReader->new();
+    $reader->openString(" $input ");
+    $reader->eatChar;
+
+    my ($result, $e) = BiBTeXML::BibStyle::StyParser::readReference($reader);
     ok($result->equals($expected), $name);
 
     $reader->finalize;
@@ -54,7 +78,7 @@ subtest 'readQuote' => sub {
 
   doesReadQuote('empty quotes', '""',      'StyString[QUOTE, "", from=1:1, to=1:3]');
   doesReadQuote('simple quote', '"hello"', 'StyString[QUOTE, "hello", from=1:1, to=1:8]');
-  doesReadQuote('with { s',     '"{\"}"',  'StyString[QUOTE, "{\"}", from=1:1, to=1:7]');
+  doesReadQuote('no escapes',   '"{\"}"',  'StyString[QUOTE, "{\", from=1:1, to=1:5]');
   doesReadQuote('quote with spaces', '"hello world"', 'StyString[QUOTE, "hello world", from=1:1, to=1:14]');
 
   sub doesReadQuote {
@@ -66,6 +90,29 @@ subtest 'readQuote' => sub {
     $reader->eatChar;
 
     my ($result) = BiBTeXML::BibStyle::StyParser::readQuote($reader);
+    ok($result->equals($expected), $name);
+
+    $reader->finalize;
+  }
+};
+
+subtest 'readBlock' => sub {
+  plan tests => 4;
+
+  doesReadBlock('empty block', '{}', 'StyString[BLOCK, [], from=1:1, to=1:3]');
+  doesReadBlock('block of literal', '{hello}', 'StyString[BLOCK, [StyString[LITERAL, "hello", from=1:2, to=1:7]], from=1:1, to=1:8]');
+  doesReadBlock('block of multiples', '{hello \'world #3}', 'StyString[BLOCK, [StyString[LITERAL, "hello", from=1:2, to=1:7], StyString[REFERENCE, "world", from=1:8, to=1:14], StyString[NUMBER, 3, from=1:15, to=1:17]], from=1:1, to=1:18]');
+  doesReadBlock('nested blocks', '{outer {inner #1} outer}', 'StyString[BLOCK, [StyString[LITERAL, "outer", from=1:2, to=1:7], StyString[BLOCK, [StyString[LITERAL, "inner", from=1:9, to=1:14], StyString[NUMBER, 1, from=1:15, to=1:17]], from=1:8, to=1:18], StyString[LITERAL, "outer", from=1:19, to=1:24]], from=1:1, to=1:25]');
+
+  sub doesReadBlock {
+    my ($name, $input, $expected) = @_;
+
+    # create a new string reader with some dummy input
+    my $reader = BiBTeXML::Common::StreamReader->new();
+    $reader->openString(" $input ");
+    $reader->eatChar;
+
+    my ($result, $e) = BiBTeXML::BibStyle::StyParser::readBlock($reader);
     ok($result->equals($expected), $name);
 
     $reader->finalize;

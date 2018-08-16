@@ -24,26 +24,91 @@ sub getLocationString {
 # Parsing quotes literals and braces
 # ======================================================================= #
 
-sub readArgument {
+# read any valid code from the sty file
+sub readAny {
+  my ($reader) = @_;
+
+  my ($char, $sr, $sc) = $reader->peekChar;
+  return undef, 'Unexpected end of input while reading' . getLocationString($reader) unless defined($char);
+
+  if ($char eq '#') {
+    return readNumber($reader);
+  } elsif ($char eq "'") {
+    return readReference($reader);
+  } elsif ($char eq '"') {
+    return readQuote($reader);
+  } elsif ($char eq '{') {
+    return readBlock($reader);
+  } else {
+    return readLiteral($reader);
+  }
+}
+
+sub readBlock {
+  my ($reader) = @_;
+
+  # read the opening brace
+  my ($char, $sr, $sc) = $reader->readChar;
+  return 'expected "{" while reading block' . getLocationString($reader) unless defined($char) && $char eq '{';
+
+  my @values = ();
+  my ($value, $valueError, $er, $ec);
+
+  # if the next char is '}', finish
+  ($char, $er, $ec) = $reader->peekChar;
+  return undef, 'Unexpected end of input while reading block' . getLocationString($reader) unless defined($char);
+
+  # read until we find a closing brace
+  while ($char ne '}') {
+
+    ($value, $valueError) = readAny($reader);
+    return $value, $valueError if defined($valueError);
+    push(@values, $value);
+
+    # skip all the spaces and read the next character
+    $reader->eatSpaces;
+    ($char, $er, $ec) = $reader->peekChar;
+    return undef, 'Unexpected end of input while reading block' . getLocationString($reader) unless defined($char);
+  }
+
+  $reader->eatChar;
+  # we can add +1, because we did not read a \n
+  return BiBTeXML::BibStyle::StyString->new('BLOCK', [@values], [($sr, $sc, $er, $ec + 1)]);
+}
+
+sub readNumber {
   my ($reader) = @_;
 
   # read anything that's not a space
   my ($char, $sr, $sc) = $reader->readChar;
-  return 'expected "#" while reading argument' . getLocationString($reader) unless defined($char) && $char eq '#';
+  return undef, 'expected "#" while reading number' . getLocationString($reader) unless defined($char) && $char eq '#';
 
   my ($literal, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /\d/; });
-  return undef, 'expected a non-empty argument' . getLocationString($reader) unless $literal ne "";
+  return undef, 'expected a non-empty number' . getLocationString($reader) unless $literal ne "";
 
-  return BiBTeXML::BibStyle::StyString->new('ARGUMENT', $literal + 0, [($sr, $sc, $er, $ec)]);
+  return BiBTeXML::BibStyle::StyString->new('NUMBER', $literal + 0, [($sr, $sc, $er, $ec)]);
+}
+
+sub readReference {
+  my ($reader) = @_;
+
+  my ($char, $sr, $sc) = $reader->readChar;
+  return undef, 'expected "\'" while reading reference' . getLocationString($reader) unless defined($char) && $char eq "'";
+
+  # read anything that's not a space and not the end of a block
+  my ($reference, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /[^\s\}]/; });
+  return undef, 'expected a non-empty argument' . getLocationString($reader) unless $reference ne "";
+
+  return BiBTeXML::BibStyle::StyString->new('REFERENCE', $reference, [($sr, $sc, $er, $ec)]);
 }
 
 # Reads a literal, delimited by spaces, from the input
 sub readLiteral {
   my ($reader) = @_;
 
-  # read anything that's not a space
+  # read anything that's not a space or the end of a block
   my ($sr, $sc) = $reader->getPosition;
-  my ($literal, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /[^\s]/; });
+  my ($literal, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /[^\s\}]/; });
   return undef, 'expected a non-empty literal' . getLocationString($reader) unless $literal;
 
   return BiBTeXML::BibStyle::StyString->new('LITERAL', $literal, [($sr, $sc, $er, $ec)]);
@@ -58,26 +123,14 @@ sub readQuote {
   my ($char, $line, $col, $eof) = $reader->readChar;
   return undef, 'expected to find an \'"\'' . getLocationString($reader) unless defined($char) && $char eq '"';
 
-  # record the starting position of the bracket
+  # record the starting position and read until the next quote
   my ($sr, $sc) = ($line, $col);
+  my ($result) = $reader->readCharWhile(sub { $_[0] =~ /[^"]/ });
+  return undef, 'Unexpected end of input in quote' . getLocationString($reader) if $eof;
 
-  my $result = '';
-  my $level  = 0;
-  while (1) {
-    ($char, $line, $col, $eof) = $reader->readChar;
-    return undef, 'Unexpected end of input in quote' . getLocationString($reader) if $eof;
-
-    # if we find a {, or a }, keep track of levels, and don't do anything inside
-    if ($char eq '"') {
-      last unless $level;
-    } elsif ($char eq '{') {
-      $level++;
-    } elsif ($char eq '}') {
-      $level--;
-    }
-
-    $result .= $char;
-  }
+  # read the end quote, or die if we are at the end
+  ($char, $line, $col, $eof) = $reader->readChar;
+  return undef, 'expected to find an \'"\'' . getLocationString($reader) unless defined($char) && $char eq '"';
 
   # we can add a +1 here, because we did not read a \n
   return BiBTeXML::BibStyle::StyString->new('QUOTE', $result, [($sr, $sc, $line, $col + 1)]);

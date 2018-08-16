@@ -66,11 +66,11 @@ sub readFile {
 
   while (defined($entry) || defined($error)) {
     if (defined($entry)) {
-      if($evaluate){
+      if ($evaluate) {
         $entry->evaluate(%context);
-        if($entry->getType->getValue eq 'string'){
-          ($content) = @{$entry->getTags};
-          $context{$content->getName->getValue} = $content->getContent;
+        if ($entry->getType->getValue eq 'string') {
+          ($content) = @{ $entry->getTags };
+          $context{ $content->getName->getValue } = $content->getContent;
         }
       }
 
@@ -278,7 +278,7 @@ sub readLiteral {
   my ($er, $ec) = ($sr, $sc);
 
   my $keyword = '';
-  my $cache  = '';
+  my $cache   = '';
 
   # look at the next character and break if it is a special
   my ($char, $line, $col, $eof) = $reader->readChar;

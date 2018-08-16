@@ -1,6 +1,6 @@
 # /=====================================================================\ #
 # |  BiBTeXML::BibStyle::StyString                                      | #
-# | Representations for files with source refs to a .bst file           | #
+# | Representations for strings with source refs to a .bst file         | #
 # |=====================================================================| #
 # | Part of BibTeXML                                                    | #
 # |---------------------------------------------------------------------| #
@@ -14,18 +14,26 @@ use warnings;
 sub new {
   my ($class, $kind, $value, $source) = @_;
   return bless {
-    kind => $kind || '',
-    value  => $value,
-    source => $source,    # quadruple
+    kind => $kind || '',    # the kind of string we have (see getKind)
+    value  => $value,       # the value in this string (see getValue)
+    source => $source,      # the source position (see getSource)
   }, $class;
 }
 
-# known kinds = 'LITERAL', 'QUOTE', 'ARGUMENT', 'BLOCK'
+# get the kind this StyString represents. One of:
+#   ''            (other)
+#   'NUMBER'      (a literal number)
+#   'QUOTE'       (a literal string)
+#   'LITERAL'     (any unquoted value)
+#   'REFERENCE'   (a reference to a function or variable)
+#   'BLOCK'       (a {} enclosed list of other StyStrings)
 sub getKind {
   my ($self) = @_;
   return $$self{kind};
 }
 
+# get the value of this StyString
+# why
 sub getValue {
   my ($self) = @_;
   return $$self{value};
@@ -41,10 +49,10 @@ sub stringify {
   my ($kind) = $$self{kind};
 
   my $value;
-  if ($kind eq 'BRACE') {
+  if ($kind eq 'BLOCK') {
     my @content = map { $_->stringify; } @{ $$self{value} };
-    $value = '[' . join(',', @content) . ']';
-  } elsif ($kind eq 'ARGUMENT') {
+    $value = '[' . join(', ', @content) . ']';
+  } elsif ($kind eq 'NUMBER') {
     $value = $$self{value};
   } else {
     $value = '"' . $$self{value} . '"';
