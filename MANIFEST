@@ -33,7 +33,7 @@ lib/BiBTeXML/BibStyle/StyString.pm
 #==================================================
 t/01_StreamReader.t
 t/10_BibParser.t
-t/11_BibParser_kwarcbib.t
+t/11_BibParser_file.t
 
 t/fixtures/streamreader/helloworld.txt
 
@@ -44,5 +44,5 @@ t/fixtures/bibparser/02_string.txt
 t/fixtures/bibparser/03_article.bib
 t/fixtures/bibparser/03_article.txt
 
-t/fixtures/kwarcbib/kwarc.bib
-t/fixtures/kwarcbib/README.md
+t/fixtures/bibfiles/kwarc.bib
+t/fixtures/bibfiles/README.md
