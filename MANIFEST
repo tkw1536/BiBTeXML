@@ -23,6 +23,12 @@ lib/BibTeXML/Bibliography/BibString.pm
 lib/BibTeXML/Bibliography/BibTag.pm
 
 #==================================================
+# BibStyle
+#==================================================
+lib/BibTeXML/BibStyle/StyParser.pm
+lib/BibTeXML/BibStyle/StyString.pm
+
+#==================================================
 # Test Suite.
 #==================================================
 t/01_StreamReader.t
