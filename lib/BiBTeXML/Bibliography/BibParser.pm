@@ -96,7 +96,8 @@ sub readEntry {
 
   # skip ahead until we have an '@' sign
   my $prev = ' ';
-  $reader->readCharWhile(sub {
+  my ($sr, $sc);
+  ($prev, $sr, $sc) = $reader->readCharWhile(sub {
       # if the previous character was a space (perhaps linebreak)
       # then start an entry with an '@' sign.
       if ($prev =~ /\s/) {
@@ -109,7 +110,6 @@ sub readEntry {
   });
 
   # read an @ sign
-  my ($sr, $sc) = $reader->getPosition;
   my ($at) = $reader->readChar;
   return undef, undef unless defined($at);
   return undef, 'expected to find an "@"' . getLocationString($reader) unless $at eq '@';
@@ -278,7 +278,7 @@ sub readLiteral {
   my ($er, $ec) = ($sr, $sc);
 
   my $keyword = '';
-  my $spaces  = '';
+  my $cache  = '';
 
   # look at the next character and break if it is a special
   my ($char, $line, $col, $eof) = $reader->readChar;
@@ -288,12 +288,13 @@ sub readLiteral {
 
   # iterate over sequential non-space sequences
   while (isNotSpecialLiteral($char)) {
-    # add spaces from the last round (if any)
-    $keyword .= $spaces . $char . $reader->readCharWhile($isNotSpecialSpaceLiteral);
+    # add spaces from the last round and then non-spaces
+    $keyword .= $cache . $char;
+    ($cache, $er, $ec) = $reader->readCharWhile($isNotSpecialSpaceLiteral);
+    $keyword .= $cache;
 
     # record possible end position and skip more spaces
-    ($er, $ec) = $reader->getPosition;
-    $spaces = $reader->readSpaces;
+    ($cache) = $reader->readSpaces;
 
     # look at the next character and break if it is a special
     ($char, $line, $col, $eof) = $reader->readChar;

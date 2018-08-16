@@ -31,9 +31,8 @@ sub readArgument {
   my ($char, $sr, $sc) = $reader->readChar;
   return 'expected "#" while reading argument' . getLocationString($reader) unless defined($char) && $char eq '#';
 
-  my $literal = $reader->readCharWhile(sub { $_[0] =~ /\d/; });
+  my ($literal, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /\d/; });
   return undef, 'expected a non-empty argument' . getLocationString($reader) unless $literal ne "";
-  my ($er, $ec) = $reader->getPosition;
 
   return BiBTeXML::BibStyle::StyString->new('ARGUMENT', $literal + 0, [($sr, $sc, $er, $ec)]);
 }
@@ -44,9 +43,8 @@ sub readLiteral {
 
   # read anything that's not a space
   my ($sr, $sc) = $reader->getPosition;
-  my $literal = $reader->readCharWhile(sub { $_[0] =~ /[^\s]/; });
+  my ($literal, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /[^\s]/; });
   return undef, 'expected a non-empty literal' . getLocationString($reader) unless $literal;
-  my ($er, $ec) = $reader->getPosition;
 
   return BiBTeXML::BibStyle::StyString->new('LITERAL', $literal, [($sr, $sc, $er, $ec)]);
 }

@@ -254,7 +254,7 @@ sub readCharWhile {
   $self->unreadChar($char, $colno, $lineno, $eof);
 
   # and return how many characters we skipped.
-  return $chars;
+  return ($chars, $colno, $lineno, $eof);
 }
 
 # like readCharWhile, but doesn't return anything
