@@ -44,14 +44,14 @@ sub isNotSpecialSpaceLiteral {
 
 # reads an entire .bib file into a collection of entries.
 # if $evaluate is true-ish, evaluates and substitutes all strings
+# context is an initial context for abbreviations
 # return [@entries], [@errors]
 sub readFile {
-  my ($reader, $evaluate) = @_;
+  my ($reader, $evaluate, %context) = @_;
 
   my @entries = ();
   my @errors  = ();
 
-  my %context = ();
   my ($content, $name);
 
   my ($entry, $error) = readEntry($reader);
