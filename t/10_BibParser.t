@@ -1,7 +1,5 @@
+use BiBTeXML::Common::Test;
 use Test::More tests => 6;
-
-use File::Basename;
-use File::Spec;
 
 subtest "requirements" => sub {
   plan tests => 2;
@@ -23,9 +21,7 @@ subtest 'readLiteral' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BiBTeXML::Common::StreamReader->new();
-    $reader->openString(" $input}");
-    $reader->eatChar;
+    my $reader = makeStringReader($input, 1, '}');
 
     # ensure that it actually
     my ($result) = BiBTeXML::Bibliography::BibParser::readLiteral($reader);
@@ -48,9 +44,7 @@ subtest 'readBrace' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BiBTeXML::Common::StreamReader->new();
-    $reader->openString(" $input ");
-    $reader->eatChar;
+    my $reader = makeStringReader($input, 1);
 
     my ($result) = BiBTeXML::Bibliography::BibParser::readBrace($reader);
     ok($result->equals($expected), $name);
@@ -71,9 +65,7 @@ subtest 'readQuote' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BiBTeXML::Common::StreamReader->new();
-    $reader->openString(" $input ");
-    $reader->eatChar;
+    my $reader = makeStringReader($input, 1, ', ');
 
     my ($result) = BiBTeXML::Bibliography::BibParser::readQuote($reader);
     ok($result->equals($expected), $name);
@@ -102,9 +94,7 @@ subtest 'readTag' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BiBTeXML::Common::StreamReader->new();
-    $reader->openString(" $input, ");    # the comma simulates the next value
-    $reader->eatChar;
+    my $reader = makeStringReader($input, 1, ', ');
 
     my ($result) = BiBTeXML::Bibliography::BibParser::readTag($reader);
 
@@ -130,31 +120,12 @@ subtest 'readEntry' => sub {
   sub doesReadEntry {
     my ($input, $expected) = @_;
 
-    my $path = File::Spec->join(dirname(__FILE__), 'fixtures', 'bibparser', $input);
-
     # create a new string reader with some dummy input
-    my $reader = BiBTeXML::Common::StreamReader->new();
-    $reader->openFile("$path.bib", 'utf-8');
+    my ($reader, $path) = makeFixtureReader(__FILE__, 'bibparser', "$input.bib");
 
     my ($result) = BiBTeXML::Bibliography::BibParser::readEntry($reader);
     ok($result->equals(slurp("$path.txt")), $input);
     $reader->finalize;
-  }
-
-  sub slurp {
-    my ($path) = @_;
-    open my $fh, '<', $path or die "Can't open file $!";
-    my $file_content = do { local $/; binmode $fh; <$fh> };
-    close($fh);
-    $file_content =~ s/(?:\015\012|\015|\012)/\n/sg;
-    return decode('utf-8', $file_content);
-  }
-
-  sub puts {
-    my ($path, $content) = @_;
-    open my $fh, '>', $path or die "Can't open file $!";
-    print $fh encode('utf-8', $content);
-    close $fh;
   }
 };
 

@@ -1,7 +1,5 @@
+use BiBTeXML::Common::Test;
 use Test::More tests => 5;
-
-use File::Basename;
-use File::Spec;
 
 subtest "requirements" => sub {
   plan tests => 1;
@@ -9,12 +7,10 @@ subtest "requirements" => sub {
   require_ok("BiBTeXML::Common::StreamReader");
 };
 
-subtest 'String Hello world' => sub {
+subtest 'String hello\\nworld' => sub {
   plan tests => 16;
 
-  # creating a reader from a string should work
-  my $reader = BiBTeXML::Common::StreamReader->new();
-  $reader->openString("hello\nworld");
+  my $reader = makeStringReader("hello\nworld", 0, '');
 
   peeks($reader, "1st character", "h", 0, 0, 0);
   reads($reader, "1st character", "h", 1, 1, 0);
@@ -44,8 +40,7 @@ subtest 'String aaaaab' => sub {
   plan tests => 2;
 
   # creating a reader from a string should work
-  my $reader = BiBTeXML::Common::StreamReader->new();
-  $reader->openString("aaaaab");
+  my $reader = makeStringReader("aaaaab", 0, '');
 
   readsWhile($reader, "read while 'a's", sub { return $_[0] =~ /a/; }, 'aaaaa');
   reads($reader, "fhe final b", "b", 1, 6, 0);
@@ -57,9 +52,7 @@ subtest 'File helloworld.txt' => sub {
   plan tests => 16;
 
   # creating a reader from a string should work
-  my $reader = BiBTeXML::Common::StreamReader->new();
-  my $path = File::Spec->join(dirname(__FILE__), 'fixtures', 'streamreader', 'helloworld.txt');
-  $reader->openFile($path, "utf-8");
+  my ($reader) = makeFixtureReader(__FILE__, 'streamreader', 'helloworld.txt');
 
   peeks($reader, "1st character", "h", 0, 0, 0);
   reads($reader, "1st character", "h", 1, 1, 0);
@@ -89,9 +82,7 @@ subtest 'File empty.txt' => sub {
   plan tests => 26;
 
   # creating a reader from a string should work
-  my $reader = BiBTeXML::Common::StreamReader->new();
-  my $path = File::Spec->join(dirname(__FILE__), 'fixtures', 'streamreader', 'empty.txt');
-  $reader->openFile($path, "utf-8");
+  my ($reader) = makeFixtureReader(__FILE__, 'streamreader', 'empty.txt');
 
   preads($reader, "h",   "h",  1, 1, 0);
   preads($reader, "e",   "e",  1, 2, 0);

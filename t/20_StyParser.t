@@ -1,7 +1,5 @@
+use BiBTeXML::Common::Test;
 use Test::More tests => 7;
-
-use File::Basename;
-use File::Spec;
 
 subtest "requirements" => sub {
   plan tests => 2;
@@ -22,9 +20,7 @@ subtest 'readLiteral' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BiBTeXML::Common::StreamReader->new();
-    $reader->openString(" $input ");
-    $reader->eatChar;
+    my $reader = makeStringReader($input, 1);
 
     my ($result) = BiBTeXML::BibStyle::StyParser::readLiteral($reader);
     ok($result->equals($expected), $name);
@@ -44,9 +40,7 @@ subtest 'readNumber' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BiBTeXML::Common::StreamReader->new();
-    $reader->openString(" $input ");
-    $reader->eatChar;
+    my $reader = makeStringReader($input, 1);
 
     my ($result) = BiBTeXML::BibStyle::StyParser::readNumber($reader);
     ok($result->equals($expected), $name);
@@ -66,9 +60,7 @@ subtest 'readReference' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BiBTeXML::Common::StreamReader->new();
-    $reader->openString(" $input ");
-    $reader->eatChar;
+    my $reader = makeStringReader($input, 1);
 
     my ($result, $e) = BiBTeXML::BibStyle::StyParser::readReference($reader);
     ok($result->equals($expected), $name);
@@ -89,9 +81,7 @@ subtest 'readQuote' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BiBTeXML::Common::StreamReader->new();
-    $reader->openString(" $input ");
-    $reader->eatChar;
+    my $reader = makeStringReader($input, 1);
 
     my ($result) = BiBTeXML::BibStyle::StyParser::readQuote($reader);
     ok($result->equals($expected), $name);
@@ -112,9 +102,7 @@ subtest 'readBlock' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BiBTeXML::Common::StreamReader->new();
-    $reader->openString(" $input ");
-    $reader->eatChar;
+    my $reader = makeStringReader($input, 1);
 
     my ($result, $e) = BiBTeXML::BibStyle::StyParser::readBlock($reader);
     ok($result->equals($expected), $name);
@@ -141,12 +129,9 @@ subtest 'readCommand' => sub {
     my ($name, $input, $expected) = @_;
 
     # create a new string reader with some dummy input
-    my $reader = BiBTeXML::Common::StreamReader->new();
-    $reader->openString(" $input ");
-    $reader->eatChar;
+    my $reader = makeStringReader($input, 1);
 
     my ($result, $e) = BiBTeXML::BibStyle::StyParser::readCommand($reader);
-    diag(defined($result) ? $result->stringify : $e) unless $result->equals($expected);
     ok($result->equals($expected), $name);
 
     $reader->finalize;
