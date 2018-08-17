@@ -38,7 +38,7 @@ t/11_BibParser_file.t
 t/20_StyParser.t
 t/21_StyParser_file.t
 
-
+t/fixtures/streamreader/empty.txt
 t/fixtures/streamreader/helloworld.txt
 
 t/fixtures/bibparser/01_preamble.bib

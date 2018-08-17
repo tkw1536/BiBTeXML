@@ -150,8 +150,14 @@ sub eatChar {
 
   # if we had some pushback
   # we just need to clear it.
+  my $pushback = $$self{pushback};
   if (defined($$self{pushback})) {
+    my ($char, $lineno, $colno, $eof) = @$pushback;
     $$self{pushback} = undef;
+
+    $$self{lineno} = $lineno;
+    $$self{colno}  = $colno;
+    $$self{eof}    = $eof;
     return;
   }
 

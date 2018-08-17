@@ -32,7 +32,6 @@ sub doesParseFile {
     # check that we did not make any errors
     my @sresults = map { $_->stringify; } @{$result};
     my $resultstr = join("\n\n", @sresults);
-    puts("$path.txt", $resultstr);
     is($resultstr, slurp("$path.txt"), "evaluates $name correctly");
 
     diag("parsed $name in $duration seconds");
