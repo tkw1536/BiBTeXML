@@ -11,6 +11,8 @@ package BiBTeXML::Bibliography::BibString;
 use strict;
 use warnings;
 
+use base qw(BiBTeXML::Common::Object);
+
 sub new {
   my ($class, $kind, $value, $source) = @_;
   return bless {
@@ -53,16 +55,6 @@ sub normalizeValue {
   $$self{value} = lc($$self{value});
 }
 
-# get the source position of this string
-# a quadruple ($startRow, $startColumn, $endRow, $endColumn)
-# row-indexes are one-based, column-indexes zero-based
-# the start position is inclusive, the end position is not
-# never includes any whitespace in positioning
-sub getSource {
-  my ($self) = @_;
-  return $$self{source};
-}
-
 # evaluate this BibString inside of a context
 # i.e. if it is a literal read the value from the context
 # returns 0 iff evaluation failed, and 1 otherwise.
@@ -103,13 +95,6 @@ sub stringify {
 
   my ($sr, $sc, $er, $ec) = @{ $self->getSource };
   return "BibString[$kind, \"$value\", from=$sr:$sc, to=$er:$ec]";
-}
-
-# checks if this BibString equals another BibString
-sub equals {
-  my ($self, $other) = @_;
-  $other = ref $other ? $other->stringify : $other;
-  return $self->stringify eq $other;
 }
 
 1;

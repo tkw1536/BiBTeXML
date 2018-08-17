@@ -12,6 +12,8 @@ use strict;
 use warnings;
 use List::Util qw(reduce);
 
+use base qw(BiBTeXML::Common::Object);
+
 sub new {
   my ($class, $name, $content, $source) = @_;
   return bless {
@@ -19,16 +21,6 @@ sub new {
     content => $content,    # content of this tag (see getContent)
     source  => $source,     # the source position (see getSource)
   }, $class;
-}
-
-# get the source position of this tag
-# a quadruple ($startRow, $startColumn, $endRow, $endColumn)
-# row-indexes are one-based, column-indexes zero-based
-# the start position is inclusive, the end position is not
-# never includes any whitespace in positioning
-sub getSource {
-  my ($self) = @_;
-  return $$self{source};
 }
 
 # the name of this literal
@@ -93,13 +85,6 @@ sub stringify {
 
   my ($sr, $sc, $er, $ec) = @{ $self->getSource };
   return "BibTag[name=$name, content=$content, from=$sr:$sc, to=$er:$ec]";
-}
-
-# checks if this BiBTag equals another BiBTag
-sub equals {
-  my ($self, $other) = @_;
-  $other = ref $other ? $other->stringify : $other;
-  return $self->stringify eq $other;
 }
 
 1;

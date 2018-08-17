@@ -11,6 +11,8 @@ package BiBTeXML::BibStyle::StyString;
 use strict;
 use warnings;
 
+use base qw(BiBTeXML::Common::Object);
+
 sub new {
   my ($class, $kind, $value, $source) = @_;
   return bless {
@@ -38,12 +40,6 @@ sub getValue {
   return $$self{value};
 }
 
-# get the source of this string
-sub getSource {
-  my ($self) = @_;
-  return $$self{source};
-}
-
 # turns this StyString into a string for human-readable presentation
 sub stringify {
   my ($self) = @_;
@@ -61,13 +57,6 @@ sub stringify {
 
   my ($sr, $sc, $er, $ec) = @{ $self->getSource };
   return "StyString[$kind, $value, from=$sr:$sc, to=$er:$ec]";
-}
-
-# checks if this StyString equals another StyString
-sub equals {
-  my ($self, $other) = @_;
-  $other = ref $other ? $other->stringify : $other;
-  return $self->stringify eq $other;
 }
 
 1;

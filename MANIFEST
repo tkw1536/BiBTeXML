@@ -12,6 +12,7 @@ LICENSE
 #==================================================
 # Common Modules
 #==================================================
+lib/BiBTeXML/Common/Object.pm
 lib/BiBTeXML/Common/StreamReader.pm
 lib/BiBTeXML/Common/Test.pm
 

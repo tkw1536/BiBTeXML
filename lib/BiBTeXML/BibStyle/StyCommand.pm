@@ -11,6 +11,8 @@ package BiBTeXML::BibStyle::StyCommand;
 use strict;
 use warnings;
 
+use base qw(BiBTeXML::Common::Object);
+
 sub new {
   my ($class, $name, $arguments, $source) = @_;
   return bless {
@@ -32,12 +34,6 @@ sub getArguments {
   return $$self{arguments};
 }
 
-# the source of this string
-sub getSource {
-  my ($self) = @_;
-  return $$self{source};
-}
-
 # turns this StyCommand into a string for human-readable presentation
 sub stringify {
   my ($self) = @_;
@@ -48,13 +44,6 @@ sub stringify {
 
   my ($sr, $sc, $er, $ec) = @{ $self->getSource };
   return "StyCommand[$name, $value, from=$sr:$sc, to=$er:$ec]";
-}
-
-# checks if this StyCommand equals another StyCommand
-sub equals {
-  my ($self, $other) = @_;
-  $other = ref $other ? $other->stringify : $other;
-  return $self->stringify eq $other;
 }
 
 1;
