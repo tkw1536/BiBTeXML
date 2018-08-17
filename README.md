@@ -2,11 +2,11 @@
 
 [![Build Status](https://travis-ci.org/tkw1536/BibTeXML.svg?branch=master)](https://travis-ci.org/tkw1536/BibTeXML)
 
-** Still a work in progress **
+__Still a work in progress__
 
 BiBTeXML is a pure-perl efficient parser and interpreter for [BibTeX](http://www.bibtex.org) `.bib` and `.bst` files. 
 
-As such it can
+As such it can:
 * read BibTeX `.bib` bibliography files
 * interpret BibTeX `.bst` bibliography files
 * output BiBTeX `.bbl` in a machine-readable format, maintaining source references of substrings
@@ -27,6 +27,15 @@ make
 make test
 make install
 ```
+
+## How it works
+
+BiBTeXML is split into (roughly) four components:
+
+* [`BiBTeXML::Bibliography`](lib/BiBTeXML/Bibliography/) - a parser for `.bib` files
+* [`BiBTeXML::BibStyle`](lib/BiBTeXML/BibStyle/) - a parser for `.bst` files
+* [`BiBTeXML::Compiler`](lib/BiBTeXML/Compiler/) - a compiler for `.bst` files into perl (__work in progress__)
+* [`BiBTeXML::Runtime`](lib/BiBTeXML/Runtime/) - a runtime for the compiler-generated code (__work in progress__)
 
 ## LICENSE
 
