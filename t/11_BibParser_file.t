@@ -7,6 +7,8 @@ use Encode;
 use Time::HiRes qw(time);
 
 subtest "requirements" => sub {
+  plan tests => 2;
+
   require_ok("BiBTeXML::Common::StreamReader");
   require_ok("BiBTeXML::Bibliography::BibParser");
 };

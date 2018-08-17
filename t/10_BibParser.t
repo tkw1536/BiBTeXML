@@ -1,11 +1,14 @@
-use Test::More tests => 7;
+use Test::More tests => 6;
 
 use File::Basename;
 use File::Spec;
 
-# we should be able to read the module
-require_ok("BiBTeXML::Common::StreamReader");
-require_ok("BiBTeXML::Bibliography::BibParser");
+subtest "requirements" => sub {
+  plan tests => 2;
+
+  require_ok("BiBTeXML::Common::StreamReader");
+  require_ok("BiBTeXML::Bibliography::BibParser");
+};
 
 subtest 'readLiteral' => sub {
   plan tests => 5;

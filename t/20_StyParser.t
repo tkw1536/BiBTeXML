@@ -1,11 +1,14 @@
-use Test::More tests => 8;
+use Test::More tests => 7;
 
 use File::Basename;
 use File::Spec;
 
-# we should be able to read the module
-require_ok("BiBTeXML::Common::StreamReader");
-require_ok("BiBTeXML::BibStyle::StyParser");
+subtest "requirements" => sub {
+  plan tests => 2;
+
+  require_ok("BiBTeXML::Common::StreamReader");
+  require_ok("BiBTeXML::BibStyle::StyParser");
+};
 
 subtest 'readLiteral' => sub {
   plan tests => 4;
@@ -33,7 +36,7 @@ subtest 'readLiteral' => sub {
 subtest 'readNumber' => sub {
   plan tests => 3;
 
-  doesReadNumber('simple number', '#0', 'StyString[NUMBER, 0, from=1:1, to=1:3]');
+  doesReadNumber('simple number',          '#0',       'StyString[NUMBER, 0, from=1:1, to=1:3]');
   doesReadNumber('ends after first space', '#123456 ', 'StyString[NUMBER, 123456, from=1:1, to=1:8]');
   doesReadNumber('ends after }', '#123456}7', 'StyString[NUMBER, 123456, from=1:1, to=1:8]');
 
@@ -123,17 +126,16 @@ subtest 'readBlock' => sub {
 subtest 'readCommand' => sub {
   plan tests => 10;
 
-  doesReadCommand('ENTRY',    'ENTRY    {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "ENTRY", from=1:1, to=1:6], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13], StyString[BLOCK, [StyString[LITERAL, "b", from=1:15, to=1:16]], from=1:14, to=1:17], StyString[BLOCK, [StyString[LITERAL, "c", from=1:19, to=1:20]], from=1:18, to=1:21]], from=1:1, to=1:21]');
-  doesReadCommand('EXECUTE',  'EXECUTE  {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "EXECUTE", from=1:1, to=1:8], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
+  doesReadCommand('ENTRY', 'ENTRY    {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "ENTRY", from=1:1, to=1:6], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13], StyString[BLOCK, [StyString[LITERAL, "b", from=1:15, to=1:16]], from=1:14, to=1:17], StyString[BLOCK, [StyString[LITERAL, "c", from=1:19, to=1:20]], from=1:18, to=1:21]], from=1:1, to=1:21]');
+  doesReadCommand('EXECUTE', 'EXECUTE  {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "EXECUTE", from=1:1, to=1:8], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
   doesReadCommand('FUNCTION', 'FUNCTION {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "FUNCTION", from=1:1, to=1:9], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13], StyString[BLOCK, [StyString[LITERAL, "b", from=1:15, to=1:16]], from=1:14, to=1:17]], from=1:1, to=1:17]');
   doesReadCommand('INTEGERS', 'INTEGERS {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "INTEGERS", from=1:1, to=1:9], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
-  doesReadCommand('ITERATE',  'ITERATE  {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "ITERATE", from=1:1, to=1:8], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
-  doesReadCommand('MACRO',    'MACRO    {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "MACRO", from=1:1, to=1:6], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13], StyString[BLOCK, [StyString[LITERAL, "b", from=1:15, to=1:16]], from=1:14, to=1:17]], from=1:1, to=1:17]');
-  doesReadCommand('READ',     'READ     {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "READ", from=1:1, to=1:5], [], from=1:1, to=1:5]');
-  doesReadCommand('REVERSE',  'REVERSE  {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "REVERSE", from=1:1, to=1:8], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
-  doesReadCommand('SORT',     'SORT     {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "SORT", from=1:1, to=1:5], [], from=1:1, to=1:5]');
-  doesReadCommand('STRINGS',  'STRINGS  {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "STRINGS", from=1:1, to=1:8], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
-
+  doesReadCommand('ITERATE', 'ITERATE  {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "ITERATE", from=1:1, to=1:8], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
+  doesReadCommand('MACRO', 'MACRO    {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "MACRO", from=1:1, to=1:6], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13], StyString[BLOCK, [StyString[LITERAL, "b", from=1:15, to=1:16]], from=1:14, to=1:17]], from=1:1, to=1:17]');
+  doesReadCommand('READ', 'READ     {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "READ", from=1:1, to=1:5], [], from=1:1, to=1:5]');
+  doesReadCommand('REVERSE', 'REVERSE  {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "REVERSE", from=1:1, to=1:8], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
+  doesReadCommand('SORT', 'SORT     {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "SORT", from=1:1, to=1:5], [], from=1:1, to=1:5]');
+  doesReadCommand('STRINGS', 'STRINGS  {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "STRINGS", from=1:1, to=1:8], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
 
   sub doesReadCommand {
     my ($name, $input, $expected) = @_;

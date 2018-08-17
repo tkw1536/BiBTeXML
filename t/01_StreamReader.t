@@ -3,8 +3,11 @@ use Test::More tests => 5;
 use File::Basename;
 use File::Spec;
 
-# we should be able to read the module
-require_ok("BiBTeXML::Common::StreamReader");
+subtest "requirements" => sub {
+  plan tests => 1;
+
+  require_ok("BiBTeXML::Common::StreamReader");
+};
 
 subtest 'String Hello world' => sub {
   plan tests => 16;
@@ -98,7 +101,7 @@ subtest 'File empty.txt' => sub {
   preads($reader, "end", "\n", 1, 6, 0);
 
   preads($reader, "empty line 1", "\n", 2, 1, 0);
-  preads($reader, "empty line 2", "\n", 3, 1, 0);  
+  preads($reader, "empty line 2", "\n", 3, 1, 0);
   preads($reader, "empty line 3", "\n", 4, 1, 0);
   preads($reader, "empty line 4", "\n", 5, 1, 0);
 
@@ -111,15 +114,15 @@ subtest 'File empty.txt' => sub {
 
   preads($reader, "empty line 7",  "\n", 7,  1, 0);
   preads($reader, "empty line 8",  "\n", 8,  1, 0);
-  preads($reader, "empty line 9",  "\n", 9,  1, 0);  
+  preads($reader, "empty line 9",  "\n", 9,  1, 0);
   preads($reader, "empty line 10", "\n", 10, 1, 0);
 
-  preads($reader, "s",    "s",  11, 1, 0);
-  preads($reader, "t",    "t",  11, 2, 0);
-  preads($reader, "u",    "u",  11, 3, 0);
-  preads($reader, "f 1",  "f",  11, 4, 0);
-  preads($reader, "f 2",  "f",  11, 5, 0);
-  preads($reader, "end",  "\n", 11, 6, 0);
+  preads($reader, "s",   "s",  11, 1, 0);
+  preads($reader, "t",   "t",  11, 2, 0);
+  preads($reader, "u",   "u",  11, 3, 0);
+  preads($reader, "f 1", "f",  11, 4, 0);
+  preads($reader, "f 2", "f",  11, 5, 0);
+  preads($reader, "end", "\n", 11, 6, 0);
 
   $reader->finalize;
 };
