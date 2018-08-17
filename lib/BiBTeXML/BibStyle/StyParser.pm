@@ -12,6 +12,15 @@ use strict;
 use warnings;
 
 use BiBTeXML::BibStyle::StyString;
+use BiBTeXML::BibStyle::StyCommand;
+
+use base qw(Exporter);
+our @EXPORT = (
+  qw( &readFile &readCommand ),
+  qw( &readAny &readBlock ),
+  qw( &readNumber &readReference &readLiteral &readQuote ),
+  qw( &getLocationString ),
+);
 
 # format an error message for the user
 sub getLocationString {
@@ -20,8 +29,105 @@ sub getLocationString {
   return ' near line ' . $row . ' column ' . $col;
 }
 
+# eats all spaces or comments
+sub eatSpacesOrComments {
+  my ($reader) = @_;
+
+  my ($char);
+  while (1) {
+
+    # eat spaces and check if there is a % comment char
+    $reader->eatSpaces;
+    ($char) = $reader->peekChar;
+
+    # return if we are not '%'
+    last unless defined($char);
+    last unless $char eq '%';
+
+    # skip until a new line happens
+    $reader->eatCharWhile(sub { $_[0] ne "\n" });
+  }
+}
+
 # ======================================================================= #
-# Parsing quotes literals and braces
+# Parsing Commands
+# ======================================================================= #
+
+# read a .bst file and return the list of entries
+# is not smart, and returns the first error if it can not understand the file
+sub readFile {
+  my ($reader) = @_;
+
+  my @commands = ();
+  my ($command, $commandError);
+
+  # reads commands
+  while (1) {
+    ($command, $commandError) = readCommand($reader);
+    return $command, $commandError if defined($commandError);
+    last unless defined($command);
+    push(@commands, $command);
+  }
+
+  # and return them
+  return [@commands];
+}
+
+# commands and how many argument
+our %COMMANDS = (
+  ENTRY    => 3,
+  EXECUTE  => 1,
+  FUNCTION => 2,
+  INTEGERS => 1,
+  ITERATE  => 1,
+  MACRO    => 2,
+  READ     => 0,
+  REVERSE  => 1,
+  SORT     => 0,
+  STRINGS  => 1
+);
+
+# read a single command from the input
+# if it exists
+sub readCommand {
+  my ($reader) = @_;
+
+  # skip spaces, and check that we have something left to read
+  eatSpacesOrComments($reader);
+  my ($char) = $reader->peekChar;
+  return undef, undef unless defined($char);
+
+  # read the command name
+  my ($name, $nameError) = readLiteral($reader);
+  return $name, $nameError if defined($nameError);
+
+  # figure out how many argumeents the command takes
+  my $command = $name->getValue;
+  return undef, 'unknown command ' . $command . getLocationString($reader) unless exists($COMMANDS{$command});
+  $command = $COMMANDS{$command};
+
+  # and read them
+  my @arguments = ();
+  my ($argument, $argumentError);
+  if ($command > 0) {
+    foreach my $i (1 .. $command) {
+      eatSpacesOrComments($reader);
+      ($argument, $argumentError) = readBlock($reader);
+      return $argument, $argumentError if defined($argumentError);
+      push(@arguments, $argument);
+    }
+  }
+
+  # get the ending position of the last arguments
+  my ($a, $b);
+  my ($sr, $sc, $er, $ec) = @{ $name->getSource };
+  ($a, $b, $er, $ec) = @{ $argument->getSource } if defined($argument);
+
+  return BiBTeXML::BibStyle::StyCommand->new($name, [@arguments], [($sr, $sc, $er, $ec)]);
+}
+
+# ======================================================================= #
+# Parsing Blocks
 # ======================================================================= #
 
 # read any valid code from the sty file
@@ -49,7 +155,7 @@ sub readBlock {
 
   # read the opening brace
   my ($char, $sr, $sc) = $reader->readChar;
-  return 'expected "{" while reading block' . getLocationString($reader) unless defined($char) && $char eq '{';
+  return undef, 'expected "{" while reading block' . getLocationString($reader) unless defined($char) && $char eq '{';
 
   my @values = ();
   my ($value, $valueError, $er, $ec);
@@ -57,6 +163,7 @@ sub readBlock {
   # if the next char is '}', finish
   ($char, $er, $ec) = $reader->peekChar;
   return undef, 'Unexpected end of input while reading block' . getLocationString($reader) unless defined($char);
+  eatSpacesOrComments($reader);
 
   # read until we find a closing brace
   while ($char ne '}') {
@@ -66,7 +173,7 @@ sub readBlock {
     push(@values, $value);
 
     # skip all the spaces and read the next character
-    $reader->eatSpaces;
+    eatSpacesOrComments($reader);
     ($char, $er, $ec) = $reader->peekChar;
     return undef, 'Unexpected end of input while reading block' . getLocationString($reader) unless defined($char);
   }
@@ -76,6 +183,7 @@ sub readBlock {
   return BiBTeXML::BibStyle::StyString->new('BLOCK', [@values], [($sr, $sc, $er, $ec + 1)]);
 }
 
+# reads a number, consisting of numbers, from the input
 sub readNumber {
   my ($reader) = @_;
 
@@ -89,6 +197,7 @@ sub readNumber {
   return BiBTeXML::BibStyle::StyString->new('NUMBER', $literal + 0, [($sr, $sc, $er, $ec)]);
 }
 
+# Reads a reference, delimited by spaces, from the input
 sub readReference {
   my ($reader) = @_;
 
@@ -106,9 +215,9 @@ sub readReference {
 sub readLiteral {
   my ($reader) = @_;
 
-  # read anything that's not a space or the end of a block
+  # read anything that's not a space or the boundary of a block
   my ($sr, $sc) = $reader->getPosition;
-  my ($literal, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /[^\s\}]/; });
+  my ($literal, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /[^\s\{\}]/; });
   return undef, 'expected a non-empty literal' . getLocationString($reader) unless $literal;
 
   return BiBTeXML::BibStyle::StyString->new('LITERAL', $literal, [($sr, $sc, $er, $ec)]);

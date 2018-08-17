@@ -14,9 +14,9 @@ use warnings;
 sub new {
   my ($class, $kind, $value, $source) = @_;
   return bless {
-    kind => $kind || '',    # the kind of string we have (see getKind)
-    value  => $value,       # the value in this string (see getValue)
-    source => $source,      # the source position (see getSource)
+    kind   => $kind || '',    # the kind of string we have (see getKind)
+    value  => $value,         # the value in this string (see getValue)
+    source => $source,        # the source position (see getSource)
   }, $class;
 }
 
@@ -33,17 +33,18 @@ sub getKind {
 }
 
 # get the value of this StyString
-# why
 sub getValue {
   my ($self) = @_;
   return $$self{value};
 }
 
+# get the source of this string
 sub getSource {
   my ($self) = @_;
   return $$self{source};
 }
 
+# turns this StyString into a string for human-readable presentation
 sub stringify {
   my ($self) = @_;
   my ($kind) = $$self{kind};
@@ -62,6 +63,7 @@ sub stringify {
   return "StyString[$kind, $value, from=$sr:$sc, to=$er:$ec]";
 }
 
+# checks if this StyString equals another StyString
 sub equals {
   my ($self, $other) = @_;
   $other = ref $other ? $other->stringify : $other;

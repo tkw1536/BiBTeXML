@@ -57,14 +57,10 @@ sub doesEvalFile {
     my ($results, $errors) = BiBTeXML::Bibliography::BibParser::readFile($reader, 1);
     my $duration = time - $start;
 
-    # check that we did not make any errors
-    if (defined($expectEntries)) {
-      is(scalar(@$results), $expectEntries, 'parses correct number of entries from ' . $name);
-    } else {
-      my @sresults = map { $_->stringify; } @{$results};
-      my $resultstr = join("\n\n", @sresults);
-      is($resultstr, slurp("$path.txt"), "evaluates $name correctly");
-    }
+    # check that the result is correct
+    my @sresults = map { $_->stringify; } @{$results};
+    my $resultstr = join("\n\n", @sresults);
+    is($resultstr, slurp("$path.txt"), "evaluates $name correctly");
     is(scalar(@$errors), 0, 'does not produce any errors parsing ' . $name);
 
     diag("evaluated $name in $duration seconds");

@@ -14,9 +14,9 @@ use warnings;
 sub new {
   my ($class, $kind, $value, $source) = @_;
   return bless {
-    kind => $kind || '',    # the kind of string we have (see getKind)
-    value  => $value,       # the value in this string (see getValue)
-    source => $source,      # the source position (see getSource)
+    kind   => $kind || '',    # the kind of string we have (see getKind)
+    value  => $value,         # the value in this string (see getValue)
+    source => $source,        # the source position (see getSource)
   }, $class;
 }
 

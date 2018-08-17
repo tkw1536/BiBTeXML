@@ -1,4 +1,4 @@
-use Test::More tests => 7;
+use Test::More tests => 8;
 
 use File::Basename;
 use File::Spec;
@@ -8,11 +8,12 @@ require_ok("BiBTeXML::Common::StreamReader");
 require_ok("BiBTeXML::BibStyle::StyParser");
 
 subtest 'readLiteral' => sub {
-  plan tests => 3;
+  plan tests => 4;
 
   doesReadLiteral('simple literal', 'hello#world', 'StyString[LITERAL, "hello#world", from=1:1, to=1:12]');
   doesReadLiteral('ends after first space', 'hello world', 'StyString[LITERAL, "hello", from=1:1, to=1:6]');
   doesReadLiteral('ends after }', 'hello}world', 'StyString[LITERAL, "hello", from=1:1, to=1:6]');
+  doesReadLiteral('ends after {', 'hello{world', 'StyString[LITERAL, "hello", from=1:1, to=1:6]');
 
   sub doesReadLiteral {
     my ($name, $input, $expected) = @_;
@@ -113,6 +114,37 @@ subtest 'readBlock' => sub {
     $reader->eatChar;
 
     my ($result, $e) = BiBTeXML::BibStyle::StyParser::readBlock($reader);
+    ok($result->equals($expected), $name);
+
+    $reader->finalize;
+  }
+};
+
+subtest 'readCommand' => sub {
+  plan tests => 10;
+
+  doesReadCommand('ENTRY',    'ENTRY    {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "ENTRY", from=1:1, to=1:6], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13], StyString[BLOCK, [StyString[LITERAL, "b", from=1:15, to=1:16]], from=1:14, to=1:17], StyString[BLOCK, [StyString[LITERAL, "c", from=1:19, to=1:20]], from=1:18, to=1:21]], from=1:1, to=1:21]');
+  doesReadCommand('EXECUTE',  'EXECUTE  {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "EXECUTE", from=1:1, to=1:8], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
+  doesReadCommand('FUNCTION', 'FUNCTION {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "FUNCTION", from=1:1, to=1:9], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13], StyString[BLOCK, [StyString[LITERAL, "b", from=1:15, to=1:16]], from=1:14, to=1:17]], from=1:1, to=1:17]');
+  doesReadCommand('INTEGERS', 'INTEGERS {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "INTEGERS", from=1:1, to=1:9], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
+  doesReadCommand('ITERATE',  'ITERATE  {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "ITERATE", from=1:1, to=1:8], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
+  doesReadCommand('MACRO',    'MACRO    {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "MACRO", from=1:1, to=1:6], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13], StyString[BLOCK, [StyString[LITERAL, "b", from=1:15, to=1:16]], from=1:14, to=1:17]], from=1:1, to=1:17]');
+  doesReadCommand('READ',     'READ     {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "READ", from=1:1, to=1:5], [], from=1:1, to=1:5]');
+  doesReadCommand('REVERSE',  'REVERSE  {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "REVERSE", from=1:1, to=1:8], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
+  doesReadCommand('SORT',     'SORT     {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "SORT", from=1:1, to=1:5], [], from=1:1, to=1:5]');
+  doesReadCommand('STRINGS',  'STRINGS  {a} {b} {c} {d}', 'StyCommand[StyString[LITERAL, "STRINGS", from=1:1, to=1:8], [StyString[BLOCK, [StyString[LITERAL, "a", from=1:11, to=1:12]], from=1:10, to=1:13]], from=1:1, to=1:13]');
+
+
+  sub doesReadCommand {
+    my ($name, $input, $expected) = @_;
+
+    # create a new string reader with some dummy input
+    my $reader = BiBTeXML::Common::StreamReader->new();
+    $reader->openString(" $input ");
+    $reader->eatChar;
+
+    my ($result, $e) = BiBTeXML::BibStyle::StyParser::readCommand($reader);
+    diag(defined($result) ? $result->stringify : $e) unless $result->equals($expected);
     ok($result->equals($expected), $name);
 
     $reader->finalize;
