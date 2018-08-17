@@ -88,3 +88,5 @@ sub isResult {
   Test::More::is(joinStrs(@{$results}), slurp("$path.txt"), $message);
 }
 
+
+1;
