@@ -18,8 +18,7 @@ use BiBTeXML::Bibliography::BibEntry;
 use base qw(Exporter);
 our @EXPORT = (
   qw( &readFile &readEntry &readQuote ),
-  qw( &readLiteral &readBrace &readQuote ),
-  qw( &getLocationString),
+  qw( &readLiteral &readBrace &readQuote )
 );
 
 # ======================================================================= #
@@ -37,13 +36,6 @@ sub isNotSpecialLiteral {
 sub isNotSpecialSpaceLiteral {
   my ($char) = @_;
   return ($char =~ /[^\s]/) && ($char ne '{') && ($char ne '}') && ($char ne '=') && ($char ne '#') && ($char ne ',');
-}
-
-# format an error message for the user
-sub getLocationString {
-  my ($reader) = @_;
-  my ($row, $col) = $reader->getPosition;
-  return ' near line ' . $row . ' column ' . $col;
 }
 
 # ======================================================================= #
@@ -112,16 +104,16 @@ sub readEntry {
   # read an @ sign
   my ($at) = $reader->readChar;
   return undef, undef unless defined($at);
-  return undef, 'expected to find an "@"' . getLocationString($reader) unless $at eq '@';
+  return undef, 'expected to find an "@" ' . $reader->getLocationString unless $at eq '@';
 
   # read the type
   my ($type, $typeError) = readLiteral($reader);
   return $type, $typeError unless defined($type);
-  return undef, 'expected a non-empty name' . getLocationString($reader) unless $type->getValue;
+  return undef, 'expected a non-empty name ' . $reader->getLocationString unless $type->getValue;
 
   # read opening brace (for tags)
   my ($obrace) = $reader->readChar;
-  return undef, 'expected an "{"' . getLocationString($reader) unless defined($obrace) && $obrace eq '{';
+  return undef, 'expected an "{" ' . $reader->getLocationString unless defined($obrace) && $obrace eq '{';
 
   my @tags = ();
 
@@ -130,7 +122,7 @@ sub readEntry {
   while (1) {
     $reader->eatSpaces;
     ($char) = $reader->peekChar;
-    return undef, 'Unexpected end of input while reading entry' . getLocationString($reader) unless defined($char);
+    return undef, 'unexpected end of input while reading entry ' . $reader->getLocationString unless defined($char);
 
     # if we have a comma, we just need the next tag
     # TODO: Ignores multiple following commas
@@ -173,7 +165,7 @@ sub readTag {
   # we may have tried to read a closing brace
   # so return undef and also no error.
   my ($char) = $reader->peekChar;
-  return undef, 'Unexpected end of input while reading tag' . getLocationString($reader) unless defined($char);
+  return undef, 'unexpected end of input while reading tag ' . $reader->getLocationString unless defined($char);
 
   if ($char eq '}' or $char eq ',') {
     return undef, undef;
@@ -195,7 +187,7 @@ sub readTag {
     # if we have an equals sign, remember that we had one
     # and allow only strings next (i.e. the value)
     if ($char eq '=') {
-      return undef, 'Unexpected "="' . getLocationString($reader) unless $mayEqualNext;
+      return undef, 'unexpected "=" ' . $reader->getLocationString unless $mayEqualNext;
       $reader->eatChar;
 
       $hadEqualSign = 1;
@@ -206,7 +198,7 @@ sub readTag {
 
       # if we have a concat, allow only strings (i.e. the value) next
     } elsif ($char eq '#') {
-      return undef, 'Unexpected "#"' . getLocationString($reader) unless $mayConcatNext;
+      return undef, 'unexpected "#" ' . $reader->getLocationString unless $mayConcatNext;
       $reader->eatChar;
 
       $mayStringNext = 1;
@@ -215,7 +207,7 @@ sub readTag {
 
       # if we had a quote, allow only a concat next
     } elsif ($char eq '"') {
-      return undef, 'Unexpected \'"\'' . getLocationString($reader) unless $mayStringNext;
+      return undef, 'unexpected \'"\' ' . $reader->getLocationString unless $mayStringNext;
 
       ($value, $valueError) = readQuote($reader);
       return $value, $valueError unless defined($value);
@@ -227,7 +219,7 @@ sub readTag {
 
       # if we had a brace, allow only a concat next
     } elsif ($char eq '{') {
-      return undef, 'Unexpected \'{\'' . getLocationString($reader) unless $mayStringNext;
+      return undef, 'unexpected \'{\' ' . $reader->getLocationString unless $mayStringNext;
 
       ($value, $valueError) = readBrace($reader);
       return $value, $valueError unless defined($value);
@@ -239,7 +231,7 @@ sub readTag {
 
       # if we have a literal, allow concat and equals next (unless we already had)
     } else {
-      return undef, 'Unexpected start of literal' . getLocationString($reader) unless $mayStringNext;
+      return undef, 'unexpected start of literal ' . $reader->getLocationString unless $mayStringNext;
 
       ($value, $valueError) = readLiteral($reader);
       return $value, $valueError unless defined($value);
@@ -254,7 +246,7 @@ sub readTag {
     $reader->eatSpaces;
 
     ($char) = $reader->peekChar;
-    return undef, 'Unexpected end of input while reading tag' . getLocationString($reader) unless defined($char);
+    return undef, 'unexpected end of input while reading tag ' . $reader->getLocationString unless defined($char);
   }
 
   # if we had an equal sign, shift that value
@@ -282,7 +274,7 @@ sub readLiteral {
 
   # look at the next character and break if it is a special
   my ($char, $line, $col, $eof) = $reader->readChar;
-  return undef, 'Unexpected end of input in literal' . getLocationString($reader) unless defined($char);
+  return undef, 'unexpected end of input in literal ' . $reader->getLocationString unless defined($char);
 
   my $isNotSpecialSpaceLiteral = \&isNotSpecialSpaceLiteral;
 
@@ -298,7 +290,7 @@ sub readLiteral {
 
     # look at the next character and break if it is a special
     ($char, $line, $col, $eof) = $reader->readChar;
-    return undef, 'Unexpected end of input in literal' . getLocationString($reader) unless defined($char);
+    return undef, 'unexpected end of input in literal ' . $reader->getLocationString unless defined($char);
   }
 
   # unread the character that isn't part of the special literal and return
@@ -313,7 +305,7 @@ sub readBrace {
 
   # read the first bracket, or die if we are at the end
   my ($char, $line, $col, $eof) = $reader->readChar;
-  return undef, 'expected to find an "{"' . getLocationString($reader) unless defined($char) && $char eq '{';
+  return undef, 'expected to find an "{" ' . $reader->getLocationString unless defined($char) && $char eq '{';
 
   # record the starting position of the bracket
   my ($sr, $sc) = ($line, $col);
@@ -327,7 +319,7 @@ sub readBrace {
     # add the previous character, and read the next one.
     $result .= $char;
     ($char, $line, $col, $eof) = $reader->readChar;
-    return undef, 'Unexpected end of input in quote' . getLocationString($reader) if $eof;
+    return undef, 'unexpected end of input in quote ' . $reader->getLocationString if $eof;
 
     # keep count of what level we are in
     if ($char eq '{') {
@@ -348,7 +340,7 @@ sub readQuote {
 
   # read the first quote, or die if we are at the end
   my ($char, $line, $col, $eof) = $reader->readChar;
-  return undef, 'expected to find an \'"\'' . getLocationString($reader) unless defined($char) && $char eq '"';
+  return undef, 'expected to find an \'"\' ' . $reader->getLocationString unless defined($char) && $char eq '"';
 
   # record the starting position of the bracket
   my ($sr, $sc) = ($line, $col);
@@ -357,7 +349,7 @@ sub readQuote {
   my $level  = 0;
   while (1) {
     ($char, $line, $col, $eof) = $reader->readChar;
-    return undef, 'Unexpected end of input in quote' . getLocationString($reader) if $eof;
+    return undef, 'unexpected end of input in quote ' . $reader->getLocationString if $eof;
 
     # if we find a {, or a }, keep track of levels, and don't do anything inside
     if ($char eq '"') {

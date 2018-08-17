@@ -19,15 +19,7 @@ our @EXPORT = (
   qw( &readFile &readCommand ),
   qw( &readAny &readBlock ),
   qw( &readNumber &readReference &readLiteral &readQuote ),
-  qw( &getLocationString ),
 );
-
-# format an error message for the user
-sub getLocationString {
-  my ($reader) = @_;
-  my ($row, $col) = $reader->getPosition;
-  return ' near line ' . $row . ' column ' . $col;
-}
 
 # eats all spaces or comments
 sub eatSpacesOrComments {
@@ -103,7 +95,7 @@ sub readCommand {
 
   # figure out how many argumeents the command takes
   my $command = $name->getValue;
-  return undef, 'unknown command ' . $command . getLocationString($reader) unless exists($COMMANDS{$command});
+  return undef, 'unknown command ' . $command . ' ' . $reader->getLocationString unless exists($COMMANDS{$command});
   $command = $COMMANDS{$command};
 
   # and read them
@@ -135,7 +127,7 @@ sub readAny {
   my ($reader) = @_;
 
   my ($char, $sr, $sc) = $reader->peekChar;
-  return undef, 'Unexpected end of input while reading' . getLocationString($reader) unless defined($char);
+  return undef, 'unexpected end of input while reading ' . $reader->getLocationString unless defined($char);
 
   if ($char eq '#') {
     return readNumber($reader);
@@ -155,14 +147,14 @@ sub readBlock {
 
   # read the opening brace
   my ($char, $sr, $sc) = $reader->readChar;
-  return undef, 'expected "{" while reading block' . getLocationString($reader) unless defined($char) && $char eq '{';
+  return undef, 'expected "{" while reading block ' . $reader->getLocationString unless defined($char) && $char eq '{';
 
   my @values = ();
   my ($value, $valueError, $er, $ec);
 
   # if the next char is '}', finish
   ($char, $er, $ec) = $reader->peekChar;
-  return undef, 'Unexpected end of input while reading block' . getLocationString($reader) unless defined($char);
+  return undef, 'unexpected end of input while reading block ' . $reader->getLocationString unless defined($char);
   eatSpacesOrComments($reader);
 
   # read until we find a closing brace
@@ -175,7 +167,7 @@ sub readBlock {
     # skip all the spaces and read the next character
     eatSpacesOrComments($reader);
     ($char, $er, $ec) = $reader->peekChar;
-    return undef, 'Unexpected end of input while reading block' . getLocationString($reader) unless defined($char);
+    return undef, 'unexpected end of input while reading block ' . $reader->getLocationString unless defined($char);
   }
 
   $reader->eatChar;
@@ -189,10 +181,10 @@ sub readNumber {
 
   # read anything that's not a space
   my ($char, $sr, $sc) = $reader->readChar;
-  return undef, 'expected "#" while reading number' . getLocationString($reader) unless defined($char) && $char eq '#';
+  return undef, 'expected "#" while reading number ' . $reader->getLocationString unless defined($char) && $char eq '#';
 
   my ($literal, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /\d/; });
-  return undef, 'expected a non-empty number' . getLocationString($reader) unless $literal ne "";
+  return undef, 'expected a non-empty number ' . $reader->getLocationString unless $literal ne "";
 
   return BiBTeXML::BibStyle::StyString->new('NUMBER', $literal + 0, [($sr, $sc, $er, $ec)]);
 }
@@ -202,11 +194,11 @@ sub readReference {
   my ($reader) = @_;
 
   my ($char, $sr, $sc) = $reader->readChar;
-  return undef, 'expected "\'" while reading reference' . getLocationString($reader) unless defined($char) && $char eq "'";
+  return undef, 'expected "\'" while reading reference ' . $reader->getLocationString unless defined($char) && $char eq "'";
 
   # read anything that's not a space and not the end of a block
   my ($reference, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /[^\s\}]/; });
-  return undef, 'expected a non-empty argument' . getLocationString($reader) unless $reference ne "";
+  return undef, 'expected a non-empty argument ' . $reader->getLocationString unless $reference ne "";
 
   return BiBTeXML::BibStyle::StyString->new('REFERENCE', $reference, [($sr, $sc, $er, $ec)]);
 }
@@ -218,7 +210,7 @@ sub readLiteral {
   # read anything that's not a space or the boundary of a block
   my ($sr, $sc) = $reader->getPosition;
   my ($literal, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /[^\s\{\}]/; });
-  return undef, 'expected a non-empty literal' . getLocationString($reader) unless $literal;
+  return undef, 'expected a non-empty literal ' . $reader->getLocationString unless $literal;
 
   return BiBTeXML::BibStyle::StyString->new('LITERAL', $literal, [($sr, $sc, $er, $ec)]);
 }
@@ -230,16 +222,16 @@ sub readQuote {
 
   # read the first quote, or die if we are at the end
   my ($char, $line, $col, $eof) = $reader->readChar;
-  return undef, 'expected to find an \'"\'' . getLocationString($reader) unless defined($char) && $char eq '"';
+  return undef, 'expected to find an \'"\' ' . $reader->getLocationString unless defined($char) && $char eq '"';
 
   # record the starting position and read until the next quote
   my ($sr, $sc) = ($line, $col);
   my ($result) = $reader->readCharWhile(sub { $_[0] =~ /[^"]/ });
-  return undef, 'Unexpected end of input in quote' . getLocationString($reader) if $eof;
+  return undef, 'unexpected end of input in quote ' . $reader->getLocationString if $eof;
 
   # read the end quote, or die if we are at the end
   ($char, $line, $col, $eof) = $reader->readChar;
-  return undef, 'expected to find an \'"\'' . getLocationString($reader) unless defined($char) && $char eq '"';
+  return undef, 'expected to find an \'"\' ' . $reader->getLocationString unless defined($char) && $char eq '"';
 
   # we can add a +1 here, because we did not read a \n
   return BiBTeXML::BibStyle::StyString->new('QUOTE', $result, [($sr, $sc, $line, $col + 1)]);

@@ -306,6 +306,13 @@ sub getPosition {
   return ($$self{lineno}, $$self{colno}, $$self{eof});
 }
 
+# format a location message intended to be used inside
+# of error messages
+sub getLocationString {
+  my ($self) = @_;
+  return 'near line ' . $$self{lineno} . ' column ' . $$self{colno} . ($$self{eof} ? ' (at end of file)' : '');
+}
+
 # ===================================================================== #
 # Reading lines
 # ===================================================================== #
