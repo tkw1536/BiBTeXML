@@ -12,6 +12,12 @@ use strict;
 use warnings;
 
 use base qw(BiBTeXML::Common::Object);
+use BiBTeXML::Common::Utils;
+
+use base qw(Exporter);
+our @EXPORT = (
+  qw( &BibString ),
+);
 
 sub new {
   my ($class, $kind, $value, $source) = @_;
@@ -21,6 +27,8 @@ sub new {
     source => $source,        # the source position (see getSource)
   }, $class;
 }
+
+sub BibString { BiBTeXML::Bibliography::BibString->new(@_); }
 
 # return a copy of this entry
 sub copy {
@@ -87,14 +95,14 @@ sub append {
   $$self{source} = [($sr, $sc, $er, $ec)];
 }
 
-# turns this BibString into a string for human-readable presentation
+# turns this BibString into a string representing code to create this object
 sub stringify {
   my ($self)  = @_;
   my ($kind)  = $$self{kind};
   my ($value) = $$self{value};
 
   my ($sr, $sc, $er, $ec) = @{ $self->getSource };
-  return "BibString[$kind, \"$value\", from=$sr:$sc, to=$er:$ec]";
+  return 'BibString(' . escapeString($kind) . ', ' . escapeString($value) . ", [($sr, $sc, $er, $ec)])";
 }
 
 1;

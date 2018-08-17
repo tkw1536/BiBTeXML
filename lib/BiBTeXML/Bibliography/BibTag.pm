@@ -13,6 +13,12 @@ use warnings;
 use List::Util qw(reduce);
 
 use base qw(BiBTeXML::Common::Object);
+use BiBTeXML::Common::Utils;
+
+use base qw(Exporter);
+our @EXPORT = (
+  qw( &BibTag ),
+);
 
 sub new {
   my ($class, $name, $content, $source) = @_;
@@ -22,6 +28,8 @@ sub new {
     source  => $source,     # the source position (see getSource)
   }, $class;
 }
+
+sub BibTag { BiBTeXML::Bibliography::BibTag->new(@_); }
 
 # the name of this literal
 sub getName {
@@ -69,22 +77,22 @@ sub evaluate {
   return @failed;
 }
 
-# turns this BiBTag into a string for human-readable presentation
+# turns this BibTag into a string representing code to create this object
 sub stringify {
   my ($self) = @_;
   my ($name) = $self->getName;
-  $name = defined($name) ? $name->stringify : '';
+  $name = defined($name) ? $name->stringify : 'undef';
 
   my $content = $self->getContent;
   if (ref $content eq 'ARRAY') {
     my @scontent = map { $_->stringify; } @{ $self->getContent };
-    $content = '[' . join(',', @scontent) . ']';
+    $content = '[(' . join(', ', @scontent) . ')]';
   } else {
     $content = $content->stringify;
   }
 
   my ($sr, $sc, $er, $ec) = @{ $self->getSource };
-  return "BibTag[name=$name, content=$content, from=$sr:$sc, to=$er:$ec]";
+  return 'BibTag(' . $name . ', ' . $content . ", [($sr, $sc, $er, $ec)])";
 }
 
 1;

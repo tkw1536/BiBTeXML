@@ -12,6 +12,12 @@ use strict;
 use warnings;
 
 use base qw(BiBTeXML::Common::Object);
+use BiBTeXML::Common::Utils;
+
+use base qw(Exporter);
+our @EXPORT = (
+  qw( &StyString ),
+);
 
 sub new {
   my ($class, $kind, $value, $source) = @_;
@@ -21,6 +27,8 @@ sub new {
     source => $source,        # the source position (see getSource)
   }, $class;
 }
+
+sub StyString { BiBTeXML::BibStyle::StyString->new(@_); }
 
 # get the kind this StyString represents. One of:
 #   ''            (other)
@@ -40,7 +48,7 @@ sub getValue {
   return $$self{value};
 }
 
-# turns this StyString into a string for human-readable presentation
+# turns this StyCommand into a string representing code to create this object
 sub stringify {
   my ($self) = @_;
   my ($kind) = $$self{kind};
@@ -52,11 +60,11 @@ sub stringify {
   } elsif ($kind eq 'NUMBER') {
     $value = $$self{value};
   } else {
-    $value = '"' . $$self{value} . '"';
+    $value = escapeString($$self{value});
   }
 
   my ($sr, $sc, $er, $ec) = @{ $self->getSource };
-  return "StyString[$kind, $value, from=$sr:$sc, to=$er:$ec]";
+  return 'StyString(' . escapeString($kind) . ', ' . $value . ", [($sr, $sc, $er, $ec)])";
 }
 
 1;

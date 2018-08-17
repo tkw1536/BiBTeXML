@@ -12,6 +12,12 @@ use strict;
 use warnings;
 
 use base qw(BiBTeXML::Common::Object);
+use BiBTeXML::Common::Utils;
+
+use base qw(Exporter);
+our @EXPORT = (
+  qw( &BibEntry ),
+);
 
 sub new {
   my ($class, $type, $tags, $source) = @_;
@@ -21,6 +27,8 @@ sub new {
     source => $source    # a source referenb
   }, $class;
 }
+
+sub BibEntry { BiBTeXML::Bibliography::BibEntry->new(@_); }
 
 # the type of this entry
 # a BibString of type 'LITERAL' (and hence lowercase)
@@ -49,15 +57,15 @@ sub evaluate {
   }
 }
 
-# turns this BibEntry into a string for human-readable presentation
+# turns this BibEntry into a string representing code to create this object
 sub stringify {
   my ($self) = @_;
   my ($type) = $self->getType->stringify;
   my @tags = map { $_->stringify; } @{ $self->getTags };
-  my $tagStr = '[' . join(',', @tags) . ']';
+  my $tagStr = '[(' . join(',', @tags) . ')]';
 
   my ($sr, $sc, $er, $ec) = @{ $self->getSource };
-  return "BibEntry[type=$type, tags=$tagStr, from=$sr:$sc, to=$er:$ec]";
+  return 'BibTag(' . $type . ', ' . $tagStr . ", [($sr, $sc, $er, $ec)])";
 }
 
 1;

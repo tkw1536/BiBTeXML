@@ -1,1 +1,1 @@
-BibEntry[type=BibString[LITERAL, "STRING", from=1:1, to=1:7], tags=[BibTag[name=BibString[LITERAL, "premessage", from=1:8, to=1:18], content=[BibString[QUOTE, "This is the LaTeX preamble shared by all KWARC *.bib files.  ", from=1:21, to=1:84]], from=1:8, to=1:84]], from=0:0, to=1:85]
+BibTag(BibString('LITERAL', 'STRING', [(1, 1, 1, 7)]), [(BibTag(BibString('LITERAL', 'premessage', [(1, 8, 1, 18)]), [(BibString('QUOTE', 'This is the LaTeX preamble shared by all KWARC *.bib files.  ', [(1, 21, 1, 84)]))], [(1, 8, 1, 84)]))], [(0, 0, 1, 85)])

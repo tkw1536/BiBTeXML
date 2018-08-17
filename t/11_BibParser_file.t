@@ -4,8 +4,8 @@ use Test::More tests => 5;
 subtest "requirements" => sub {
   plan tests => 2;
 
-  require_ok("BiBTeXML::Common::StreamReader");
-  require_ok("BiBTeXML::Bibliography::BibParser");
+  use_ok("BiBTeXML::Common::StreamReader");
+  use_ok("BiBTeXML::Bibliography::BibParser");
 };
 
 doesParseFile("complicated.bib", 6);

@@ -19,7 +19,7 @@ use File::Spec;
 
 use base qw(Exporter);
 our @EXPORT = (
-  qw( &slurp &isResult ),
+  qw( &slurp &puts &isResult ),
   qw( &makeStringReader &makeFixtureReader ),
   qw( &measureBegin &measureEnd ),
 );
@@ -87,6 +87,5 @@ sub isResult {
   my ($results, $path, $message) = @_;
   Test::More::is(joinStrs(@{$results}), slurp("$path.txt"), $message);
 }
-
 
 1;

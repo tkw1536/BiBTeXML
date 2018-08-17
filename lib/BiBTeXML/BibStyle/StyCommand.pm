@@ -12,6 +12,12 @@ use strict;
 use warnings;
 
 use base qw(BiBTeXML::Common::Object);
+use BiBTeXML::Common::Utils;
+
+use base qw(Exporter);
+our @EXPORT = (
+  qw( &StyCommand ),
+);
 
 sub new {
   my ($class, $name, $arguments, $source) = @_;
@@ -21,6 +27,8 @@ sub new {
     source    => $source,        # the source position of the command (see getSource)
   }, $class;
 }
+
+sub StyCommand { BiBTeXML::BibStyle::StyCommand->new(@_); }
 
 # the name of the command. Should be a STYString of type Literal.
 sub getName {
@@ -34,16 +42,16 @@ sub getArguments {
   return $$self{arguments};
 }
 
-# turns this StyCommand into a string for human-readable presentation
+# turns this StyCommand into a string representing code to create this object
 sub stringify {
   my ($self) = @_;
   my ($name) = $$self{name}->stringify;
 
   my @arguments = map { $_->stringify; } @{ $$self{arguments} };
-  my $value = '[' . join(', ', @arguments) . ']';
+  my $value = '[(' . join(', ', @arguments) . ')]';
 
   my ($sr, $sc, $er, $ec) = @{ $self->getSource };
-  return "StyCommand[$name, $value, from=$sr:$sc, to=$er:$ec]";
+  return 'StyCommand(' . $name . ', ' . $value . ", [($sr, $sc, $er, $ec)])";
 }
 
 1;

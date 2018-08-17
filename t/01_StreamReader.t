@@ -4,10 +4,10 @@ use Test::More tests => 5;
 subtest "requirements" => sub {
   plan tests => 1;
 
-  require_ok("BiBTeXML::Common::StreamReader");
+  use_ok("BiBTeXML::Common::StreamReader");
 };
 
-subtest 'String hello\\nworld' => sub {
+subtest 'peek, then read a read a string' => sub {
   plan tests => 16;
 
   my $reader = makeStringReader("hello\nworld", 0, '');
@@ -36,7 +36,7 @@ subtest 'String hello\\nworld' => sub {
   $reader->finalize;
 };
 
-subtest 'String aaaaab' => sub {
+subtest 'readWhile() a string' => sub {
   plan tests => 2;
 
   # creating a reader from a string should work
@@ -48,37 +48,31 @@ subtest 'String aaaaab' => sub {
   $reader->finalize;
 };
 
-subtest 'File helloworld.txt' => sub {
-  plan tests => 16;
+subtest 'peek, then eat a file' => sub {
+  plan tests => 13;
 
   # creating a reader from a string should work
   my ($reader) = makeFixtureReader(__FILE__, 'streamreader', 'helloworld.txt');
 
-  peeks($reader, "1st character", "h", 0, 0, 0);
-  reads($reader, "1st character", "h", 1, 1, 0);
+  epeeks($reader, "1st character", "h",  0, 0, 0);
+  epeeks($reader, "2nd character", "e",  1, 1, 0);
+  epeeks($reader, "3rd character", "l",  1, 2, 0);
+  epeeks($reader, "4th character", "l",  1, 3, 0);
+  epeeks($reader, "5th character", "o",  1, 4, 0);
+  epeeks($reader, "6th character", "\n", 1, 5, 0);
 
-  peeks($reader, "2nd character", "e", 1, 1, 0);
-  reads($reader, "2nd character", "e", 1, 2, 0);
-
-  reads($reader, "3rd character", "l",  1, 3, 0);
-  reads($reader, "4th character", "l",  1, 4, 0);
-  reads($reader, "5th character", "o",  1, 5, 0);
-  reads($reader, "6th character", "\n", 1, 6, 0);
-
-  peeks($reader, "7th character", "w", 1, 6, 0);
-  reads($reader, "7th character", "w", 2, 1, 0);
-
-  reads($reader, "8th character",  "o",   2, 2, 0);
-  reads($reader, "9th character",  "r",   2, 3, 0);
-  reads($reader, "10th character", "l",   2, 4, 0);
-  reads($reader, "11th character", "d",   2, 5, 0);
-  reads($reader, "12th character", "\n",  2, 6, 0);
-  reads($reader, "13th character", undef, 3, 0, 1);
+  epeeks($reader, "7th character",  "w",   1, 6, 0);
+  epeeks($reader, "8th character",  "o",   2, 1, 0);
+  epeeks($reader, "9th character",  "r",   2, 2, 0);
+  epeeks($reader, "10th character", "l",   2, 3, 0);
+  epeeks($reader, "11th character", "d",   2, 4, 0);
+  epeeks($reader, "12th character", "\n",  2, 5, 0);
+  epeeks($reader, "13th character", undef, 2, 6, 0);
 
   $reader->finalize;
 };
 
-subtest 'File empty.txt' => sub {
+subtest 'peek, then read a file' => sub {
   plan tests => 26;
 
   # creating a reader from a string should work
@@ -118,54 +112,43 @@ subtest 'File empty.txt' => sub {
   $reader->finalize;
 };
 
-#####
-# Test helper function
-#####
 sub reads {
   my ($reader, $name, $echar, $eline, $ecol, $eeof) = @_;
-  subtest "read $name" => sub {
-    plan tests => 4;
 
-    my ($gchar) = $reader->readChar;
-    my ($gline, $gcol, $geof) = $reader->getPosition;
+  my ($gchar) = $reader->readChar;
+  my ($gline, $gcol, $geof) = $reader->getPosition;
 
-    is($gchar, $echar, "getChar");
-    is($gline, $eline, "lineNo");
-    is($gcol,  $ecol,  "colNo");
-    is($geof,  $eeof,  "eof");
-  };
-
+  is_deeply([$gchar, $gline, $gcol, $geof], [$echar, $eline, $ecol, $eeof], "read $name");
 }
 
 sub preads {
   my ($reader, $name, $echar, $eline, $ecol, $eeof) = @_;
-  subtest "read $name" => sub {
-    plan tests => 4;
 
-    $reader->peekChar;
-    my ($gchar) = $reader->readChar;
-    my ($gline, $gcol, $geof) = $reader->getPosition;
+  $reader->peekChar;
+  my ($gchar) = $reader->readChar;
+  my ($gline, $gcol, $geof) = $reader->getPosition;
 
-    is($gchar, $echar, "getChar");
-    is($gline, $eline, "lineNo");
-    is($gcol,  $ecol,  "colNo");
-    is($geof,  $eeof,  "eof");
-  };
-
+  is_deeply([$gchar, $gline, $gcol, $geof], [$echar, $eline, $ecol, $eeof], "peek, then read $name");
 }
 
 sub peeks {
   my ($reader, $name, $echar, $eline, $ecol, $eeof) = @_;
-  subtest "peek $name" => sub {
-    plan tests => 4;
-    my ($gchar) = $reader->peekChar;
-    my ($gline, $gcol, $geof) = $reader->getPosition;
 
-    is($gchar, $echar, "getChar");
-    is($gline, $eline, "lineNo");
-    is($gcol,  $ecol,  "colNo");
-    is($geof,  $eeof,  "eof");
-  };
+  my ($gchar) = $reader->peekChar;
+  my ($gline, $gcol, $geof) = $reader->getPosition;
+
+  is_deeply([$gchar, $gline, $gcol, $geof], [$echar, $eline, $ecol, $eeof], "peek $name");
+}
+
+sub epeeks {
+  my ($reader, $name, $echar, $eline, $ecol, $eeof) = @_;
+
+  my ($gchar) = $reader->peekChar;
+  my ($gline, $gcol, $geof) = $reader->getPosition;
+
+  is_deeply([$gchar, $gline, $gcol, $geof], [$echar, $eline, $ecol, $eeof], "peek, then eat $name");
+
+  $reader->eatChar;
 }
 
 sub readsWhile {
