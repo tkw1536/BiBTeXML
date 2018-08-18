@@ -4,8 +4,8 @@ use Test::More tests => 2;
 subtest "requirements" => sub {
   plan tests => 2;
 
-  require_ok("BiBTeXML::Common::StreamReader");
-  require_ok("BiBTeXML::BibStyle::StyParser");
+  use_ok("BiBTeXML::Common::StreamReader");
+  use_ok("BiBTeXML::BibStyle");
 };
 
 doesParseFile("plain.bst");
@@ -20,7 +20,7 @@ sub doesParseFile {
 
     # parse file and measure the time it takes
     my $begin = measureBegin;
-    my ($results, $error) = BiBTeXML::BibStyle::StyParser::readFile($reader);
+    my ($results, $error) = readFile($reader);
     measureEnd($begin, $name);
 
     # check that we did not make any errors

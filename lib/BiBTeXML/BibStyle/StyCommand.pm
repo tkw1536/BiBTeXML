@@ -14,11 +14,6 @@ use warnings;
 use base qw(BiBTeXML::Common::Object);
 use BiBTeXML::Common::Utils;
 
-use base qw(Exporter);
-our @EXPORT = (
-  qw( &StyCommand ),
-);
-
 sub new {
   my ($class, $name, $arguments, $source) = @_;
   return bless {
@@ -27,8 +22,6 @@ sub new {
     source    => $source,        # the source position of the command (see getSource)
   }, $class;
 }
-
-sub StyCommand { BiBTeXML::BibStyle::StyCommand->new(@_); }
 
 # the name of the command. Should be a STYString of type Literal.
 sub getName {

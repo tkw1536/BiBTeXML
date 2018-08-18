@@ -2,13 +2,10 @@ use BiBTeXML::Common::Test;
 use Test::More tests => 6;
 
 subtest "requirements" => sub {
-  plan tests => 4;
+  plan tests => 2;
 
   use_ok("BiBTeXML::Common::StreamReader");
-  use_ok("BiBTeXML::Bibliography::BibParser");
-
-  use_ok("BiBTeXML::Bibliography::BibString");
-  use_ok("BiBTeXML::Bibliography::BibTag");
+  use_ok("BiBTeXML::Bibliography");
 };
 
 subtest 'readLiteral' => sub {

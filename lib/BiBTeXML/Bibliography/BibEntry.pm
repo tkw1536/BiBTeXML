@@ -14,11 +14,6 @@ use warnings;
 use base qw(BiBTeXML::Common::Object);
 use BiBTeXML::Common::Utils;
 
-use base qw(Exporter);
-our @EXPORT = (
-  qw( &BibEntry ),
-);
-
 sub new {
   my ($class, $type, $tags, $source) = @_;
   return bless {
@@ -27,8 +22,6 @@ sub new {
     source => $source    # a source referenb
   }, $class;
 }
-
-sub BibEntry { BiBTeXML::Bibliography::BibEntry->new(@_); }
 
 # the type of this entry
 # a BibString of type 'LITERAL' (and hence lowercase)

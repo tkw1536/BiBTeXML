@@ -5,7 +5,7 @@ subtest "requirements" => sub {
   plan tests => 2;
 
   use_ok("BiBTeXML::Common::StreamReader");
-  use_ok("BiBTeXML::Bibliography::BibParser");
+  use_ok("BiBTeXML::Bibliography");
 };
 
 doesParseFile("complicated.bib", 6);
@@ -25,7 +25,7 @@ sub doesParseFile {
 
     # parse file and measure the time it takes
     my $begin = measureBegin;
-    my ($results, $errors) = BiBTeXML::Bibliography::BibParser::readFile($reader, 0);
+    my ($results, $errors) = readFile($reader, 0);
     measureEnd($begin, $name);
 
     # check that we did not make any errors

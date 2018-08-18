@@ -17,7 +17,7 @@ use BiBTeXML::Bibliography::BibEntry;
 
 use base qw(Exporter);
 our @EXPORT = (
-  qw( &readFile &readEntry &readQuote ),
+  qw( &readFile &readEntry ),
   qw( &readLiteral &readBrace &readQuote )
 );
 

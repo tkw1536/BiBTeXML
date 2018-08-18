@@ -20,6 +20,7 @@ lib/BiBTeXML/Common/Utils.pm
 #==================================================
 # Bibliography
 #==================================================
+lib/BiBTeXML/Bibliography.pm
 lib/BiBTeXML/Bibliography/BibEntry.pm
 lib/BiBTeXML/Bibliography/BibParser.pm
 lib/BiBTeXML/Bibliography/BibString.pm
@@ -28,6 +29,7 @@ lib/BiBTeXML/Bibliography/BibTag.pm
 #==================================================
 # BibStyle
 #==================================================
+lib/BiBTeXML/BibStyle.pm
 lib/BiBTeXML/BibStyle/StyCommand.pm
 lib/BiBTeXML/BibStyle/StyParser.pm
 lib/BiBTeXML/BibStyle/StyString.pm

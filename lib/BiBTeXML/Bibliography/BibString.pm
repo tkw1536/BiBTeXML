@@ -14,11 +14,6 @@ use warnings;
 use base qw(BiBTeXML::Common::Object);
 use BiBTeXML::Common::Utils;
 
-use base qw(Exporter);
-our @EXPORT = (
-  qw( &BibString ),
-);
-
 sub new {
   my ($class, $kind, $value, $source) = @_;
   return bless {
@@ -27,8 +22,6 @@ sub new {
     source => $source,        # the source position (see getSource)
   }, $class;
 }
-
-sub BibString { BiBTeXML::Bibliography::BibString->new(@_); }
 
 # return a copy of this entry
 sub copy {

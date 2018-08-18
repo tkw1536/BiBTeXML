@@ -15,11 +15,6 @@ use List::Util qw(reduce);
 use base qw(BiBTeXML::Common::Object);
 use BiBTeXML::Common::Utils;
 
-use base qw(Exporter);
-our @EXPORT = (
-  qw( &BibTag ),
-);
-
 sub new {
   my ($class, $name, $content, $source) = @_;
   return bless {
@@ -28,8 +23,6 @@ sub new {
     source  => $source,     # the source position (see getSource)
   }, $class;
 }
-
-sub BibTag { BiBTeXML::Bibliography::BibTag->new(@_); }
 
 # the name of this literal
 sub getName {
