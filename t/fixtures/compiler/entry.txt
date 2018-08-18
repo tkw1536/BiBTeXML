@@ -1,0 +1,6 @@
+defineEntryField($context, 'a', StyString('LITERAL', 'a', [(2, 4, 2, 5)])); 
+defineEntryField($context, 'b', StyString('LITERAL', 'b', [(2, 6, 2, 7)])); 
+defineEntryField($context, 'c', StyString('LITERAL', 'c', [(2, 8, 2, 9)])); 
+defineEntryInteger($context, 'd', StyString('LITERAL', 'd', [(3, 4, 3, 5)])); 
+defineEntryInteger($context, 'e', StyString('LITERAL', 'e', [(3, 6, 3, 7)])); 
+defineEntryString($context, 'f', StyString('LITERAL', 'f', [(4, 4, 4, 5)])); 

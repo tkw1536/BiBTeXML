@@ -16,8 +16,9 @@ use base qw(Exporter);
 our @EXPORT = (
   qw( &compileProgram ),
   qw( &compileQuote ),
-  qw( &compileArgument ),
+  qw( &compileInteger ),
   qw( &compileReference ),
   qw( &compileLiteral ),
-  qw( &compileInlineBlock ),
+  qw( &compileInlineBlock &compileBlock ),
+  qw( &compileEntry &compileStrings &compileIntegers &compileMacro &compileFunction &compileExecute &compileRead &compileSort &compileIterate &compileReverse )
 );

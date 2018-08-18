@@ -1,0 +1,4 @@
+pushFunction($context, sub { 
+  my ($context) = @_; 
+  pushString($context, 'content', StyString('QUOTE', 'content', [(1, 5, 1, 10)])); 
+}, StyString('BLOCK', [(StyString('QUOTE', 'content', [(1, 5, 1, 10)]))], [(1, 4, 1, 11)])); 

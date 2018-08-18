@@ -65,7 +65,7 @@ sub readFile {
   return [@commands];
 }
 
-# commands and how many argument
+# commands and how many arguments
 our %COMMANDS = (
   ENTRY    => 3,
   EXECUTE  => 1,

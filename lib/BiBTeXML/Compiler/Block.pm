@@ -17,10 +17,10 @@ use BiBTeXML::Compiler::Calls;
 use base qw(Exporter);
 our @EXPORT = (
   qw( &compileQuote ),
-  qw( &compileArgument ),
+  qw( &compileInteger ),
   qw( &compileReference ),
   qw( &compileLiteral ),
-  qw( &compileInlineBlock ),
+  qw( &compileInlineBlock &compileBlockBody ),
 );
 
 sub compileInstruction {
@@ -36,7 +36,7 @@ sub compileInstruction {
   } elsif ($type eq 'QUOTE') {
     return compileQuote(@_);
   } elsif ($type eq 'NUMBER') {
-    return compileArgument(@_);
+    return compileInteger(@_);
   } else {
     return undef, "Unknown instruction of type $type " . $instruction->getLocationString;
   }
@@ -103,12 +103,27 @@ sub compileReference {
   return makeIndent($indent) . $result . "\n";
 }
 
+# compiles a single inline block
 sub compileInlineBlock {
   my ($block, $indent, %context) = @_;
   return undef, 'Expected a BLOCK ' . $block->getLocationString unless $block->getKind eq 'BLOCK';
 
-  my $buffer = makeIndent($indent) . callLookupBlockStart . "sub { \n";
+  my ($body, $error) = compileBlockBody($block, $indent, undef, %context);
+  return $body, $error if defined($error);
 
+  return makeIndent($indent) . callPushFunctionStart($block) . $body . callPushFunctionEnd($block) . "\n";
+}
+
+# compiles the body of a block
+sub compileBlockBody {
+  my ($block, $indent, $name, %context) = @_;
+  return undef, 'Expected a BLOCK ' . $block->getLocationString unless $block->getKind eq 'BLOCK';
+
+  # start a new sub and read the context
+  my $buffer = "sub " . (defined($name) ? escapeFunctionName($name) . ' ' : '') . "{ \n";
+  $buffer .= makeIndent($indent + 1) . 'my ($context) = @_; ' . "\n";
+
+  # compile all the instructions
   my @instructions = @{ $block->getValue };
   my ($compilation, $compilationError);
   foreach my $instruction (@instructions) {
@@ -117,8 +132,8 @@ sub compileInlineBlock {
     $buffer .= $compilation;
   }
 
-  # TODO: Compile all the things inside with indent + 1
-  $buffer .= makeIndent($indent) . '}' . callLookupBlockEnd($block) . "\n";
+  # close the sub
+  $buffer .= makeIndent($indent) . "}";
   return $buffer;
 }
 
@@ -131,10 +146,10 @@ sub compileQuote {
 }
 
 # compiles a single number
-sub compileArgument {
+sub compileInteger {
   my ($number, $indent) = @_;
   return undef, 'Expected a NUMBER ' . $number->getLocationString unless $number->getKind eq 'NUMBER';
-  return makeIndent($indent) . callPushArgument($number) . "\n";
+  return makeIndent($indent) . callPushInteger($number) . "\n";
 }
 
 1;

@@ -8,15 +8,15 @@ subtest "requirements" => sub {
   use_ok("BiBTeXML::Compiler");
 };
 
-subtest "compileArgument" => sub {
+subtest "compileInteger" => sub {
   plan tests => 2;
 
-  doesCompileArgument('1st argument', StyString('NUMBER', 1, [(1, 1, 1, 3)]), 'pushArgument($context, $arg1, StyString(\'NUMBER\', 1, [(1, 1, 1, 3)])); ');
-  doesCompileArgument('2nd argument', StyString('NUMBER', 2, [(1, 5, 1, 7)]), 'pushArgument($context, $arg2, StyString(\'NUMBER\', 2, [(1, 5, 1, 7)])); ');
+  doesCompileInteger('integer 1', StyString('NUMBER', 1, [(1, 1, 1, 3)]), 'pushInteger($context, 1, StyString(\'NUMBER\', 1, [(1, 1, 1, 3)])); ');
+  doesCompileInteger('integer 2', StyString('NUMBER', 2, [(1, 5, 1, 7)]), 'pushInteger($context, 2, StyString(\'NUMBER\', 2, [(1, 5, 1, 7)])); ');
 
-  sub doesCompileArgument {
-    my ($name, $argument, @compilation) = @_;
-    my ($result) = compileArgument($argument, 0);
+  sub doesCompileInteger {
+    my ($name, $integer, @compilation) = @_;
+    my ($result) = compileInteger($integer, 0);
     is($result, join("\n", @compilation) . "\n", $name);
   }
 };
@@ -98,27 +98,13 @@ subtest "compileLiteral" => sub {
 subtest "compileInlineBlock" => sub {
   plan tests => 2;
 
-  doesCompileInlineBlock('simple block', StyString('BLOCK', [(StyString('QUOTE', 'content', [(1, 5, 1, 10)]))], [(1, 4, 1, 11)]),
-    'lookupFunction($context, sub { ',
-    '  pushString($context, \'content\', StyString(\'QUOTE\', \'content\', [(1, 5, 1, 10)])); ',
-'}, StyString(\'BLOCK\', [(StyString(\'QUOTE\', \'content\', [(1, 5, 1, 10)]))], [(1, 4, 1, 11)])); '
-  );
-
-  doesCompileInlineBlock('nested block', StyString('BLOCK', [(StyString('QUOTE', 'outer', [(1, 1, 1, 7)]), StyString('BLOCK', [(StyString('QUOTE', 'inner', [(2, 2, 2, 7)]))], [(2, 1, 2, 8)]), StyString('QUOTE', 'outer', [(3, 1, 3, 7)]))], [(1, 4, 3, 8)])
-    ,
-    'lookupFunction($context, sub { ',
-    '  pushString($context, \'outer\', StyString(\'QUOTE\', \'outer\', [(1, 1, 1, 7)])); ',
-    '  lookupFunction($context, sub { ',
-    '    pushString($context, \'inner\', StyString(\'QUOTE\', \'inner\', [(2, 2, 2, 7)])); ',
-    '  }, StyString(\'BLOCK\', [(StyString(\'QUOTE\', \'inner\', [(2, 2, 2, 7)]))], [(2, 1, 2, 8)])); ',
-    '  pushString($context, \'outer\', StyString(\'QUOTE\', \'outer\', [(3, 1, 3, 7)])); ',
-'}, StyString(\'BLOCK\', [(StyString(\'QUOTE\', \'outer\', [(1, 1, 1, 7)]), StyString(\'BLOCK\', [(StyString(\'QUOTE\', \'inner\', [(2, 2, 2, 7)]))], [(2, 1, 2, 8)]), StyString(\'QUOTE\', \'outer\', [(3, 1, 3, 7)]))], [(1, 4, 3, 8)])); '
-  );
+  doesCompileInlineBlock('simple block', "inline_block_simple.txt", StyString('BLOCK', [(StyString('QUOTE', 'content', [(1, 5, 1, 10)]))], [(1, 4, 1, 11)]));
+  doesCompileInlineBlock('nested block', "inline_block_complex.txt", StyString('BLOCK', [(StyString('QUOTE', 'outer', [(1, 1, 1, 7)]), StyString('BLOCK', [(StyString('QUOTE', 'inner', [(2, 2, 2, 7)]))], [(2, 1, 2, 8)]), StyString('QUOTE', 'outer', [(3, 1, 3, 7)]))], [(1, 4, 3, 8)]));
 
   sub doesCompileInlineBlock {
-    my ($name, $block, @compilation) = @_;
-    my ($result, $e) = compileInlineBlock($block, 0);
-    is($result, join("\n", @compilation) . "\n", $name);
+    my ($name, $path, $block) = @_;
+    my ($result) = compileInlineBlock($block, 0);
+    is($result, slurp(fixture(__FILE__, "compiler", $path)), $name);
   }
 };
 

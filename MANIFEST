@@ -52,6 +52,7 @@ t/11_BibParser_file.t
 t/20_StyParser.t
 t/21_StyParser_file.t
 t/30_Compiler.t
+t/31_Compiler_command.t
 
 t/fixtures/streamreader/empty.txt
 t/fixtures/streamreader/helloworld.txt
@@ -71,3 +72,19 @@ t/fixtures/bibfiles/README.md
 
 t/fixtures/bstfiles/plain.bst
 t/fixtures/bstfiles/README.md
+
+t/fixtures/compiler/entry.txt
+t/fixtures/compiler/execute_builtin.txt
+t/fixtures/compiler/execute_user.txt
+t/fixtures/compiler/function.txt
+t/fixtures/compiler/inline_block_simple.txt
+t/fixtures/compiler/inline_block_complex.txt
+t/fixtures/compiler/integers.txt
+t/fixtures/compiler/iterate_builtin.txt
+t/fixtures/compiler/iterate_user.txt
+t/fixtures/compiler/macro.txt
+t/fixtures/compiler/read.txt
+t/fixtures/compiler/reverse_builtin.txt
+t/fixtures/compiler/reverse_user.txt
+t/fixtures/compiler/sort.txt
+t/fixtures/compiler/strings.txt
