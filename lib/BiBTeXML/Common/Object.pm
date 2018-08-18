@@ -21,6 +21,14 @@ sub getSource {
   return $$self{source};
 }
 
+# format a location message intended to be used inside
+# of error messages
+sub getLocationString {
+  my ($self) = @_;
+  my ($sr, $sc, $er, $ec) = @{ $self->getSource };
+  return "source from $sc:$sc to $er:$ec";
+}
+
 # checks if this object equals another object
 sub equals {
   my ($self, $other) = @_;

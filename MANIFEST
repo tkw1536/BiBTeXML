@@ -35,6 +35,15 @@ lib/BiBTeXML/BibStyle/StyParser.pm
 lib/BiBTeXML/BibStyle/StyString.pm
 
 #==================================================
+# Compiler
+#==================================================
+lib/BiBTeXML/Compiler.pm
+lib/BiBTeXML/Compiler/Block.pm
+lib/BiBTeXML/Compiler/Calls.pm
+lib/BiBTeXML/Compiler/Program.pm
+lib/BiBTeXML/Compiler/Utils.pm
+
+#==================================================
 # Test Suite.
 #==================================================
 t/01_StreamReader.t
@@ -42,6 +51,7 @@ t/10_BibParser.t
 t/11_BibParser_file.t
 t/20_StyParser.t
 t/21_StyParser_file.t
+t/30_Compiler.t
 
 t/fixtures/streamreader/empty.txt
 t/fixtures/streamreader/helloworld.txt
