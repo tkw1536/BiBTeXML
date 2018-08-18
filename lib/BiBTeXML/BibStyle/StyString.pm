@@ -56,7 +56,7 @@ sub stringify {
   my $value;
   if ($kind eq 'BLOCK') {
     my @content = map { $_->stringify; } @{ $$self{value} };
-    $value = '[' . join(', ', @content) . ']';
+    $value = '[(' . join(', ', @content) . ')]';
   } elsif ($kind eq 'NUMBER') {
     $value = $$self{value};
   } else {
