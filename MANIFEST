@@ -71,6 +71,7 @@ t/fixtures/bibfiles/kwarc.bib.txt
 t/fixtures/bibfiles/README.md
 
 t/fixtures/bstfiles/plain.bst
+t/fixtures/bstfiles/plain.bst.compiled
 t/fixtures/bstfiles/README.md
 
 t/fixtures/compiler/entry.txt

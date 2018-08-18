@@ -22,8 +22,8 @@ our @EXPORT = (
   qw(&callIterateFunction &callIterateBuiltin),
   qw(&callReverseFunction &callReverseBuiltin),
   qw(&callPushFunctionStart &callPushFunctionEnd &callPopValue),
-  qw(&callPushGlobalString &callPushGlobalInteger &callLookupEntryField &callPushEntryString &callPushEntryInteger &callCallFunction &callCallBuiltin),
-  qw(&callLookupGlobalString &callLookupGlobalInteger &callLookupEntryString &callLookupEntryInteger &callLookupFunction &callLookupBuiltin),
+  qw(&callPushGlobalString &callPushGlobalInteger &callPushEntryField &callPushEntryString &callPushEntryInteger &callCallFunction &callCallBuiltin),
+  qw(&callLookupGlobalString &callLookupGlobalInteger &callLookupEntryField &callLookupEntryString &callLookupEntryInteger &callLookupFunction &callLookupBuiltin),
   qw(&callPushString &callPushInteger),
 );
 
@@ -124,9 +124,9 @@ sub callPushGlobalInteger {
   return callRuntimeFunction('pushGlobalInteger', escapeString($styString->getValue), $styString);
 }
 
-sub callLookupEntryField {
+sub callPushEntryField {
   my ($styString) = @_;
-  return callRuntimeFunction('lookupEntryField', escapeString($styString->getValue), $styString);
+  return callRuntimeFunction('pushEntryField', escapeString($styString->getValue), $styString);
 }
 
 sub callPushEntryString {
@@ -159,6 +159,11 @@ sub callLookupGlobalString {
 sub callLookupGlobalInteger {
   my ($styString) = @_;
   return callRuntimeFunction('lookupGlobalInteger', escapeString($styString->getValue), $styString);
+}
+
+sub callLookupEntryField {
+  my ($styString) = @_;
+  return callRuntimeFunction('lookupEntryField', escapeString($styString->getValue), $styString);
 }
 
 sub callLookupEntryString {

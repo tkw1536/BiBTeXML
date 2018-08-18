@@ -26,7 +26,7 @@ sub getSource {
 sub getLocationString {
   my ($self) = @_;
   my ($sr, $sc, $er, $ec) = @{ $self->getSource };
-  return "source from $sc:$sc to $er:$ec";
+  return "(near source from $sr:$sc to $er:$ec)";
 }
 
 # checks if this object equals another object

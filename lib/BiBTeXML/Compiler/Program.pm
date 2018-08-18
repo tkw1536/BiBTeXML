@@ -49,36 +49,36 @@ sub compileProgram {
     '*'  => 'BUILTIN_FUNCTION',
     ':=' => 'BUILTIN_FUNCTION',
 
-    'add.period$'   => 'BUILTIN_FUNCTION',
-    'call.type$'    => 'BUILTIN_FUNCTION',
-    'change.case$'  => 'BUILTIN_FUNCTION',
-    'chr.to.int$'   => 'BUILTIN_FUNCTION',
-    'cite$'         => 'BUILTIN_FUNCTION',
-    'duplicate$'    => 'BUILTIN_FUNCTION',
-    'empty$'        => 'BUILTIN_FUNCTION',
-    'format.name$ ' => 'BUILTIN_FUNCTION',
-    'if$'           => 'BUILTIN_FUNCTION',
-    'int.to.chr$'   => 'BUILTIN_FUNCTION',
-    'int.to.str$'   => 'BUILTIN_FUNCTION',
-    'missing$'      => 'BUILTIN_FUNCTION',
-    'newline$'      => 'BUILTIN_FUNCTION',
-    'num.names$'    => 'BUILTIN_FUNCTION',
-    'pop$'          => 'BUILTIN_FUNCTION',
-    'preamble$'     => 'BUILTIN_FUNCTION',
-    'purify$'       => 'BUILTIN_FUNCTION',
-    'quote$'        => 'BUILTIN_FUNCTION',
-    'skip$ '        => 'BUILTIN_FUNCTION',
-    'stack$'        => 'BUILTIN_FUNCTION',
-    'substring$'    => 'BUILTIN_FUNCTION',
-    'swap$'         => 'BUILTIN_FUNCTION',
-    'text.length$'  => 'BUILTIN_FUNCTION',
-    'text.prefix$'  => 'BUILTIN_FUNCTION',
-    'top$ '         => 'BUILTIN_FUNCTION',
-    'type$'         => 'BUILTIN_FUNCTION',
-    'warning$'      => 'BUILTIN_FUNCTION',
-    'while$'        => 'BUILTIN_FUNCTION',
-    'width$'        => 'BUILTIN_FUNCTION',
-    'write$'        => 'BUILTIN_FUNCTION',
+    'add.period$'  => 'BUILTIN_FUNCTION',
+    'call.type$'   => 'BUILTIN_FUNCTION',
+    'change.case$' => 'BUILTIN_FUNCTION',
+    'chr.to.int$'  => 'BUILTIN_FUNCTION',
+    'cite$'        => 'BUILTIN_FUNCTION',
+    'duplicate$'   => 'BUILTIN_FUNCTION',
+    'empty$'       => 'BUILTIN_FUNCTION',
+    'format.name$' => 'BUILTIN_FUNCTION',
+    'if$'          => 'BUILTIN_FUNCTION',
+    'int.to.chr$'  => 'BUILTIN_FUNCTION',
+    'int.to.str$'  => 'BUILTIN_FUNCTION',
+    'missing$'     => 'BUILTIN_FUNCTION',
+    'newline$'     => 'BUILTIN_FUNCTION',
+    'num.names$'   => 'BUILTIN_FUNCTION',
+    'pop$'         => 'BUILTIN_FUNCTION',
+    'preamble$'    => 'BUILTIN_FUNCTION',
+    'purify$'      => 'BUILTIN_FUNCTION',
+    'quote$'       => 'BUILTIN_FUNCTION',
+    'skip$'        => 'BUILTIN_FUNCTION',
+    'stack$'       => 'BUILTIN_FUNCTION',
+    'substring$'   => 'BUILTIN_FUNCTION',
+    'swap$'        => 'BUILTIN_FUNCTION',
+    'text.length$' => 'BUILTIN_FUNCTION',
+    'text.prefix$' => 'BUILTIN_FUNCTION',
+    'top$'         => 'BUILTIN_FUNCTION',
+    'type$'        => 'BUILTIN_FUNCTION',
+    'warning$'     => 'BUILTIN_FUNCTION',
+    'while$'       => 'BUILTIN_FUNCTION',
+    'width$'       => 'BUILTIN_FUNCTION',
+    'write$'       => 'BUILTIN_FUNCTION',
   );
 
   # compile each of the commands
@@ -101,23 +101,23 @@ sub compileProgram {
 # compiles a command in a given context
 # returns $command, $error, %context
 sub compileCommand {
-  my ($command, %context) = @_;
+  my ($command, $indent, %context) = @_;
   my $name = $command->getName->getValue;
-  if ($name eq 'ENTRY') { return compileEntry($command, %context);
+  if ($name eq 'ENTRY') { return compileEntry($command, $indent, %context);
 
-  } elsif ($name eq 'STRINGS') { return compileSort($command, %context);
-  } elsif ($name eq 'INTEGERS') { return compileIntegers($command, %context);
+  } elsif ($name eq 'STRINGS') { return compileStrings($command, $indent, %context);
+  } elsif ($name eq 'INTEGERS') { return compileIntegers($command, $indent, %context);
 
-  } elsif ($name eq 'MACRO') { return compileMacro($command, %context);
-  } elsif ($name eq 'FUNCTION') { return compileFunction($command, %context);
+  } elsif ($name eq 'MACRO') { return compileMacro($command, $indent, %context);
+  } elsif ($name eq 'FUNCTION') { return compileFunction($command, $indent, %context);
 
-  } elsif ($name eq 'EXECUTE') { return compileExecute($command, %context);
+  } elsif ($name eq 'EXECUTE') { return compileExecute($command, $indent, %context);
 
-  } elsif ($name eq 'READ') { return compileRead($command, %context);
-  } elsif ($name eq 'SORT') { return compileSort($command, %context);
+  } elsif ($name eq 'READ') { return compileRead($command, $indent, %context);
+  } elsif ($name eq 'SORT') { return compileSort($command, $indent, %context);
 
-  } elsif ($name eq 'ITERATE') { return compileIterate($command, %context);
-  } elsif ($name eq 'REVERSE') { return compileIterate($command, %context);
+  } elsif ($name eq 'ITERATE') { return compileIterate($command, $indent, %context);
+  } elsif ($name eq 'REVERSE') { return compileIterate($command, $indent, %context);
 
   } else {
     return undef, "Unknown command $name" . $command->getLocationString;

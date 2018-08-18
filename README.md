@@ -34,7 +34,7 @@ BiBTeXML is split into (roughly) four components:
 
 * [`BiBTeXML::Bibliography`](lib/BiBTeXML/Bibliography/) - a parser for `.bib` files
 * [`BiBTeXML::BibStyle`](lib/BiBTeXML/BibStyle/) - a parser for `.bst` files
-* [`BiBTeXML::Compiler`](lib/BiBTeXML/Compiler/) - a compiler for `.bst` files into perl (__work in progress__)
+* [`BiBTeXML::Compiler`](lib/BiBTeXML/Compiler/) - a compiler for `.bst` files into perl
 * [`BiBTeXML::Runtime`](lib/BiBTeXML/Runtime/) - a runtime for the compiler-generated code (__work in progress__)
 
 ## LICENSE

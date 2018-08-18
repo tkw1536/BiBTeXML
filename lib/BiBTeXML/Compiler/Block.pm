@@ -58,7 +58,7 @@ sub compileLiteral {
   } elsif ($type eq 'GLOBAL_INTEGER' or $type eq 'BUILTIN_GLOBAL_INTEGER') {
     $result = callPushGlobalInteger($variable);
   } elsif ($type eq 'ENTRY_FIELD' or $type eq 'BUILTIN_ENTRY_FIELD') {
-    $result = callLookupEntryField($variable);
+    $result = callPushEntryField($variable);
   } elsif ($type eq 'ENTRY_STRING' or $type eq 'BUILTIN_ENTRY_STRING') {
     $result = callPushEntryString($variable);
   } elsif ($type eq 'ENTRY_INTEGER' or $type eq 'BUILTIN_ENTRY_INTEGER') {
@@ -68,7 +68,7 @@ sub compileLiteral {
   } elsif ($type eq 'BUILTIN_FUNCTION') {
     $result .= callCallBuiltin($variable);
   } else {
-    return undef, "Unknown variable type $type in literal " . $variable->getLocationString;
+    return undef, "Attempted to resolve " . $name . " of type $type in literal " . $variable->getLocationString;
   }
   return makeIndent($indent) . $result . "\n";
 }
@@ -90,6 +90,8 @@ sub compileReference {
     $result = callLookupGlobalInteger($reference);
   } elsif ($type eq 'ENTRY_STRING' or $type eq 'BUILTIN_ENTRY_STRING') {
     $result = callLookupEntryString($reference);
+  } elsif ($type eq 'ENTRY_FIELD' or $type eq 'BUILTIN_ENTRY_FIELD') {
+    $result = callLookupEntryField($reference);
   } elsif ($type eq 'ENTRY_INTEGER' or $type eq 'BUILTIN_ENTRY_INTEGER') {
     $result = callLookupEntryInteger($reference);
   } elsif ($type eq 'FUNCTION') {
@@ -97,7 +99,7 @@ sub compileReference {
   } elsif ($type eq 'BUILTIN_FUNCTION') {
     $result .= callLookupBuiltin($reference);
   } else {
-    return undef, "Unsupported variable type $type in reference " . $reference->getLocationString;
+    return undef, "Attempted to reference " . $name . " of type $type in reference " . $reference->getLocationString;
   }
 
   return makeIndent($indent) . $result . "\n";

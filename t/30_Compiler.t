@@ -35,13 +35,16 @@ subtest "compileQuote" => sub {
 };
 
 subtest "compileVariable" => sub {
-  plan tests => 10;
+  plan tests => 12;
 
   doesCompileReference('GLOBAL_STRING', 'example', 'lookupGlobalString($context, \'example\', StyString(\'REFERENCE\', \'example\', [(1, 2, 1, 9)])); ');
   doesCompileReference('BUILTIN_GLOBAL_STRING', 'example', 'lookupGlobalString($context, \'example\', StyString(\'REFERENCE\', \'example\', [(1, 2, 1, 9)])); ');
 
   doesCompileReference('GLOBAL_INTEGER', 'example', 'lookupGlobalInteger($context, \'example\', StyString(\'REFERENCE\', \'example\', [(1, 2, 1, 9)])); ');
   doesCompileReference('BUILTIN_GLOBAL_INTEGER', 'entry.max$', 'lookupGlobalInteger($context, \'entry.max$\', StyString(\'REFERENCE\', \'entry.max$\', [(1, 2, 1, 9)])); ');
+
+  doesCompileReference('ENTRY_FIELD', 'example', 'lookupEntryField($context, \'example\', StyString(\'REFERENCE\', \'example\', [(1, 2, 1, 9)])); ');
+  doesCompileReference('BUILTIN_ENTRY_FIELD', 'crossref', 'lookupEntryField($context, \'crossref\', StyString(\'REFERENCE\', \'crossref\', [(1, 2, 1, 9)])); ');
 
   doesCompileReference('ENTRY_STRING', 'example', 'lookupEntryString($context, \'example\', StyString(\'REFERENCE\', \'example\', [(1, 2, 1, 9)])); ');
   doesCompileReference('BUILTIN_ENTRY_STRING', 'sort.key$', 'lookupEntryString($context, \'sort.key$\', StyString(\'REFERENCE\', \'sort.key$\', [(1, 2, 1, 9)])); ');
@@ -72,8 +75,8 @@ subtest "compileLiteral" => sub {
   doesCompileLiteral('GLOBAL_INTEGER', 'example', 'pushGlobalInteger($context, \'example\', StyString(\'LITERAL\', \'example\', [(1, 2, 1, 9)])); ');
   doesCompileLiteral('BUILTIN_GLOBAL_INTEGER', 'entry.max$', 'pushGlobalInteger($context, \'entry.max$\', StyString(\'LITERAL\', \'entry.max$\', [(1, 2, 1, 9)])); ');
 
-  doesCompileLiteral('ENTRY_FIELD', 'example', 'lookupEntryField($context, \'example\', StyString(\'LITERAL\', \'example\', [(1, 2, 1, 9)])); ');
-  doesCompileLiteral('BUILTIN_ENTRY_FIELD', 'crossref', 'lookupEntryField($context, \'crossref\', StyString(\'LITERAL\', \'crossref\', [(1, 2, 1, 9)])); ');
+  doesCompileLiteral('ENTRY_FIELD', 'example', 'pushEntryField($context, \'example\', StyString(\'LITERAL\', \'example\', [(1, 2, 1, 9)])); ');
+  doesCompileLiteral('BUILTIN_ENTRY_FIELD', 'crossref', 'pushEntryField($context, \'crossref\', StyString(\'LITERAL\', \'crossref\', [(1, 2, 1, 9)])); ');
 
   doesCompileLiteral('ENTRY_STRING', 'example', 'pushEntryString($context, \'example\', StyString(\'LITERAL\', \'example\', [(1, 2, 1, 9)])); ');
   doesCompileLiteral('BUILTIN_ENTRY_STRING', 'sort.key$', 'pushEntryString($context, \'sort.key$\', StyString(\'LITERAL\', \'sort.key$\', [(1, 2, 1, 9)])); ');

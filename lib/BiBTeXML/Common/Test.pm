@@ -19,7 +19,7 @@ use File::Spec;
 
 use base qw(Exporter);
 our @EXPORT = (
-  qw( &fixture &slurp &isResult ),
+  qw( &fixture &slurp &puts &isResult ),
   qw( &makeStringReader &makeFixtureReader ),
   qw( &measureBegin &measureEnd ),
 );
