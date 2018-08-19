@@ -104,17 +104,26 @@ sub escapeBstInlineBlock {
   return $code;
 }
 
-# bstFunctionDefinition($name, $sourceString, $body, $outerIndent, $innerIndent) - escapes the definition to a bst function
-# - $name:          the (escaped) name of the bst function to define
+# bstFunctionDefinition($name, $name, $sourceString, $body, $outerIndent, $innerIndent) - escapes the definition to a bst function
+# - $name:          the (unescaped) name of the bst function to define
 # - $sourceString:  the StyString this function was defined from
 # - $body:          the (compiled) body of the function to define
 # - $outerIndent:   the (generated) outer indent, for use in multi-line outputs
 # - $innerIndent:   the (generated) inner indent, for use in multi-line outputs
 sub bstFunctionDefinition {
   my ($class, $name, $sourceString, $body, $outerIndent, $innerIndent) = @_;
-  my $code = "sub $name { \n";
+  my $code = "sub " . $class->escapeFunctionName($name) . " { \n";
   $code .= $innerIndent . 'my ($context) = @_; ' . "\n";    # TODO: Fix indent
-  $code .= $body . $outerIndent . '}';
+  $code .= $body . $outerIndent . "} \n";
+  # perl-specific runtime-call
+  $code .= $outerInden . $class->runtimeFunctionCall(
+    'registerFunctionDefinition', 
+    $sourceString, 
+    $class->escapeString($name), 
+    $class->escapeBstFunctionReference(
+      $class->escapeFunctionName($name)
+    )
+  ) . "; ";
   return $code;
 }
 

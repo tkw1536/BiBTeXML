@@ -226,7 +226,7 @@ sub compileFunction {
   return $body, $error if defined($error);
 
   $body = $target->bstFunctionDefinition(
-    $target->escapeFunctionName($name->getValue),
+    $name->getValue,
     $function, $body,
     $target->makeIndent($indent),
     $target->makeIndent($indent + 1)
