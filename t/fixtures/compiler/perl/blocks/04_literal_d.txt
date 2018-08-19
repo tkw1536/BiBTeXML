@@ -1,0 +1,1 @@
+pushGlobalInteger($context, 'entry.max$', StyString('LITERAL', 'entry.max$', [(1, 2, 1, 9)])); 

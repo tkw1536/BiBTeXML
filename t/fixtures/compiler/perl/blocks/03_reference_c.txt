@@ -1,0 +1,1 @@
+lookupGlobalInteger($context, 'example', StyString('REFERENCE', 'example', [(1, 2, 1, 9)])); 

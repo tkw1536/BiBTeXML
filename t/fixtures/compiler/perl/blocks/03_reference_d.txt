@@ -1,0 +1,1 @@
+lookupGlobalInteger($context, 'entry.max$', StyString('REFERENCE', 'entry.max$', [(1, 2, 1, 9)])); 

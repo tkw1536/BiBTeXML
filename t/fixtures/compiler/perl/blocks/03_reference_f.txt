@@ -1,0 +1,1 @@
+lookupEntryField($context, 'crossref', StyString('REFERENCE', 'crossref', [(1, 2, 1, 9)])); 

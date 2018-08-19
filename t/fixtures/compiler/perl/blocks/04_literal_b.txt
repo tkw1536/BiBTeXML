@@ -1,0 +1,1 @@
+pushGlobalString($context, 'example', StyString('LITERAL', 'example', [(1, 2, 1, 9)])); 
