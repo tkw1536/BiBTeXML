@@ -22,6 +22,7 @@ WriteMakefile(NAME => 'Bi',
   PREREQ_PM => {
     'Test::More'     => 0,
   },
+  EXE_FILES => ['bin/bibtexmlc'],
   # link to  github location to newer MakeMaker
   (eval { ExtUtils::MakeMaker->VERSION(6.46) } ? (META_MERGE => {
    'meta-spec' => { version => 2 },
