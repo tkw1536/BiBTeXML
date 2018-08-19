@@ -21,7 +21,7 @@ our @EXPORT = (
   qw(&callReadEntries &callSortEntries),
   qw(&callIterateFunction &callIterateBuiltin),
   qw(&callReverseFunction &callReverseBuiltin),
-  qw(&callPushFunctionStart &callPushFunctionEnd &callPopValue),
+  qw(&callPushFunction &callPopValue),
   qw(&callPushGlobalString &callPushGlobalInteger &callPushEntryField &callPushEntryString &callPushEntryInteger &callCallFunction &callCallBuiltin),
   qw(&callLookupGlobalString &callLookupGlobalInteger &callLookupEntryField &callLookupEntryString &callLookupEntryInteger &callLookupFunction &callLookupBuiltin),
   qw(&callPushString &callPushInteger),
@@ -99,13 +99,9 @@ sub callReverseBuiltin {
 
 ### block
 
-sub callPushFunctionStart {
-  return 'pushFunction($context, ';
-}
-
-sub callPushFunctionEnd {
-  my ($styString) = @_;
-  return ', ' . $styString->stringify . '); ';
+sub callPushFunction {
+  my ($styString, $function) = @_;
+  return callRuntimeFunction('pushFunction', $function, $styString);
 }
 
 sub callPopValue {

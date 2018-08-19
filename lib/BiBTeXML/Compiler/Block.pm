@@ -1,6 +1,6 @@
 # /=====================================================================\ #
 # |  BiBTeXML::Compiler::Block                                          | #
-# | .bst -> perl compile block implementation                           | #
+# | .bst compile block implementation                                   | #
 # |=====================================================================| #
 # | Part of BibTeXML                                                    | #
 # |---------------------------------------------------------------------| #
@@ -113,7 +113,7 @@ sub compileInlineBlock {
   my ($body, $error) = compileBlockBody($block, $indent, undef, %context);
   return $body, $error if defined($error);
 
-  return makeIndent($indent) . callPushFunctionStart($block) . $body . callPushFunctionEnd($block) . "\n";
+  return makeIndent($indent) . callPushFunction($block, $body) . "\n";
 }
 
 # compiles the body of a block
