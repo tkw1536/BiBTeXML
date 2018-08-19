@@ -107,7 +107,7 @@ sub compileCommand {
   } elsif ($name eq 'SORT') { return compileSort($target, $command, $indent, %context);
 
   } elsif ($name eq 'ITERATE') { return compileIterate($target, $command, $indent, %context);
-  } elsif ($name eq 'REVERSE') { return compileIterate($target, $command, $indent, %context);
+  } elsif ($name eq 'REVERSE') { return compileReverse($target, $command, $indent, %context);
 
   } else {
     return undef, "Unknown command $name" . $command->getLocationString;
