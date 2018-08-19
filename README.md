@@ -80,6 +80,14 @@ bibtexmlc plain.bst --destination plain.bst.pl
 
 (Work in progress)
 
+
+### See also
+
+For documentation on BiBTeX Style Files, the following resources are helpful:
+
+* [Tame the BeaST](http://mirrors.ctan.org/info/bibtex/tamethebeast/ttb_en.pdf) -- in particular sections 3 + 4
+* [Designing BIBTEX Styles](http://mirrors.ctan.org/biblio/bibtex/base/btxhak.pdf) -- a.k.a `texdoc btxhak`
+
 ## LICENSE
 
 BiBTeXML is free software and released into the public domain according to CC0, see also [LICENSE](LICENSE). 

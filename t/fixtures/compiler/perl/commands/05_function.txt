@@ -1,23 +1,23 @@
-sub bst__chop_o_word { 
+sub bst__chopZoword { 
   my ($context) = @_; 
   lookupGlobalString($context, 's', StyString('REFERENCE', 's', [(2, 2, 2, 4)])); 
-  builtin___co__eq_($context, StyString('LITERAL', ':=', [(2, 5, 2, 7)])); 
+  builtin__ZcZe($context, StyString('LITERAL', ':=', [(2, 5, 2, 7)])); 
   lookupGlobalInteger($context, 'len', StyString('REFERENCE', 'len', [(3, 2, 3, 6)])); 
-  builtin___co__eq_($context, StyString('LITERAL', ':=', [(3, 7, 3, 9)])); 
+  builtin__ZcZe($context, StyString('LITERAL', ':=', [(3, 7, 3, 9)])); 
   pushGlobalString($context, 's', StyString('LITERAL', 's', [(4, 2, 4, 3)])); 
   pushInteger($context, 1, StyString('NUMBER', 1, [(4, 4, 4, 6)])); 
   pushGlobalInteger($context, 'len', StyString('LITERAL', 'len', [(4, 7, 4, 10)])); 
-  builtin__substring_S_($context, StyString('LITERAL', 'substring$', [(4, 11, 4, 21)])); 
-  builtin___eq_($context, StyString('LITERAL', '=', [(4, 22, 4, 23)])); 
+  builtin__substringZs($context, StyString('LITERAL', 'substring$', [(4, 11, 4, 21)])); 
+  builtin__Ze($context, StyString('LITERAL', '=', [(4, 22, 4, 23)])); 
   pushFunction($context, sub { 
     my ($context) = @_; 
     pushGlobalString($context, 's', StyString('LITERAL', 's', [(5, 6, 5, 7)])); 
     pushGlobalInteger($context, 'len', StyString('LITERAL', 'len', [(5, 8, 5, 11)])); 
     pushInteger($context, 1, StyString('NUMBER', 1, [(5, 12, 5, 14)])); 
-    builtin___pl_($context, StyString('LITERAL', '+', [(5, 15, 5, 16)])); 
+    builtin__Zp($context, StyString('LITERAL', '+', [(5, 15, 5, 16)])); 
     pushGlobalInteger($context, 'global.max$', StyString('LITERAL', 'global.max$', [(5, 17, 5, 28)])); 
-    builtin__substring_S_($context, StyString('LITERAL', 'substring$', [(5, 29, 5, 39)])); 
+    builtin__substringZs($context, StyString('LITERAL', 'substring$', [(5, 29, 5, 39)])); 
   }, StyString('BLOCK', [(StyString('LITERAL', 's', [(5, 6, 5, 7)]), StyString('LITERAL', 'len', [(5, 8, 5, 11)]), StyString('NUMBER', 1, [(5, 12, 5, 14)]), StyString('LITERAL', '+', [(5, 15, 5, 16)]), StyString('LITERAL', 'global.max$', [(5, 17, 5, 28)]), StyString('LITERAL', 'substring$', [(5, 29, 5, 39)]))], [(5, 4, 5, 41)])); 
   lookupGlobalString($context, 's', StyString('REFERENCE', 's', [(6, 4, 6, 6)])); 
-  builtin__if_S_($context, StyString('LITERAL', 'if$', [(7, 2, 7, 5)])); 
+  builtin__ifZs($context, StyString('LITERAL', 'if$', [(7, 2, 7, 5)])); 
 }
