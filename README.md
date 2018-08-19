@@ -4,11 +4,11 @@
 
 __Still a work in progress__
 
-BiBTeXML is a pure-perl efficient parser and interpreter for [BibTeX](http://www.bibtex.org) `.bib` and `.bst` files. 
+BiBTeXML is a pure-perl efficient parser, compiler and interpreter for [BibTeX](http://www.bibtex.org) `.bib` and `.bst` files. 
 
 As such it can:
 * read BibTeX `.bib` bibliography files
-* interpret BibTeX `.bst` bibliography files
+* compile BibTeX `.bst` bibliography style files into perl
 * output BiBTeX `.bbl` in a machine-readable format, maintaining source references of substrings
 
 
@@ -32,10 +32,12 @@ make install
 
 BiBTeXML is split into (roughly) four components:
 
-* [`BiBTeXML::Bibliography`](lib/BiBTeXML/Bibliography/) - a parser for `.bib` files
 * [`BiBTeXML::BibStyle`](lib/BiBTeXML/BibStyle/) - a parser for `.bst` files
-* [`BiBTeXML::Compiler`](lib/BiBTeXML/Compiler/) - a compiler for `.bst` files into perl
-* [`BiBTeXML::Runtime`](lib/BiBTeXML/Runtime/) - a runtime for the compiler-generated code (__work in progress__)
+* [`BiBTeXML::Compiler`](lib/BiBTeXML/Compiler/) - a compiler for `.bst` files into perl (and possibly other languages)
+
+* [`BiBTeXML::Bibliography`](lib/BiBTeXML/Bibliography/) - a parser for `.bib` files
+* [`BiBTeXML::Runtime`](lib/BiBTeXML/Runtime/) - a perl runtime for the compiler-generated code (__work in progress__)
+
 
 ## LICENSE
 

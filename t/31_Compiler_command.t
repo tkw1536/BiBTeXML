@@ -2,17 +2,18 @@ use BiBTeXML::Common::Test;
 use Test::More tests => 11;
 
 subtest "requirements" => sub {
-  plan tests => 2;
+  plan tests => 3;
 
   use_ok("BiBTeXML::BibStyle");
   use_ok("BiBTeXML::Compiler");
+  use_ok("BiBTeXML::Compiler::Target::Perl");
 };
 
 subtest "compileEntry" => sub {
   plan tests => 1;
 
   my $entry = StyCommand(StyString('LITERAL', 'ENTRY', [(0, 0, 1, 5)]), [(StyString('BLOCK', [(StyString('LITERAL', 'a', [(2, 4, 2, 5)]), StyString('LITERAL', 'b', [(2, 6, 2, 7)]), StyString('LITERAL', 'c', [(2, 8, 2, 9)]))], [(2, 2, 2, 11)]), StyString('BLOCK', [(StyString('LITERAL', 'd', [(3, 4, 3, 5)]), StyString('LITERAL', 'e', [(3, 6, 3, 7)]))], [(3, 2, 3, 9)]), StyString('BLOCK', [(StyString('LITERAL', 'f', [(4, 4, 4, 5)]))], [(4, 2, 4, 7)]))], [(0, 0, 4, 7)]);
-  my ($result) = compileEntry($entry, 0);
+  my ($result) = compileEntry(BiBTeXML::Compiler::Target::Perl, $entry, 0);
   is($result, slurp(fixture(__FILE__, "compiler", "entry.txt")), "entry");
 };
 
@@ -20,7 +21,7 @@ subtest "compileStrings" => sub {
   plan tests => 1;
 
   my $strings = StyCommand(StyString('LITERAL', 'STRINGS', [(0, 0, 1, 7)]), [(StyString('BLOCK', [(StyString('LITERAL', 'a', [(2, 4, 2, 5)]), StyString('LITERAL', 'b', [(2, 6, 2, 7)]), StyString('LITERAL', 'c', [(2, 8, 2, 9)]), StyString('LITERAL', 'd', [(2, 10, 2, 11)]), StyString('LITERAL', 'e', [(2, 12, 2, 13)]), StyString('LITERAL', 'f', [(2, 14, 2, 15)]))], [(2, 2, 2, 17)]))], [(0, 0, 2, 17)]);
-  my ($result) = compileStrings($strings, 0);
+  my ($result) = compileStrings(BiBTeXML::Compiler::Target::Perl, $strings, 0);
   is($result, slurp(fixture(__FILE__, "compiler", "strings.txt")), "strings");
 };
 
@@ -28,7 +29,7 @@ subtest "compileIntegers" => sub {
   plan tests => 1;
 
   my $integers = StyCommand(StyString('LITERAL', 'INTEGERS', [(0, 0, 1, 8)]), [(StyString('BLOCK', [(StyString('LITERAL', 'a', [(2, 4, 2, 5)]), StyString('LITERAL', 'b', [(2, 6, 2, 7)]), StyString('LITERAL', 'c', [(2, 8, 2, 9)]), StyString('LITERAL', 'd', [(2, 10, 2, 11)]), StyString('LITERAL', 'e', [(2, 12, 2, 13)]), StyString('LITERAL', 'f', [(2, 14, 2, 15)]))], [(2, 2, 2, 17)]))], [(0, 0, 2, 17)]);
-  my ($result) = compileIntegers($integers, 0);
+  my ($result) = compileIntegers(BiBTeXML::Compiler::Target::Perl, $integers, 0);
   is($result, slurp(fixture(__FILE__, "compiler", "integers.txt")), "integers");
 };
 
@@ -36,7 +37,7 @@ subtest "compileMacro" => sub {
   plan tests => 1;
 
   my $integers = StyCommand(StyString('LITERAL', 'MACRO', [(0, 0, 1, 5)]), [(StyString('BLOCK', [(StyString('LITERAL', 'jan', [(1, 7, 1, 10)]))], [(1, 6, 1, 11)]), StyString('BLOCK', [(StyString('QUOTE', 'January', [(1, 13, 1, 22)]))], [(1, 12, 1, 23)]))], [(0, 0, 1, 23)]);
-  my ($result) = compileMacro($integers, 0);
+  my ($result) = compileMacro(BiBTeXML::Compiler::Target::Perl, $integers, 0);
   is($result, slurp(fixture(__FILE__, "compiler", "macro.txt")), "macro");
 };
 
@@ -55,7 +56,7 @@ subtest "compileFunction" => sub {
     'if$'         => 'BUILTIN_FUNCTION'
   );
 
-  my ($result, $error) = compileFunction($function, 0, %context);
+  my ($result, $error) = compileFunction(BiBTeXML::Compiler::Target::Perl, $function, 0, %context);
   is($result, slurp(fixture(__FILE__, "compiler", "function.txt")), "function");
 };
 
@@ -64,10 +65,10 @@ subtest "compileExecute" => sub {
 
   my $execute = StyCommand(StyString('LITERAL', 'EXECUTE', [(0, 0, 1, 7)]), [(StyString('BLOCK', [(StyString('LITERAL', 'example', [(1, 9, 1, 16)]))], [(1, 8, 1, 17)]))], [(0, 0, 1, 17)]);
 
-  my ($userResult) = compileExecute($execute, 0, 'example' => 'FUNCTION');
+  my ($userResult) = compileExecute(BiBTeXML::Compiler::Target::Perl, $execute, 0, 'example' => 'FUNCTION');
   is($userResult, slurp(fixture(__FILE__, "compiler", "execute_user.txt")), "user-defined function");
 
-  my ($builtinResult) = compileExecute($execute, 0, 'example' => 'BUILTIN_FUNCTION');
+  my ($builtinResult) = compileExecute(BiBTeXML::Compiler::Target::Perl, $execute, 0, 'example' => 'BUILTIN_FUNCTION');
   is($builtinResult, slurp(fixture(__FILE__, "compiler", "execute_builtin.txt")), "builtin function");
 };
 
@@ -75,7 +76,7 @@ subtest "compileRead" => sub {
   plan tests => 1;
 
   my $read = StyCommand(StyString('LITERAL', 'READ', [(0, 0, 1, 4)]), [()], [(0, 0, 1, 4)]);
-  my ($result) = compileRead($read, 0);
+  my ($result) = compileRead(BiBTeXML::Compiler::Target::Perl, $read, 0);
   is($result, slurp(fixture(__FILE__, "compiler", "read.txt")), "read");
 };
 
@@ -83,7 +84,7 @@ subtest "compileSort" => sub {
   plan tests => 1;
 
   my $sort = StyCommand(StyString('LITERAL', 'SORT', [(0, 0, 1, 4)]), [()], [(0, 0, 1, 4)]);
-  my ($result, $error) = compileSort($sort, 0);
+  my ($result, $error) = compileSort(BiBTeXML::Compiler::Target::Perl, $sort, 0);
   is($result, slurp(fixture(__FILE__, "compiler", "sort.txt")), "sort");
 };
 
@@ -92,10 +93,10 @@ subtest "compileIterate" => sub {
 
   my $iterate = StyCommand(StyString('LITERAL', 'ITERATE', [(0, 0, 1, 7)]), [(StyString('BLOCK', [(StyString('LITERAL', 'example', [(1, 9, 1, 16)]))], [(1, 8, 1, 17)]))], [(0, 0, 1, 17)]);
 
-  my ($userResult) = compileIterate($iterate, 0, 'example' => 'FUNCTION');
+  my ($userResult) = compileIterate(BiBTeXML::Compiler::Target::Perl, $iterate, 0, 'example' => 'FUNCTION');
   is($userResult, slurp(fixture(__FILE__, "compiler", "iterate_user.txt")), "user-defined function");
 
-  my ($builtinResult) = compileIterate($iterate, 0, 'example' => 'BUILTIN_FUNCTION');
+  my ($builtinResult) = compileIterate(BiBTeXML::Compiler::Target::Perl, $iterate, 0, 'example' => 'BUILTIN_FUNCTION');
   is($builtinResult, slurp(fixture(__FILE__, "compiler", "iterate_builtin.txt")), "builtin function");
 };
 
@@ -104,10 +105,10 @@ subtest "compileReverse" => sub {
 
   my $reverse = StyCommand(StyString('LITERAL', 'REVERSE', [(0, 0, 1, 7)]), [(StyString('BLOCK', [(StyString('LITERAL', 'example', [(1, 9, 1, 16)]))], [(1, 8, 1, 17)]))], [(0, 0, 1, 17)]);
 
-  my ($userResult) = compileReverse($reverse, 0, 'example' => 'FUNCTION');
+  my ($userResult) = compileReverse(BiBTeXML::Compiler::Target::Perl, $reverse, 0, 'example' => 'FUNCTION');
   is($userResult, slurp(fixture(__FILE__, "compiler", "reverse_user.txt")), "user-defined function");
 
-  my ($builtinResult) = compileReverse($reverse, 0, 'example' => 'BUILTIN_FUNCTION');
+  my ($builtinResult) = compileReverse(BiBTeXML::Compiler::Target::Perl, $reverse, 0, 'example' => 'BUILTIN_FUNCTION');
   is($builtinResult, slurp(fixture(__FILE__, "compiler", "reverse_builtin.txt")), "builtin function");
 };
 

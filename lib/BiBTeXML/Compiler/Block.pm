@@ -11,7 +11,6 @@ package BiBTeXML::Compiler::Block;
 use strict;
 use warnings;
 
-use BiBTeXML::Compiler::Utils;
 use BiBTeXML::Compiler::Calls;
 
 use base qw(Exporter);
@@ -24,7 +23,7 @@ our @EXPORT = (
 );
 
 sub compileInstruction {
-  my ($instruction) = @_;
+  my ($target, $instruction) = @_;
 
   my $type = $instruction->getKind;
   if ($type eq 'LITERAL') {
@@ -44,7 +43,7 @@ sub compileInstruction {
 
 # compiles a single literal
 sub compileLiteral {
-  my ($variable, $indent, %context) = @_;
+  my ($target, $variable, $indent, %context) = @_;
   return undef, 'Expected a LITERAL ' . $variable->getLocationString unless $variable->getKind eq 'LITERAL';
 
   # lookup type of variable
@@ -54,28 +53,28 @@ sub compileLiteral {
 
   my $result;
   if ($type eq 'GLOBAL_STRING' or $type eq 'BUILTIN_GLOBAL_STRING') {
-    $result = callPushGlobalString($variable);
+    $result = callPushGlobalString($target, $variable);
   } elsif ($type eq 'GLOBAL_INTEGER' or $type eq 'BUILTIN_GLOBAL_INTEGER') {
-    $result = callPushGlobalInteger($variable);
+    $result = callPushGlobalInteger($target, $variable);
   } elsif ($type eq 'ENTRY_FIELD' or $type eq 'BUILTIN_ENTRY_FIELD') {
-    $result = callPushEntryField($variable);
+    $result = callPushEntryField($target, $variable);
   } elsif ($type eq 'ENTRY_STRING' or $type eq 'BUILTIN_ENTRY_STRING') {
-    $result = callPushEntryString($variable);
+    $result = callPushEntryString($target, $variable);
   } elsif ($type eq 'ENTRY_INTEGER' or $type eq 'BUILTIN_ENTRY_INTEGER') {
-    $result = callPushEntryInteger($variable);
+    $result = callPushEntryInteger($target, $variable);
   } elsif ($type eq 'FUNCTION') {
-    $result .= callCallFunction($variable);
+    $result .= callCallFunction($target, $variable);
   } elsif ($type eq 'BUILTIN_FUNCTION') {
-    $result .= callCallBuiltin($variable);
+    $result .= callCallBuiltin($target, $variable);
   } else {
     return undef, "Attempted to resolve " . $name . " of type $type in literal " . $variable->getLocationString;
   }
-  return makeIndent($indent) . $result . "\n";
+  return $target->makeIndent($indent) . $result . "\n";
 }
 
 # compiles a single reference
 sub compileReference {
-  my ($reference, $indent, %context) = @_;
+  my ($target, $reference, $indent, %context) = @_;
   return undef, 'Expected a REFERENCE ' . $reference->getLocationString unless $reference->getKind eq 'REFERENCE';
 
   # lookup type of variable
@@ -85,73 +84,71 @@ sub compileReference {
 
   my $result;
   if ($type eq 'GLOBAL_STRING' or $type eq 'BUILTIN_GLOBAL_STRING') {
-    $result = callLookupGlobalString($reference);
+    $result = callLookupGlobalString($target, $reference);
   } elsif ($type eq 'GLOBAL_INTEGER' or $type eq 'BUILTIN_GLOBAL_INTEGER') {
-    $result = callLookupGlobalInteger($reference);
+    $result = callLookupGlobalInteger($target, $reference);
   } elsif ($type eq 'ENTRY_STRING' or $type eq 'BUILTIN_ENTRY_STRING') {
-    $result = callLookupEntryString($reference);
+    $result = callLookupEntryString($target, $reference);
   } elsif ($type eq 'ENTRY_FIELD' or $type eq 'BUILTIN_ENTRY_FIELD') {
-    $result = callLookupEntryField($reference);
+    $result = callLookupEntryField($target, $reference);
   } elsif ($type eq 'ENTRY_INTEGER' or $type eq 'BUILTIN_ENTRY_INTEGER') {
-    $result = callLookupEntryInteger($reference);
+    $result = callLookupEntryInteger($target, $reference);
   } elsif ($type eq 'FUNCTION') {
-    $result .= callLookupFunction($reference);
+    $result .= callLookupFunction($target, $reference);
   } elsif ($type eq 'BUILTIN_FUNCTION') {
-    $result .= callLookupBuiltin($reference);
+    $result .= callLookupBuiltin($target, $reference);
   } else {
     return undef, "Attempted to reference " . $name . " of type $type in reference " . $reference->getLocationString;
   }
 
-  return makeIndent($indent) . $result . "\n";
+  return $target->makeIndent($indent) . $result . "\n";
 }
 
 # compiles a single inline block
 sub compileInlineBlock {
-  my ($block, $indent, %context) = @_;
+  my ($target, $block, $indent, %context) = @_;
   return undef, 'Expected a BLOCK ' . $block->getLocationString unless $block->getKind eq 'BLOCK';
 
-  my ($body, $error) = compileBlockBody($block, $indent, undef, %context);
+  # compile the inline body instruction-per-instruction
+  my ($body, $error) = compileBlockBody($target, $block, $indent, %context);
   return $body, $error if defined($error);
 
-  return makeIndent($indent) . callPushFunction($block, $body) . "\n";
+  # wrap it in an appropriate definition
+  $body = $target->escapeBstInlineBlock($body, $block, $target->makeIndent($indent), $target->makeIndent($indent + 1));
+
+  return $target->makeIndent($indent) . callPushFunction($target, $block, $body) . "\n";
 }
 
 # compiles the body of a block
 sub compileBlockBody {
-  my ($block, $indent, $name, %context) = @_;
+  my ($target, $block, $indent, %context) = @_;
   return undef, 'Expected a BLOCK ' . $block->getLocationString unless $block->getKind eq 'BLOCK';
 
-  # start a new sub and read the context
-  my $buffer = "sub " . (defined($name) ? escapeFunctionName($name) . ' ' : '') . "{ \n";
-  $buffer .= makeIndent($indent + 1) . 'my ($context) = @_; ' . "\n";
-
-  # compile all the instructions
+  my $body         = '';
   my @instructions = @{ $block->getValue };
   my ($compilation, $compilationError);
   foreach my $instruction (@instructions) {
-    ($compilation, $compilationError) = compileInstruction($instruction, $indent + 1, %context);
+    ($compilation, $compilationError) = compileInstruction($target, $instruction, $indent + 1, %context);
     return $compilation, $compilationError unless defined($compilation);
-    $buffer .= $compilation;
+    $body .= $compilation;
   }
 
-  # close the sub
-  $buffer .= makeIndent($indent) . "}";
-  return $buffer;
+  return $body;
 }
 
 # compile a single quote
 sub compileQuote {
-  my ($quote, $indent) = @_;
+  my ($target, $quote, $indent) = @_;
   return undef, 'Expected a QUOTE ' . $quote->getLocationString unless $quote->getKind eq 'QUOTE';
 
-  return makeIndent($indent) . callPushString($quote) . "\n";
+  return $target->makeIndent($indent) . callPushString($target, $quote) . "\n";
 }
 
 # compiles a single number
 sub compileInteger {
-  my ($number, $indent) = @_;
+  my ($target, $number, $indent) = @_;
   return undef, 'Expected a NUMBER ' . $number->getLocationString unless $number->getKind eq 'NUMBER';
-  return makeIndent($indent) . callPushInteger($number) . "\n";
+  return $target->makeIndent($indent) . callPushInteger($target, $number) . "\n";
 }
 
 1;

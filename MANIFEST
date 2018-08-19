@@ -41,7 +41,8 @@ lib/BiBTeXML/Compiler.pm
 lib/BiBTeXML/Compiler/Block.pm
 lib/BiBTeXML/Compiler/Calls.pm
 lib/BiBTeXML/Compiler/Program.pm
-lib/BiBTeXML/Compiler/Utils.pm
+lib/BiBTeXML/Compiler/Target.pm
+lib/BiBTeXML/Compiler/Target/Perl.pm
 
 #==================================================
 # Test Suite.

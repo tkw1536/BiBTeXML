@@ -2,10 +2,11 @@ use BiBTeXML::Common::Test;
 use Test::More tests => 6;
 
 subtest "requirements" => sub {
-  plan tests => 2;
+  plan tests => 3;
 
   use_ok("BiBTeXML::BibStyle");
   use_ok("BiBTeXML::Compiler");
+  use_ok("BiBTeXML::Compiler::Target::Perl");
 };
 
 subtest "compileInteger" => sub {
@@ -16,7 +17,7 @@ subtest "compileInteger" => sub {
 
   sub doesCompileInteger {
     my ($name, $integer, @compilation) = @_;
-    my ($result) = compileInteger($integer, 0);
+    my ($result) = compileInteger(BiBTeXML::Compiler::Target::Perl, $integer, 0);
     is($result, join("\n", @compilation) . "\n", $name);
   }
 };
@@ -29,7 +30,7 @@ subtest "compileQuote" => sub {
 
   sub doesCompileQuote {
     my ($name, $quote, @compilation) = @_;
-    my ($result, $error) = compileQuote($quote, 0);
+    my ($result, $error) = compileQuote(BiBTeXML::Compiler::Target::Perl, $quote, 0);
     is($result, join("\n", @compilation) . "\n", $name);
   }
 };
@@ -60,7 +61,7 @@ subtest "compileVariable" => sub {
     my $reference = StyString('REFERENCE', $value, [(1, 2, 1, 9)]);
     my %context = ($value => $type);
 
-    my ($result, $error) = compileReference($reference, 0, %context);
+    my ($result, $error) = compileReference(BiBTeXML::Compiler::Target::Perl, $reference, 0, %context);
 
     is($result, join("\n", @compilation) . "\n", $type);
   }
@@ -92,7 +93,7 @@ subtest "compileLiteral" => sub {
     my $reference = StyString('LITERAL', $value, [(1, 2, 1, 9)]);
     my %context = ($value => $type);
 
-    my ($result, $error) = compileLiteral($reference, 0, %context);
+    my ($result, $error) = compileLiteral(BiBTeXML::Compiler::Target::Perl, $reference, 0, %context);
 
     is($result, join("\n", @compilation) . "\n", $type);
   }
@@ -106,7 +107,7 @@ subtest "compileInlineBlock" => sub {
 
   sub doesCompileInlineBlock {
     my ($name, $path, $block) = @_;
-    my ($result) = compileInlineBlock($block, 0);
+    my ($result) = compileInlineBlock(BiBTeXML::Compiler::Target::Perl, $block, 0);
     is($result, slurp(fixture(__FILE__, "compiler", $path)), $name);
   }
 };

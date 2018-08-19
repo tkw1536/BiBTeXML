@@ -11,8 +11,6 @@ package BiBTeXML::Compiler::Calls;
 use strict;
 use warnings;
 
-use BiBTeXML::Compiler::Utils;
-
 use base qw(Exporter);
 our @EXPORT = (
   qw(&callDefineEntryField &callDefineEntryInteger &callDefineEntryString),
@@ -21,7 +19,7 @@ our @EXPORT = (
   qw(&callReadEntries &callSortEntries),
   qw(&callIterateFunction &callIterateBuiltin),
   qw(&callReverseFunction &callReverseBuiltin),
-  qw(&callPushFunction &callPopValue),
+  qw(&callPushFunction),
   qw(&callPushGlobalString &callPushGlobalInteger &callPushEntryField &callPushEntryString &callPushEntryInteger &callCallFunction &callCallBuiltin),
   qw(&callLookupGlobalString &callLookupGlobalInteger &callLookupEntryField &callLookupEntryString &callLookupEntryInteger &callLookupFunction &callLookupBuiltin),
   qw(&callPushString &callPushInteger),
@@ -30,176 +28,289 @@ our @EXPORT = (
 ### entry
 
 sub callDefineEntryField {
-  my ($styString) = @_;
-  return callRuntimeFunction('defineEntryField', escapeString(lc $styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'defineEntryField',
+    $styString,
+    $target->escapeString(lc $styString->getValue)
+  );
 }
 
 sub callDefineEntryInteger {
-  my ($styString) = @_;
-  return callRuntimeFunction('defineEntryInteger', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'defineEntryInteger',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callDefineEntryString {
-  my ($styString) = @_;
-  return callRuntimeFunction('defineEntryString', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'defineEntryString',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 ### strings
 
 sub callDefineGlobalString {
-  my ($styString) = @_;
-  return callRuntimeFunction('defineGlobalString', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'defineGlobalString',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callDefineGlobalInteger {
-  my ($styString) = @_;
-  return callRuntimeFunction('defineGlobalInteger', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'defineGlobalInteger',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callDefineMacro {
-  my ($name, $value) = @_;
-  return callRuntimeFunction('defineMacro', escapeString(lc $name->getValue), escapeString($value->getValue), $name);
+  my ($target, $name, $value) = @_;
+  return $target->runtimeFunctionCall(
+    'defineMacro',
+    $name,
+    $target->escapeString(lc $name->getValue),
+    $target->escapeString($value->getValue)
+  );
 }
 
 ### read && sort
 
 sub callReadEntries {
-  my ($styString) = @_;
-  return callRuntimeFunction('readEntries', $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'readEntries',
+    $styString
+  );
 }
 
 sub callSortEntries {
-  my ($styString) = @_;
-  return callRuntimeFunction('sortEntries', $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'sortEntries',
+    $styString
+  );
 }
 
 ### iterate
 
 sub callIterateFunction {
-  my ($styString) = @_;
-  return callRuntimeFunction('iterateFunction', '\\&' . escapeFunctionName($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'iterateFunction',
+    $styString,
+    $target->escapeBstFunctionReference(
+      $target->escapeFunctionName($styString->getValue)
+      )
+  );
 }
 
 sub callIterateBuiltin {
-  my ($styString) = @_;
-  return callRuntimeFunction('iterateFunction', '\\&' . escapeBuiltinName($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'iterateFunction',
+    $styString,
+    $target->escapeBstFunctionReference(
+      $target->escapeBuiltinName($styString->getValue)
+      )
+  );
 }
 
 ### iterate
 
 sub callReverseFunction {
-  my ($styString) = @_;
-  return callRuntimeFunction('reverseFunction', '\\&' . escapeFunctionName($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'reverseFunction',
+    $styString,
+    $target->escapeBstFunctionReference(
+      $target->escapeFunctionName($styString->getValue)
+      )
+  );
 }
 
 sub callReverseBuiltin {
-  my ($styString) = @_;
-  return callRuntimeFunction('reverseFunction', '\\&' . escapeBuiltinName($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'reverseFunction',
+    $styString,
+    $target->escapeBstFunctionReference(
+      $target->escapeBuiltinName($styString->getValue)
+      )
+  );
 }
 
 ### block
 
 sub callPushFunction {
-  my ($styString, $function) = @_;
-  return callRuntimeFunction('pushFunction', $function, $styString);
+  my ($target, $styString, $function) = @_;
+  return $target->runtimeFunctionCall(
+    'pushFunction',
+    $styString,
+    $function
+  );
 }
 
-sub callPopValue {
-  my ($context) = @_;
-  return callRuntimeFunction('popValue');
-}
 ### variables
 
 sub callPushGlobalString {
-  my ($styString) = @_;
-  return callRuntimeFunction('pushGlobalString', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'pushGlobalString',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callPushGlobalInteger {
-  my ($styString) = @_;
-  return callRuntimeFunction('pushGlobalInteger', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'pushGlobalInteger',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callPushEntryField {
-  my ($styString) = @_;
-  return callRuntimeFunction('pushEntryField', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'pushEntryField',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callPushEntryString {
-  my ($styString) = @_;
-  return callRuntimeFunction('pushEntryString', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'pushEntryString',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callPushEntryInteger {
-  my ($styString) = @_;
-  return callRuntimeFunction('pushEntryInteger', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'pushEntryInteger',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callCallFunction {
-  my ($styString) = @_;
-  return callRuntimeFunction(escapeFunctionName($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->bstFunctionCall(
+    $target->escapeFunctionName($styString->getValue),
+    $styString,
+  );
 }
 
 sub callCallBuiltin {
-  my ($styString) = @_;
-  return callRuntimeFunction(escapeBuiltinName($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->bstFunctionCall(
+    $target->escapeBuiltinName($styString->getValue),
+    $styString,
+  );
 }
 
 ### references
 
 sub callLookupGlobalString {
-  my ($styString) = @_;
-  return callRuntimeFunction('lookupGlobalString', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'lookupGlobalString',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callLookupGlobalInteger {
-  my ($styString) = @_;
-  return callRuntimeFunction('lookupGlobalInteger', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'lookupGlobalInteger',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callLookupEntryField {
-  my ($styString) = @_;
-  return callRuntimeFunction('lookupEntryField', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'lookupEntryField',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callLookupEntryString {
-  my ($styString) = @_;
-  return callRuntimeFunction('lookupEntryString', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'lookupEntryString',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callLookupEntryInteger {
-  my ($styString) = @_;
-  return callRuntimeFunction('lookupEntryInteger', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'lookupEntryInteger',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callLookupFunction {
-  my ($styString) = @_;
-  return callRuntimeFunction('lookupFunction', '\\&' . escapeFunctionName($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'lookupFunction',
+    $styString,
+    $target->escapeBstFunctionReference(
+      $target->escapeFunctionName($styString->getValue)
+      )
+  );
 }
 
 sub callLookupBuiltin {
-  my ($styString) = @_;
-  return callRuntimeFunction('lookupFunction', '\\&' . escapeBuiltinName($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'lookupFunction',
+    $styString,
+    $target->escapeBstFunctionReference(
+      $target->escapeBuiltinName($styString->getValue)
+      )
+  );
 }
 
 ### strings + integers
 
 sub callPushString {
-  my ($styString) = @_;
-  return callRuntimeFunction('pushString', escapeString($styString->getValue), $styString);
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'pushString',
+    $styString,
+    $target->escapeString($styString->getValue)
+  );
 }
 
 sub callPushInteger {
-  my ($styString) = @_;
-  return callRuntimeFunction('pushInteger', $styString->getValue, $styString);
-}
-
-#### internal implementation
-sub callRuntimeFunction {
-  my ($name, @arguments) = @_;
-  my @args = map { (ref $_) ? $_->stringify : $_ } @arguments;
-  my $call = join(", ", @args);
-  return "$name(\$context, " . $call . '); ';
+  my ($target, $styString) = @_;
+  return $target->runtimeFunctionCall(
+    'pushInteger',
+    $styString,
+    $target->escapeInteger($styString->getValue)
+  );
 }
 
 1;

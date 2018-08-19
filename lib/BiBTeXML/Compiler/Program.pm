@@ -11,7 +11,6 @@ package BiBTeXML::Compiler::Program;
 use strict;
 use warnings;
 
-use BiBTeXML::Compiler::Utils;
 use BiBTeXML::Compiler::Calls;
 use BiBTeXML::Compiler::Block;
 
@@ -25,13 +24,10 @@ our @EXPORT = (
 # Compiles a program from (parsed) .bst
 # into a string representing perl
 sub compileProgram {
-  my ($program) = @_;
+  my ($target, $program) = @_;
 
-  # add some header for the code to be compiled
-  my $code = "sub { \n";
-  $code .= makeIndent(1) . "# code automatically generated BiBTeXML \n";
-  $code .= makeIndent(1) . 'use BiBTeXML::Runtime; ' . "\n";
-  $code .= makeIndent(1) . 'my ($context) = @_; ' . "\n";
+  # to be compiled
+  my $code = '';
 
   ### Setup a context containing everything that can be declared
   my %context = (
@@ -84,40 +80,34 @@ sub compileProgram {
   # compile each of the commands
   my ($command, $result, $error);
   foreach $command (@$program) {
-    ($result, $error, %context) = compileCommand($command, 1, %context);
+    ($result, $error, %context) = compileCommand($target, $command, 1, %context);
     return $result, $error if defined($error);
     $code .= $result;
   }
 
-  # add a little bit of code at the bottom
-  $code .= "\n\n";
-  $code .= makeIndent(1) . 'return $context; ' . "\n";
-  $code .= makeIndent(1) . "# end of automatically generated code \n";
-  $code .= "}";
-  return $code;
-
+  return $target->wrapProgram($code);
 }
 
 # compiles a command in a given context
 # returns $command, $error, %context
 sub compileCommand {
-  my ($command, $indent, %context) = @_;
+  my ($target, $command, $indent, %context) = @_;
   my $name = $command->getName->getValue;
-  if ($name eq 'ENTRY') { return compileEntry($command, $indent, %context);
+  if ($name eq 'ENTRY') { return compileEntry($target, $command, $indent, %context);
 
-  } elsif ($name eq 'STRINGS') { return compileStrings($command, $indent, %context);
-  } elsif ($name eq 'INTEGERS') { return compileIntegers($command, $indent, %context);
+  } elsif ($name eq 'STRINGS') { return compileStrings($target, $command, $indent, %context);
+  } elsif ($name eq 'INTEGERS') { return compileIntegers($target, $command, $indent, %context);
 
-  } elsif ($name eq 'MACRO') { return compileMacro($command, $indent, %context);
-  } elsif ($name eq 'FUNCTION') { return compileFunction($command, $indent, %context);
+  } elsif ($name eq 'MACRO') { return compileMacro($target, $command, $indent, %context);
+  } elsif ($name eq 'FUNCTION') { return compileFunction($target, $command, $indent, %context);
 
-  } elsif ($name eq 'EXECUTE') { return compileExecute($command, $indent, %context);
+  } elsif ($name eq 'EXECUTE') { return compileExecute($target, $command, $indent, %context);
 
-  } elsif ($name eq 'READ') { return compileRead($command, $indent, %context);
-  } elsif ($name eq 'SORT') { return compileSort($command, $indent, %context);
+  } elsif ($name eq 'READ') { return compileRead($target, $command, $indent, %context);
+  } elsif ($name eq 'SORT') { return compileSort($target, $command, $indent, %context);
 
-  } elsif ($name eq 'ITERATE') { return compileIterate($command, $indent, %context);
-  } elsif ($name eq 'REVERSE') { return compileIterate($command, $indent, %context);
+  } elsif ($name eq 'ITERATE') { return compileIterate($target, $command, $indent, %context);
+  } elsif ($name eq 'REVERSE') { return compileIterate($target, $command, $indent, %context);
 
   } else {
     return undef, "Unknown command $name" . $command->getLocationString;
@@ -126,7 +116,7 @@ sub compileCommand {
 
 # compiles an ENTRY command
 sub compileEntry {
-  my ($entry, $indent, %context) = @_;
+  my ($target, $entry, $indent, %context) = @_;
   return undef, 'Expected an ENTRY ' . $entry->getLocationString unless $entry->getName->getValue eq 'ENTRY';
 
   my $result = '';
@@ -137,7 +127,7 @@ sub compileEntry {
   foreach $field (@{ $fields->getValue }) {
     $name = lc($field->getValue);
     return undef, 'unable to define entry field ' . $name . ' ' . $field->getLocationString if defined($context{$name});
-    $result .= makeIndent($indent) . callDefineEntryField($field) . "\n";
+    $result .= $target->makeIndent($indent) . callDefineEntryField($target, $field) . "\n";
     $context{$name} = 'ENTRY_FIELD';
   }
 
@@ -146,7 +136,7 @@ sub compileEntry {
   foreach $integer (@{ $integers->getValue }) {
     $name = $integer->getValue;
     return undef, 'unable to define entry integer ' . $name . ' ' . $integer->getLocationString if defined($context{$name});
-    $result .= makeIndent($indent) . callDefineEntryInteger($integer) . "\n";
+    $result .= $target->makeIndent($indent) . callDefineEntryInteger($target, $integer) . "\n";
     $context{$name} = 'ENTRY_INTEGER';
   }
 
@@ -155,7 +145,7 @@ sub compileEntry {
   foreach $string (@{ $strings->getValue }) {
     $name = $string->getValue;
     return undef, 'unable to define entry string ' . $name . ' ' . $string->getLocationString if defined($context{$name});
-    $result .= makeIndent($indent) . callDefineEntryString($string) . "\n";
+    $result .= $target->makeIndent($indent) . callDefineEntryString($target, $string) . "\n";
     $context{$name} = 'ENTRY_STRING';
   }
 
@@ -164,7 +154,7 @@ sub compileEntry {
 
 # compiles a STRINGS command
 sub compileStrings {
-  my ($strings, $indent, %context) = @_;
+  my ($target, $strings, $indent, %context) = @_;
   return undef, 'Expected a STRINGS ' . $strings->getLocationString unless $strings->getName->getValue eq 'STRINGS';
 
   my $result = '';
@@ -175,7 +165,7 @@ sub compileStrings {
   foreach $string (@{ $args->getValue }) {
     $name = $string->getValue;
     return undef, 'unable to define global string ' . $name . ' ' . $string->getLocationString if defined($context{$name});
-    $result .= makeIndent($indent) . callDefineGlobalString($string) . "\n";
+    $result .= $target->makeIndent($indent) . callDefineGlobalString($target, $string) . "\n";
     $context{$name} = 'GLOBAL_STRING';
   }
 
@@ -184,7 +174,7 @@ sub compileStrings {
 
 # compiles a INTEGERS command
 sub compileIntegers {
-  my ($integers, $indent, %context) = @_;
+  my ($target, $integers, $indent, %context) = @_;
   return undef, 'Expected a INTEGERS ' . $integers->getLocationString unless $integers->getName->getValue eq 'INTEGERS';
 
   my $result = '';
@@ -195,7 +185,7 @@ sub compileIntegers {
   foreach $integer (@{ $args->getValue }) {
     $name = $integer->getValue;
     return undef, 'unable to define global integer ' . $name . ' ' . $integer->getLocationString if defined($context{$name});
-    $result .= makeIndent($indent) . callDefineGlobalInteger($integer) . "\n";
+    $result .= $target->makeIndent($indent) . callDefineGlobalInteger($target, $integer) . "\n";
     $context{$name} = 'GLOBAL_INTEGER';
   }
 
@@ -203,7 +193,7 @@ sub compileIntegers {
 }
 
 sub compileMacro {
-  my ($macro, $indent, %context) = @_;
+  my ($target, $macro, $indent, %context) = @_;
   return undef, 'Expected a MACRO ' . $macro->getLocationString unless $macro->getName->getValue eq 'MACRO';
 
   my ($name, $value) = @{ $macro->getArguments };
@@ -218,11 +208,11 @@ sub compileMacro {
   return undef, 'Expected exactly one macro value ' . $value->getLocationString . "\n" unless scalar(@values) eq 1;
   $value = $values[0];
 
-  return makeIndent($indent) . callDefineMacro($name, $value), undef, %context;
+  return $target->makeIndent($indent) . callDefineMacro($target, $name, $value), undef, %context;
 }
 
 sub compileFunction {
-  my ($function, $indent, %context) = @_;
+  my ($target, $function, $indent, %context) = @_;
   return undef, 'Expected a FUNCTION ' . $function->getLocationString unless $function->getName->getValue eq 'FUNCTION';
 
   my ($name, $block) = @{ $function->getArguments };
@@ -232,15 +222,22 @@ sub compileFunction {
 
   return undef, 'Can not redefine funtion ' . $name if defined($context{ $name->getValue });
 
-  my ($body, $error) = compileBlockBody($block, $indent, $name->getValue, %context);
+  my ($body, $error) = compileBlockBody($target, $block, $indent, %context);
   return $body, $error if defined($error);
 
+  $body = $target->bstFunctionDefinition(
+    $target->escapeFunctionName($name->getValue),
+    $function, $body,
+    $target->makeIndent($indent),
+    $target->makeIndent($indent + 1)
+  );
+
   $context{ $name->getValue } = 'FUNCTION';
-  return makeIndent($indent) . $body . "\n", undef, %context;
+  return $target->makeIndent($indent) . $body . "\n", undef, %context;
 }
 
 sub compileExecute {
-  my ($execute, $indent, %context) = @_;
+  my ($target, $execute, $indent, %context) = @_;
   return undef, 'Expected an EXECUTE ' . $execute->getLocationString unless $execute->getName->getValue eq 'EXECUTE';
 
   my ($name) = @{ $execute->getArguments };
@@ -252,32 +249,32 @@ sub compileExecute {
   my $call;
   return undef, 'Unknown function ' . $name->getValue . ' ' . $execute->getLocationString unless defined($kind);
   if ($kind eq 'BUILTIN_FUNCTION') {
-    $call = callCallBuiltin($name);
+    $call = callCallBuiltin($target, $name);
   } elsif ($kind eq 'FUNCTION') {
-    $call = callCallFunction($name);
+    $call = callCallFunction($target, $name);
   } else {
     return undef, 'Cannot call non-function ' . $name->getValue . ' ' . $execute->getLocationString;
   }
 
-  return makeIndent($indent) . $call . "\n", undef, %context;
+  return $target->makeIndent($indent) . $call . "\n", undef, %context;
 }
 
 sub compileRead {
-  my ($read, $indent, %context) = @_;
+  my ($target, $read, $indent, %context) = @_;
   return undef, 'Expected a READ ' . $read->getLocationString unless $read->getName->getValue eq 'READ';
 
-  return makeIndent($indent) . callReadEntries($read) . "\n", undef, %context;
+  return $target->makeIndent($indent) . callReadEntries($target, $read) . "\n", undef, %context;
 }
 
 sub compileSort {
-  my ($sort, $indent, %context) = @_;
+  my ($target, $sort, $indent, %context) = @_;
   return undef, 'Expected a SORT ' . $sort->getLocationString unless $sort->getName->getValue eq 'SORT';
 
-  return makeIndent($indent) . callSortEntries($sort) . "\n", undef, %context;
+  return $target->makeIndent($indent) . callSortEntries($target, $sort) . "\n", undef, %context;
 }
 
 sub compileIterate {
-  my ($iterate, $indent, %context) = @_;
+  my ($target, $iterate, $indent, %context) = @_;
   return undef, 'Expected an ITERATE ' . $iterate->getLocationString unless $iterate->getName->getValue eq 'ITERATE';
 
   my ($name) = @{ $iterate->getArguments };
@@ -289,18 +286,18 @@ sub compileIterate {
   my $call;
   return undef, 'Unknown function ' . $name->getValue . ' ' . $iterate->getLocationString unless defined($kind);
   if ($kind eq 'BUILTIN_FUNCTION') {
-    $call = callIterateBuiltin($name, $iterate);
+    $call = callIterateBuiltin($target, $name, $iterate);
   } elsif ($kind eq 'FUNCTION') {
-    $call = callIterateFunction($name, $iterate);
+    $call = callIterateFunction($target, $name, $iterate);
   } else {
     return undef, 'Cannot iterate non-function ' . $name->getValue . ' ' . $iterate->getLocationString;
   }
 
-  return makeIndent($indent) . $call . "\n", undef, %context;
+  return $target->makeIndent($indent) . $call . "\n", undef, %context;
 }
 
 sub compileReverse {
-  my ($reverse, $indent, %context) = @_;
+  my ($target, $reverse, $indent, %context) = @_;
   return undef, 'Expected a REVERSE ' . $reverse->getLocationString unless $reverse->getName->getValue eq 'REVERSE';
 
   my ($name) = @{ $reverse->getArguments };
@@ -312,14 +309,14 @@ sub compileReverse {
   my $call;
   return undef, 'Unknown function ' . $name->getValue . ' ' . $reverse->getLocationString unless defined($kind);
   if ($kind eq 'BUILTIN_FUNCTION') {
-    $call = callReverseBuiltin($name, $reverse);
+    $call = callReverseBuiltin($target, $name, $reverse);
   } elsif ($kind eq 'FUNCTION') {
-    $call = callReverseFunction($name, $reverse);
+    $call = callReverseFunction($target, $name, $reverse);
   } else {
     return undef, 'Cannot reverse non-function ' . $name->getValue . ' ' . $reverse->getLocationString;
   }
 
-  return makeIndent($indent) . $call . "\n", undef, %context;
+  return $target->makeIndent($indent) . $call . "\n", undef, %context;
 }
 
 1;
