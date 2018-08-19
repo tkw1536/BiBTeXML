@@ -29,9 +29,11 @@ subtest 'readLiteral' => sub {
 };
 
 subtest 'readNumber' => sub {
-  plan tests => 3;
+  plan tests => 5;
 
   doesReadNumber('simple number',          '#0',        StyString('NUMBER', 0,      [(1, 1, 1, 3)]));
+  doesReadNumber('positive number',        '#+1',       StyString('NUMBER', 1,      [(1, 1, 1, 4)]));
+  doesReadNumber('negative number',        '#-1',       StyString('NUMBER', -1,     [(1, 1, 1, 4)]));
   doesReadNumber('ends after first space', '#123456 ',  StyString('NUMBER', 123456, [(1, 1, 1, 8)]));
   doesReadNumber('ends after }',           '#123456}7', StyString('NUMBER', 123456, [(1, 1, 1, 8)]));
 

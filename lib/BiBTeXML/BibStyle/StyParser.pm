@@ -183,10 +183,19 @@ sub readNumber {
   my ($char, $sr, $sc) = $reader->readChar;
   return undef, 'expected "#" while reading number ' . $reader->getLocationString unless defined($char) && $char eq '#';
 
+  my ($sign) = $reader->peekChar;
+  return undef, 'unexpected end of input while reading number ' . $reader->getLocationString unless defined($sign);
+
+  if ($sign eq '-' or $sign eq '+') {
+    $reader->eatChar;
+  } else {
+    $sign = '';
+  }
+
   my ($literal, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /\d/; });
   return undef, 'expected a non-empty number ' . $reader->getLocationString unless $literal ne "";
 
-  return BiBTeXML::BibStyle::StyString->new('NUMBER', $literal + 0, [($sr, $sc, $er, $ec)]);
+  return BiBTeXML::BibStyle::StyString->new('NUMBER', ($sign . $literal) + 0, [($sr, $sc, $er, $ec)]);
 }
 
 # Reads a reference, delimited by spaces, from the input
