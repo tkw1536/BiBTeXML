@@ -50,6 +50,12 @@ lib/BiBTeXML/Compiler/Target.pm
 lib/BiBTeXML/Compiler/Target/Perl.pm
 
 #==================================================
+# Runtime
+#==================================================
+lib/BiBTeXML/Runtime.pm
+lib/BiBTeXML/Runtime/Context.pm
+
+#==================================================
 # Test Suite.
 #==================================================
 t/01_StreamReader.t

@@ -117,12 +117,12 @@ sub bstFunctionDefinition {
   $code .= $body . $outerIndent . "} \n";
   # perl-specific runtime-call
   $code .= $outerInden . $class->runtimeFunctionCall(
-    'registerFunctionDefinition', 
-    $sourceString, 
-    $class->escapeString($name), 
+    'registerFunctionDefinition',
+    $sourceString,
+    $class->escapeString($name),
     $class->escapeBstFunctionReference(
       $class->escapeFunctionName($name)
-    )
+      )
   ) . "; ";
   return $code;
 }
