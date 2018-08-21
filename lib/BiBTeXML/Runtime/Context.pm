@@ -23,7 +23,7 @@ use BiBTeXML::Runtime::Entry;
 ### It consists of the following items:
 
 sub new {
-  my ($class, $resultHandle, $outputHandle) = @_;
+  my ($class) = @_;
   return bless {
     ### - the stack (split into three parts, see below)
     typeStack => [], valueStack => [], sourceStack => [],
@@ -44,8 +44,6 @@ sub new {
     outputString   => [], outputSource   => [],
     preambleString => [], preambleSource => [],
 
-    ### - result and output handlers
-    resultHandle => $resultHandle, outputHandle => $outputHandle
   }, $class;
 }
 
@@ -65,7 +63,8 @@ sub new {
 ### 1. 'MISSING' - a missing value of a field (TODO: perhaps also an uninititialized constant)
 ### 2. 'STRING' - a simple string
 ### 3. 'INTEGER' -- an integer
-### 4. 'REFERENCE' -- a reference to a variable or function on the stack. Starts with 'GLOBAL_' or 'ENTRY_'.
+### 4. 'FUNCTION' -- a function
+### 5. 'REFERENCE' -- a reference to a variable or function on the stack. Starts with 'GLOBAL_' or 'ENTRY_'.
 
 ### These have the corresponding values:
 
@@ -73,14 +72,16 @@ sub new {
 ### 1. 'MISSING' -- undef
 ### 2. 'STRING' -- a tuple of strings
 ### 3. 'INTEGER' -- a single integer
-### 4. 'REFERENCE' -- a pair (variable type, reference) of the type of variable being referenced and the actual value being referened
+### 4. 'FUNCTION' -- the function reference
+### 5. 'REFERENCE' -- a pair (variable type, reference) of the type of variable being referenced and the actual value being referened
 
 ### The corresponding source references are:
 ### 0. 'UNSET' -- undef
 ### 1. 'MISSING' -- a tuple(key, field) this value comes from
 ### 2. 'STRING' -- a tuple (key, field) or undef for each string
 ### 3. 'INTEGER' -- a tuple (key, field) or undef, when joining take the first one
-### 4. 'REFERENCE' -- undef
+### 4. 'FUNCTION' -- undef
+### 5. 'REFERENCE' -- undef
 
 # return the length of the stack
 sub stackLength {
@@ -287,8 +288,21 @@ sub setVariable {
   }
 }
 
+# defines and assigns a variable
+# returns 0 if ok, 1 if it already exists, 2 if an invalid context, 3 if read-only, 4 if unknown type
+sub assignVariable {
+  my ($self, $name, $type, $value) = @_;
+
+  # define the variable
+  my $def = $self->defineVariable($name, $type);
+  return 1 if $def eq 0;
+
+  # assign it
+  return $self->assignVariable($name, $value);
+}
+
 ###
-### VARIABLES
+### ENTRIES
 ###
 
 # returns the entries loaded by this context, or undef if none
@@ -342,6 +356,15 @@ sub readEntries {
   # store all the warnings and exit
   $$self{entries} = [@entries];
   return 0, [@warnings];
+}
+
+# sort entries in-place using a comparison function
+# return 1 iff entriues have been sorted
+sub sortEntries {
+  my ($self, $comp) = @_;
+
+  $$self{entries} = [sort { &{$comp}($a, $b) } @{ $$self{entries} }];
+  return 1;
 }
 
 # sets the current entry

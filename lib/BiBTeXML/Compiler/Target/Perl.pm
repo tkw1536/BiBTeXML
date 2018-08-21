@@ -132,7 +132,7 @@ sub bstFunctionDefinition {
 # - $sourceString:  the StyString this call was made from
 # - @arguments:     a set of appropriatly escaped arguments to give to the call
 sub bstFunctionCall {
-  return runtimeFunctionCall(@_); 
+  return runtimeFunctionCall(@_);
 }
 
 # runtimeFunctionCall($name, $sourceString, @arguments) - compiles a call to function in the runtime

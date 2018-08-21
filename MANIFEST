@@ -53,7 +53,9 @@ lib/BiBTeXML/Compiler/Target/Perl.pm
 # Runtime
 #==================================================
 lib/BiBTeXML/Runtime.pm
+lib/BiBTeXML/Runtime/Config.pm
 lib/BiBTeXML/Runtime/Context.pm
+lib/BiBTeXML/Runtime/Functions.pm
 
 #==================================================
 # Test Suite.

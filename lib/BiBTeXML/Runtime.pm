@@ -11,6 +11,15 @@ package BiBTeXML::Runtime;
 use strict;
 use warnings;
 
-# TODO: Implement me
+use BiBTeXML::Runtime::Functions;
+
+use base qw(Exporter);
+our @EXPORT = (
+  qw( &defineEntryField &defineEntryInteger &defineEntryString &defineGlobalString &defineGlobalInteger &defineGlobalInteger &registerFunctionDefinition &defineMacro ),
+  qw( &readEntries &sortEntries &iterateFunction &reverseFunction ),
+  qw( &pushString &pushInteger &pushFunction ),
+  qw( &pushFunction &pushGlobalString &pushGlobalInteger &pushEntryField &pushEntryString &pushEntryInteger ),
+  qw( &lookupGlobalString &lookupGlobalInteger &lookupEntryString &lookupEntryInteger &lookupFunction ),
+);
 
 1;
