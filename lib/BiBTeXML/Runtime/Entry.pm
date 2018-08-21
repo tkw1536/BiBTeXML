@@ -30,21 +30,22 @@ sub new {
 
   # if we have a preamble, return the conent of the preamble
   if ($type eq 'preamble') {
-    return undef, ['Missing content for preamble ' . $entry->getLocationString] unless scalar(@tags) eq 1;
+    return undef, ['Missing content for preamble'], [$entry->getSource] unless scalar(@tags) eq 1;
     my $preamble = shift(@tags);
     return $preamble->getContent->getValue, [('', 'preamble')];
   }
 
   # Make sure that we have something
-  return undef, ['Missing key for entry ' . $entry->getLocationString] unless scalar(@tags) > 0;
+  return undef, ['Missing key for entry', [$entry->getSource]] unless scalar(@tags) > 0;
 
   # make sure that we have a key
   my $key = shift(@tags)->getContent->getValue;
-  return undef, ['Expected non-empty key ' . $entry->getLocationString] unless $key;
+  return undef, ['Expected non-empty key', [$entry->getSource]] unless $key;
 
   my ($tag, $value, $valueKey);
-  my %values = ();
-  my (@warnings) = ();
+  my %values      = ();
+  my (@warnings)  = ();
+  my (@locations) = ();
 
   foreach $tag (@tags) {
     $valueKey = $tag->getName;
@@ -52,7 +53,8 @@ sub new {
 
     # we need a key=value in this tag
     unless (defined($valueKey)) {
-      push(@warnings, 'Missing key for value ' . $tag->getContent->getLocationString);
+      push(@warnings,  'Missing key for value');
+      push(@locations, $tag->getContent->getSource);
       next;
     }
 
@@ -60,7 +62,8 @@ sub new {
 
     # if we have a duplicate valye
     if (defined($values{$valueKey})) {
-      push(@warnings, 'Duplicate value in entry ' . $key . ': Tag ' . $valueKey . ' already defined. ' . $tag->getContent->getLocationString);
+      push(@warnings,  'Duplicate value in entry ' . $key . ': Tag ' . $valueKey . ' already defined. ');
+      push(@locations, $tag->getContent->getSource);
       next;
     }
     $values{$valueKey} = $value;
@@ -81,10 +84,10 @@ sub new {
   }, $class;
 
   # if we have warnings, return them
-  return $self, [@warnings] if scalar(@warnings) > 0;
+  return $self, [@warnings], [@locations] if scalar(@warnings) > 0;
 
   # else just return self
-  return $self, undef;
+  return $self, undef, undef;
 }
 
 # gets the value of a given variable

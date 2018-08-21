@@ -27,7 +27,7 @@ our @EXPORT = (
 sub defineEntryField {
   my ($context, $config, $name, $styString) = @_;
 
-  $config->log('warn', "Can not define entry field $name: Already defined " . $styString->getSourceString)
+  $config->log('warn', "Can not define entry field $name: Already defined", $styString->getSource)
     unless $context->defineVariable('ENTRY_FIELD', $name);
 }
 
@@ -35,7 +35,7 @@ sub defineEntryField {
 sub defineEntryInteger {
   my ($context, $config, $name, $styString) = @_;
 
-  $config->log('warn', "Can not define entry integer $name: Already defined " . $styString->getSourceString)
+  $config->log('warn', "Can not define entry integer $name: Already defined", $styString->getSource)
     unless $context->defineVariable('ENTRY_INTEGER', $name);
 }
 
@@ -43,7 +43,7 @@ sub defineEntryInteger {
 sub defineEntryString {
   my ($context, $config, $name, $styString) = @_;
 
-  $config->log('warn', "Can not define entry string $name: Already defined " . $styString->getSourceString)
+  $config->log('warn', "Can not define entry string $name: Already defined", $styString->getSource)
     unless $context->defineVariable('ENTRY_STRING', $name);
 }
 
@@ -51,7 +51,7 @@ sub defineEntryString {
 sub defineGlobalString {
   my ($context, $config, $name, $styString) = @_;
 
-  $config->log('warn', "Can not define global string $name: Already defined " . $styString->getSourceString)
+  $config->log('warn', "Can not define global string $name: Already defined", $styString->getSource)
     unless $context->defineVariable('GLOBAL_STRING', $name);
 }
 
@@ -59,14 +59,14 @@ sub defineGlobalString {
 sub defineGlobalInteger {
   my ($context, $config, $name, $styString) = @_;
 
-  $config->log('warn', "Can not define global string $name: Already defined " . $styString->getSourceString)
+  $config->log('warn', "Can not define global string $name: Already defined", $styString->getSource)
     unless $context->defineVariable('GLOBAL_INTEGER', $name);
 }
 
 # perl runtime specific: register a function defintion
 sub registerFunctionDefinition {
   my ($context, $config, $name, $function, $styString) = @_;
-  $config->log('warn', "Can not define function $name: Already defined " . $styString->getSourceString)
+  $config->log('warn', "Can not define function $name: Already defined", $styString->getSource)
     unless $context->assignVariable('FUNCTION', $name) eq 0;
 }
 
@@ -85,17 +85,17 @@ sub readEntries {
   my ($context, $config, $styString) = @_;
   my @readers = $config->getReaders;
 
-  my ($status, $warnings) = $context->readEntries(@readers);
+  my ($status, $warnings, $locations) = $context->readEntries(@readers);
 
   if ($status eq 0) {
     my $warning;
     foreach $warning (@warnings) {
-      $config->log('WARN', $warning);
+      $config->log('WARN', $warning, shift($locations));
     }
   } elsif ($status eq 1) {
-    $config->log('WARN', 'Can not read entries: Already read entries ' . $styString->getSourceString);
+    $config->log('WARN', 'Can not read entries: Already read entries', $styString->getSource);
   } else {
-    $config->log('ERROR', 'Did not read entries: ' . $warnings);
+    $config->log('ERROR', 'Did not read entries: ' . $warnings, $locations);
   }
 }
 
@@ -103,7 +103,7 @@ sub readEntries {
 sub sortEntries {
   my ($context, $config, $styString) = @_;
   # TODO: Implement sorting
-  $config->log('WARN', 'Sorting of entries is not implemented yet ' . $styString->getSourceString);
+  $config->log('WARN', 'Sorting of entries is not implemented yet', $styString->getSource);
 }
 
 # iterateFunction($function) -- iterates a function over all entries
@@ -112,7 +112,7 @@ sub iterateFunction {
   my $entries = $context->getEntries;
 
   unless (defined($entries)) {
-    $config->log('WARN', 'Can not iterate entries: No entries have been read ' . $styString->getSourceString);
+    $config->log('WARN', 'Can not iterate entries: No entries have been read', $styString->getSource);
   } else {
     my $entry;
     foreach $entry (@entries) {
@@ -130,7 +130,7 @@ sub reverseFunction {
   my $entries = $context->getEntries;
 
   unless (defined($entries)) {
-    $config->log('WARN', 'Can not iterate entries: No entries have been read ' . $styString->getSourceString);
+    $config->log('WARN', 'Can not iterate entries: No entries have been read. ', $styString->getSource);
   } else {
     my $entry;
     foreach $entry (reverse(@entries)) {
@@ -208,7 +208,7 @@ sub lookupGlobalString {
   if (defined($t)) {
     $context->pushStack($t, $v, $s);
   } else {
-    $config->log('WARN', "Can not push global string $name: Does not exist. ");
+    $config->log('WARN', "Can not push global string $name: Does not exist. ", $sourceRef->getSource);
   }
 }
 
@@ -219,7 +219,7 @@ sub lookupGlobalInteger {
   if (defined($t)) {
     $context->pushStack($t, $v, $s);
   } else {
-    $config->log('WARN', "Can not push global integer $name: Does not exist" . $sourceRef->getLocationString);
+    $config->log('WARN', "Can not push global integer $name: Does not exist", $sourceRef->getSource);
   }
 }
 
@@ -230,7 +230,7 @@ sub lookupEntryField {
   if (defined($t)) {
     $context->pushStack($t, $v, $s);
   } else {
-    $config->log('WARN', "Can not push entry field $name: Does not exist " . $sourceRef->getLocationString);
+    $config->log('WARN', "Can not push entry field $name: Does not exist", $sourceRef->getSource);
   }
 }
 
@@ -241,7 +241,7 @@ sub lookupEntryString {
   if (defined($t)) {
     $context->pushStack($t, $v, $s);
   } else {
-    $config->log('WARN', "Can not push entry string $name: Does not exist " . $sourceRef->getLocationString);
+    $config->log('WARN', "Can not push entry string $name: Does not exist", $sourceRef->getSource);
   }
 }
 
@@ -252,7 +252,7 @@ sub lookupEntryInteger {
   if (defined($t)) {
     $context->pushStack($t, $v, $s);
   } else {
-    $config->log('WARN', "Can not push entry integer $name: Does not exist " . $sourceRef->getLocationString);
+    $config->log('WARN', "Can not push entry integer $name: Does not exist", $sourceRef->getSource);
   }
 }
 

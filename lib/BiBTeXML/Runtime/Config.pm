@@ -30,10 +30,10 @@ sub new {
 # writes a message of a given level to the output.
 # supported levels are 'INFO', 'WARNING', 'ERROR'.
 sub log {
-  my ($self, $level, $message) = @_;
+  my ($self, $level, $message, $location) = @_;
 
   # call the handle we passed during construction
-  &{ $$self{outputHandle} }($level, $message);
+  &{ $$self{outputHandle} }($level, $message, $location);
 }
 
 # writes a message to the output

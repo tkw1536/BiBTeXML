@@ -319,10 +319,11 @@ sub readEntries {
 
   return 1, undef if defined($$self{entries});
 
-  my @entries  = ();
-  my @warnings = ();
+  my @entries   = ();
+  my @warnings  = ();
+  my @locations = ();
 
-  my ($reader, $parse, $parseError, $entry, $warning);
+  my ($reader, $parse, $parseError, $entry, $warning, $location);
   while ($reader = pop(@readers)) {
     ($parse, $parseError) = readFile($reader, 1, %{ $$self{macros} });
     $reader->finalize;
@@ -337,7 +338,7 @@ sub readEntries {
 
     # iterate over all the entries
     foreach $entry (@{$parse}) {
-      ($entry, $warning) = BiBTeXML::Runtime::Entry->new($self, $entry);
+      ($entry, $warning, $location) = BiBTeXML::Runtime::Entry->new($self, $entry);
       if (defined($entry)) {
         # if we got back a ref, it's a proper entry
         if (ref $entry) {
@@ -349,13 +350,14 @@ sub readEntries {
           next;
         }
       }
-      push(@warnings, @$warning) if defined($warning);
+      push(@warnings,  @$warning)  if defined($warning);
+      push(@locations, @$location) if defined($location);
     }
   }
 
   # store all the warnings and exit
   $$self{entries} = [@entries];
-  return 0, [@warnings];
+  return 0, [@warnings], [@locations];
 }
 
 # sort entries in-place using a comparison function
