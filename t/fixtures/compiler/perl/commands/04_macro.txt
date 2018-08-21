@@ -1,1 +1,1 @@
-defineMacro($context, 'jan', 'January', StyString('LITERAL', 'jan', [(1, 7, 1, 10)])); 
+defineMacro($context, $config, 'jan', 'January', StyString('LITERAL', 'jan', [(1, 7, 1, 10)])); 

@@ -1,1 +1,1 @@
-pushEntryField($context, 'example', StyString('LITERAL', 'example', [(1, 2, 1, 9)])); 
+pushEntryField($context, $config, 'example', StyString('LITERAL', 'example', [(1, 2, 1, 9)])); 

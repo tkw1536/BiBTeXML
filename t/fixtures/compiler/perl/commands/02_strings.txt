@@ -1,6 +1,6 @@
-defineGlobalString($context, 'a', StyString('LITERAL', 'a', [(2, 4, 2, 5)])); 
-defineGlobalString($context, 'b', StyString('LITERAL', 'b', [(2, 6, 2, 7)])); 
-defineGlobalString($context, 'c', StyString('LITERAL', 'c', [(2, 8, 2, 9)])); 
-defineGlobalString($context, 'd', StyString('LITERAL', 'd', [(2, 10, 2, 11)])); 
-defineGlobalString($context, 'e', StyString('LITERAL', 'e', [(2, 12, 2, 13)])); 
-defineGlobalString($context, 'f', StyString('LITERAL', 'f', [(2, 14, 2, 15)])); 
+defineGlobalString($context, $config, 'a', StyString('LITERAL', 'a', [(2, 4, 2, 5)])); 
+defineGlobalString($context, $config, 'b', StyString('LITERAL', 'b', [(2, 6, 2, 7)])); 
+defineGlobalString($context, $config, 'c', StyString('LITERAL', 'c', [(2, 8, 2, 9)])); 
+defineGlobalString($context, $config, 'd', StyString('LITERAL', 'd', [(2, 10, 2, 11)])); 
+defineGlobalString($context, $config, 'e', StyString('LITERAL', 'e', [(2, 12, 2, 13)])); 
+defineGlobalString($context, $config, 'f', StyString('LITERAL', 'f', [(2, 14, 2, 15)])); 

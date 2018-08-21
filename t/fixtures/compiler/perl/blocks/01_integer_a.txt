@@ -1,1 +1,1 @@
-pushInteger($context, 1, StyString('NUMBER', 1, [(1, 1, 1, 3)])); 
+pushInteger($context, $config, 1, StyString('NUMBER', 1, [(1, 1, 1, 3)])); 

@@ -1,1 +1,1 @@
-iterateFunction($context, \&builtin__example, StyString('LITERAL', 'example', [(1, 9, 1, 16)])); 
+iterateFunction($context, $config, \&builtin__example, StyString('LITERAL', 'example', [(1, 9, 1, 16)])); 

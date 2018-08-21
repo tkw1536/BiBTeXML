@@ -1,1 +1,1 @@
-reverseFunction($context, \&bst__example, StyString('LITERAL', 'example', [(1, 9, 1, 16)])); 
+reverseFunction($context, $config, \&bst__example, StyString('LITERAL', 'example', [(1, 9, 1, 16)])); 

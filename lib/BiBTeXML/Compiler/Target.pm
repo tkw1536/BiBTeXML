@@ -53,7 +53,7 @@ sub escapeBstInlineBlock { die("Unimplemented"); }
 sub bstFunctionDefinition { die("Unimplemented"); }
 
 # bstFunctionCall($name, $sourceString, @argument) - compiles a call to a bst-level function
-# - $name:          the name of the runtime function to call
+# - $name:          the name of the bst function to call
 # - $sourceString:  the StyString this call was made from
 # - @arguments:     a set of appropriatly escaped arguments to give to the call
 sub bstFunctionCall { die("Unimplemented"); }

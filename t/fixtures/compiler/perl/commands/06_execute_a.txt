@@ -1,1 +1,1 @@
-bst__example($context, StyString('LITERAL', 'example', [(1, 9, 1, 16)])); 
+bst__example($context, $config, StyString('LITERAL', 'example', [(1, 9, 1, 16)])); 

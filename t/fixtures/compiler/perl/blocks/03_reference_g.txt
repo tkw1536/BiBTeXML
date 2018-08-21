@@ -1,1 +1,1 @@
-lookupEntryString($context, 'example', StyString('REFERENCE', 'example', [(1, 2, 1, 9)])); 
+lookupEntryString($context, $config, 'example', StyString('REFERENCE', 'example', [(1, 2, 1, 9)])); 

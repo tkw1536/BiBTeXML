@@ -1,1 +1,1 @@
-readEntries($context, StyCommand(StyString('LITERAL', 'READ', [(0, 0, 1, 4)]), [()], [(0, 0, 1, 4)])); 
+readEntries($context, $config, StyCommand(StyString('LITERAL', 'READ', [(0, 0, 1, 4)]), [()], [(0, 0, 1, 4)])); 
