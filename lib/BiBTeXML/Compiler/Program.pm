@@ -78,10 +78,10 @@ sub compileProgram {
   );
 
   # compile each of the commands
-  my ($command, $result, $error);
+  my ($command, $result, $error, $location);
   foreach $command (@$program) {
-    ($result, $error, %context) = compileCommand($target, $command, 1, %context);
-    return $result, $error if defined($error);
+    ($result, $error, $location, %context) = compileCommand($target, $command, 1, %context);
+    return $result, $error, $location if defined($error);
     $code .= $result;
   }
 
@@ -110,14 +110,14 @@ sub compileCommand {
   } elsif ($name eq 'REVERSE') { return compileReverse($target, $command, $indent, %context);
 
   } else {
-    return undef, "Unknown command $name" . $command->getLocationString;
+    return undef, "Unknown command $name", $command->getSource;
   }
 }
 
 # compiles an ENTRY command
 sub compileEntry {
   my ($target, $entry, $indent, %context) = @_;
-  return undef, 'Expected an ENTRY ' . $entry->getLocationString unless $entry->getName->getValue eq 'ENTRY';
+  return undef, 'Expected an ENTRY ', $entry->getSource unless $entry->getName->getValue eq 'ENTRY';
 
   my $result = '';
   my ($fields, $integers, $strings) = @{ $entry->getArguments };
@@ -126,7 +126,7 @@ sub compileEntry {
   my ($field, $name);
   foreach $field (@{ $fields->getValue }) {
     $name = lc($field->getValue);
-    return undef, 'unable to define entry field ' . $name . ' ' . $field->getLocationString if defined($context{$name});
+    return undef, 'unable to define entry field ' . $name, $field->getSource if defined($context{$name});
     $result .= $target->makeIndent($indent) . callDefineEntryField($target, $field) . "\n";
     $context{$name} = 'ENTRY_FIELD';
   }
@@ -135,7 +135,7 @@ sub compileEntry {
   my ($integer);
   foreach $integer (@{ $integers->getValue }) {
     $name = $integer->getValue;
-    return undef, 'unable to define entry integer ' . $name . ' ' . $integer->getLocationString if defined($context{$name});
+    return undef, 'unable to define entry integer ' . $name, $integer->getSource if defined($context{$name});
     $result .= $target->makeIndent($indent) . callDefineEntryInteger($target, $integer) . "\n";
     $context{$name} = 'ENTRY_INTEGER';
   }
@@ -144,18 +144,18 @@ sub compileEntry {
   my ($string);
   foreach $string (@{ $strings->getValue }) {
     $name = $string->getValue;
-    return undef, 'unable to define entry string ' . $name . ' ' . $string->getLocationString if defined($context{$name});
+    return undef, 'unable to define entry string ' . $name, $string->getSource if defined($context{$name});
     $result .= $target->makeIndent($indent) . callDefineEntryString($target, $string) . "\n";
     $context{$name} = 'ENTRY_STRING';
   }
 
-  return $result, undef, %context;
+  return $result, undef, undef, %context;
 }
 
 # compiles a STRINGS command
 sub compileStrings {
   my ($target, $strings, $indent, %context) = @_;
-  return undef, 'Expected a STRINGS ' . $strings->getLocationString unless $strings->getName->getValue eq 'STRINGS';
+  return undef, 'Expected a STRINGS', $strings->getSource unless $strings->getName->getValue eq 'STRINGS';
 
   my $result = '';
   my ($args) = @{ $strings->getArguments };
@@ -164,18 +164,18 @@ sub compileStrings {
   my ($string, $name);
   foreach $string (@{ $args->getValue }) {
     $name = $string->getValue;
-    return undef, 'unable to define global string ' . $name . ' ' . $string->getLocationString if defined($context{$name});
+    return undef, 'unable to define global string ' . $name, $string->getSource if defined($context{$name});
     $result .= $target->makeIndent($indent) . callDefineGlobalString($target, $string) . "\n";
     $context{$name} = 'GLOBAL_STRING';
   }
 
-  return $result, undef, %context;
+  return $result, undef, undef, %context;
 }
 
 # compiles a INTEGERS command
 sub compileIntegers {
   my ($target, $integers, $indent, %context) = @_;
-  return undef, 'Expected a INTEGERS ' . $integers->getLocationString unless $integers->getName->getValue eq 'INTEGERS';
+  return undef, 'Expected a INTEGERS', $integers->getSource unless $integers->getName->getValue eq 'INTEGERS';
 
   my $result = '';
   my ($args) = @{ $integers->getArguments };
@@ -184,46 +184,46 @@ sub compileIntegers {
   my ($integer, $name);
   foreach $integer (@{ $args->getValue }) {
     $name = $integer->getValue;
-    return undef, 'unable to define global integer ' . $name . ' ' . $integer->getLocationString if defined($context{$name});
+    return undef, 'unable to define global integer ' . $name, $integer->getSource if defined($context{$name});
     $result .= $target->makeIndent($indent) . callDefineGlobalInteger($target, $integer) . "\n";
     $context{$name} = 'GLOBAL_INTEGER';
   }
 
-  return $result, undef, %context;
+  return $result, undef, undef, %context;
 }
 
 sub compileMacro {
   my ($target, $macro, $indent, %context) = @_;
-  return undef, 'Expected a MACRO ' . $macro->getLocationString unless $macro->getName->getValue eq 'MACRO';
+  return undef, 'Expected a MACRO', $macro->getSource unless $macro->getName->getValue eq 'MACRO';
 
   my ($name, $value) = @{ $macro->getArguments };
 
   # read the macro name
   my @names = @{ $name->getValue };
-  return undef, 'Expected exactly one macro name ' . $name->getLocationString . "\n" unless scalar(@names) eq 1;
+  return undef, 'Expected exactly one macro name', $name->getSource unless scalar(@names) eq 1;
   $name = $names[0];
 
   # read the macro value
   my @values = @{ $value->getValue };
-  return undef, 'Expected exactly one macro value ' . $value->getLocationString . "\n" unless scalar(@values) eq 1;
+  return undef, 'Expected exactly one macro value', $value->getSource unless scalar(@values) eq 1;
   $value = $values[0];
 
-  return $target->makeIndent($indent) . callDefineMacro($target, $name, $value), undef, %context;
+  return $target->makeIndent($indent) . callDefineMacro($target, $name, $value), undef, undef, %context;
 }
 
 sub compileFunction {
   my ($target, $function, $indent, %context) = @_;
-  return undef, 'Expected a FUNCTION ' . $function->getLocationString unless $function->getName->getValue eq 'FUNCTION';
+  return undef, 'Expected a FUNCTION', $function->getSource unless $function->getName->getValue eq 'FUNCTION';
 
   my ($name, $block) = @{ $function->getArguments };
   my @names = @{ $name->getValue };
-  return undef, 'Expected exactly one function name ' . $name->getLocationString . "\n" unless scalar(@names) eq 1;
+  return undef, 'Expected exactly one function name', $name->getSource unless scalar(@names) eq 1;
   $name = $names[0];
 
   return undef, 'Can not redefine funtion ' . $name if defined($context{ $name->getValue });
 
-  my ($body, $error) = compileBlockBody($target, $block, $indent, %context);
-  return $body, $error if defined($error);
+  my ($body, $error, $location) = compileBlockBody($target, $block, $indent, %context);
+  return $body, $error, $location if defined($error);
 
   $body = $target->bstFunctionDefinition(
     $name->getValue,
@@ -233,90 +233,90 @@ sub compileFunction {
   );
 
   $context{ $name->getValue } = 'FUNCTION';
-  return $target->makeIndent($indent) . $body . "\n", undef, %context;
+  return $target->makeIndent($indent) . $body . "\n", undef, undef, %context;
 }
 
 sub compileExecute {
   my ($target, $execute, $indent, %context) = @_;
-  return undef, 'Expected an EXECUTE ' . $execute->getLocationString unless $execute->getName->getValue eq 'EXECUTE';
+  return undef, 'Expected an EXECUTE', $execute->getSource unless $execute->getName->getValue eq 'EXECUTE';
 
   my ($name) = @{ $execute->getArguments };
   my @names = @{ $name->getValue };
-  return undef, 'Expected exactly one function name ' . $name->getLocationString . "\n" unless scalar(@names) eq 1;
+  return undef, 'Expected exactly one function name', $name->getSource unless scalar(@names) eq 1;
   $name = $names[0];
 
   my $kind = $context{ $name->getValue };
   my $call;
-  return undef, 'Unknown function ' . $name->getValue . ' ' . $execute->getLocationString unless defined($kind);
+  return undef, 'Unknown function ' . $name->getValue, $execute->getSource unless defined($kind);
   if ($kind eq 'BUILTIN_FUNCTION') {
     $call = callCallBuiltin($target, $name);
   } elsif ($kind eq 'FUNCTION') {
     $call = callCallFunction($target, $name);
   } else {
-    return undef, 'Cannot call non-function ' . $name->getValue . ' ' . $execute->getLocationString;
+    return undef, 'Cannot call non-function ' . $name->getValue, $execute->getSource;
   }
 
-  return $target->makeIndent($indent) . $call . "\n", undef, %context;
+  return $target->makeIndent($indent) . $call . "\n", undef, undef, %context;
 }
 
 sub compileRead {
   my ($target, $read, $indent, %context) = @_;
-  return undef, 'Expected a READ ' . $read->getLocationString unless $read->getName->getValue eq 'READ';
+  return undef, 'Expected a READ', $read->getSource unless $read->getName->getValue eq 'READ';
 
-  return $target->makeIndent($indent) . callReadEntries($target, $read) . "\n", undef, %context;
+  return $target->makeIndent($indent) . callReadEntries($target, $read) . "\n", undef, undef, %context;
 }
 
 sub compileSort {
   my ($target, $sort, $indent, %context) = @_;
-  return undef, 'Expected a SORT ' . $sort->getLocationString unless $sort->getName->getValue eq 'SORT';
+  return undef, 'Expected a SORT', $sort->getSource unless $sort->getName->getValue eq 'SORT';
 
-  return $target->makeIndent($indent) . callSortEntries($target, $sort) . "\n", undef, %context;
+  return $target->makeIndent($indent) . callSortEntries($target, $sort) . "\n", undef, undef, %context;
 }
 
 sub compileIterate {
   my ($target, $iterate, $indent, %context) = @_;
-  return undef, 'Expected an ITERATE ' . $iterate->getLocationString unless $iterate->getName->getValue eq 'ITERATE';
+  return undef, 'Expected an ITERATE', $iterate->getSource unless $iterate->getName->getValue eq 'ITERATE';
 
   my ($name) = @{ $iterate->getArguments };
   my @names = @{ $name->getValue };
-  return undef, 'Expected exactly one function name ' . $name->getLocationString . "\n" unless scalar(@names) eq 1;
+  return undef, 'Expected exactly one function name', $name->getSource unless scalar(@names) eq 1;
   $name = $names[0];
 
   my $kind = $context{ $name->getValue };
   my $call;
-  return undef, 'Unknown function ' . $name->getValue . ' ' . $iterate->getLocationString unless defined($kind);
+  return undef, 'Unknown function ' . $name->getValue, $iterate->getSource unless defined($kind);
   if ($kind eq 'BUILTIN_FUNCTION') {
     $call = callIterateBuiltin($target, $name, $iterate);
   } elsif ($kind eq 'FUNCTION') {
     $call = callIterateFunction($target, $name, $iterate);
   } else {
-    return undef, 'Cannot iterate non-function ' . $name->getValue . ' ' . $iterate->getLocationString;
+    return undef, 'Cannot iterate non-function ' . $name->getValue, $iterate->getSource;
   }
 
-  return $target->makeIndent($indent) . $call . "\n", undef, %context;
+  return $target->makeIndent($indent) . $call . "\n", undef, undef, %context;
 }
 
 sub compileReverse {
   my ($target, $reverse, $indent, %context) = @_;
-  return undef, 'Expected a REVERSE ' . $reverse->getLocationString unless $reverse->getName->getValue eq 'REVERSE';
+  return undef, 'Expected a REVERSE', $reverse->getSource unless $reverse->getName->getValue eq 'REVERSE';
 
   my ($name) = @{ $reverse->getArguments };
   my @names = @{ $name->getValue };
-  return undef, 'Expected exactly one function name ' . $name->getLocationString . "\n" unless scalar(@names) eq 1;
+  return undef, 'Expected exactly one function name', $name->getSource unless scalar(@names) eq 1;
   $name = $names[0];
 
   my $kind = $context{ $name->getValue };
   my $call;
-  return undef, 'Unknown function ' . $name->getValue . ' ' . $reverse->getLocationString unless defined($kind);
+  return undef, 'Unknown function ' . $name->getValue, $reverse->getSource unless defined($kind);
   if ($kind eq 'BUILTIN_FUNCTION') {
     $call = callReverseBuiltin($target, $name, $reverse);
   } elsif ($kind eq 'FUNCTION') {
     $call = callReverseFunction($target, $name, $reverse);
   } else {
-    return undef, 'Cannot reverse non-function ' . $name->getValue . ' ' . $reverse->getLocationString;
+    return undef, 'Cannot reverse non-function ' . $name->getValue, $reverse->getSource;
   }
 
-  return $target->makeIndent($indent) . $call . "\n", undef, %context;
+  return $target->makeIndent($indent) . $call . "\n", undef, undef, %context;
 }
 
 1;

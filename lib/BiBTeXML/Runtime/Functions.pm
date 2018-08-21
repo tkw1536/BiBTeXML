@@ -219,7 +219,7 @@ sub lookupGlobalInteger {
   if (defined($t)) {
     $context->pushStack($t, $v, $s);
   } else {
-    $config->log('WARN', "Can not push global integer $name: Does not exist " . $sourceRef->getLocationString);
+    $config->log('WARN', "Can not push global integer $name: Does not exist" . $sourceRef->getLocationString);
   }
 }
 
