@@ -66,6 +66,8 @@ t/21_StyParser_file.t
 t/30_Compiler_Perl_blocks.t
 t/31_Compiler_Perl_commands.t
 t/32_Compiler_Perl_file.t
+t/40_Runtime_state.t
+t/40_Runtime_entries.t
 
 t/fixtures/streamreader/empty.txt
 t/fixtures/streamreader/helloworld.txt

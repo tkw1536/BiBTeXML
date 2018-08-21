@@ -8,6 +8,8 @@
 # \=====================================================================/ #
 
 package BiBTeXML::Runtime;
+use strict;
+use warnings;
 
 # TODO: Implement me
 
