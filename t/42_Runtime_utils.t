@@ -1,5 +1,5 @@
 use BiBTeXML::Common::Test;
-use Test::More tests => 6;
+use Test::More tests => 7;
 
 subtest "requirements" => sub {
   plan tests => 1;
@@ -62,6 +62,23 @@ subtest "changeCase" => sub {
   # accents
   isChangeCase("{\\'a} world", "u", "{\\'A} WORLD");
   isChangeCase("{\\0a} world", "u", "{\\0a} WORLD");    #not an accent
+};
+
+subtest "splitNames" => sub {
+  plan tests => 7;
+
+  sub isSplitNames {
+    my ($input, $expected) = @_;
+    is_deeply([splitNames($input)], $expected, $input);
+  }
+
+  isSplitNames("tom and jerry", ["tom", "jerry"]);
+  isSplitNames("and jerry", ["and jerry"]);
+  isSplitNames("tom { and { and } } jerry",           ["tom { and { and } } jerry"]);
+  isSplitNames("jerry and",                           ["jerry and"]);
+  isSplitNames("tom cat and jerry mouse",             ["tom cat", "jerry mouse"]);
+  isSplitNames("tom cat and jerry mouse and nibbles", ["tom cat", "jerry mouse", "nibbles"]);
+  isSplitNames("tom cat and jerry mouse and nibbles { and } Uncle Pecos", ["tom cat", "jerry mouse", "nibbles { and } Uncle Pecos"]);
 };
 
 subtest "numNames" => sub {

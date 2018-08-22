@@ -15,7 +15,7 @@ our @EXPORT = (
   qw( &addPeriod ),
   qw( &changeAccent &changeCase ),
   # TODO: Implement format.name$
-  qw( &numNames ),
+  qw( &splitNames &numNames ),
   # TODO: Implement purify$
   # TODO: Implement substring$
   qw( &textLength ),
@@ -158,29 +158,52 @@ sub changeAccent {
 # at brace level 0
 # implements num.names$
 sub numNames {
+  return scalar(splitNames(@_));
+}
+
+# splits a string into a list of names
+# used for numNames and a couple of other utility functions
+sub splitNames {
   my ($string) = @_;
 
   my $level  = 0;
-  my $result = '';
+  my $buffer = '';
+  my @result = ('');
+  my @cache;
   my $character;
 
   # take the string and remove everything that is not of brace-level 0
   my @characters = split(//, $string);
   while ($character = shift(@characters)) {
     if ($level eq 0) {
+      $buffer .= $character;
       if ($character eq '{') {
+        @cache = split(/\sand\s/, $buffer);
+        $result[-1] .= shift(@cache);
+        push(@result, @cache);
+
+        # clear the buffer
+        $buffer = '';
         $level++;
-      } else {
-        $result .= $character;
       }
     } else {
       $level++ if $character eq '{';
       $level-- if $character eq '}';
+      # because we do not split
+      # do not add to the buffer but into the last character
+      $result[-1] .= $character;
     }
   }
 
-  # and count the number of times we have an 'and' surrounded by spaces
-  return (() = $result =~ /\sand\s/ig) + 1;
+  # split the buffer and put it into result
+  if ($buffer) {
+    @cache = split(/\sand\s/, $buffer);
+    $result[-1] .= shift(@cache);
+    push(@result, @cache);
+  }
+
+  # and return the results
+  return @result;
 }
 
 # count's the text-length of a string
