@@ -1,5 +1,5 @@
 use BiBTeXML::Common::Test;
-use Test::More tests => 7;
+use Test::More tests => 10;
 
 subtest "requirements" => sub {
   plan tests => 1;
@@ -39,7 +39,7 @@ subtest "changeAccent" => sub {
 };
 
 subtest "changeCase" => sub {
-  plan tests => 9;
+  plan tests => 10;
 
   sub isChangeCase {
     my ($input, $format, $expected) = @_;
@@ -62,6 +62,9 @@ subtest "changeCase" => sub {
   # accents
   isChangeCase("{\\'a} world", "u", "{\\'A} WORLD");
   isChangeCase("{\\0a} world", "u", "{\\0a} WORLD");    #not an accent
+
+  # weird commands
+  isChangeCase("{\\relax von}", "u", "{\\relax VON}");    # commands
 };
 
 subtest "splitNames" => sub {
@@ -110,4 +113,73 @@ subtest "textLength" => sub {
   isTextLength("a {normal} string",      15);
   isTextLength("a {no{r}mal} string",    15);
   isTextLength("a {\\o{normal}} string", 10);
+};
+
+subtest "splitNameWords" => sub {
+  plan tests => 9;
+
+  sub isSplitNameWords {
+    my ($input, $expected) = @_;
+    is_deeply([splitNameWords($input)], $expected, $input);
+  }
+
+  isSplitNameWords('Catherine Crook de Camp', [['Catherine ', 'Crook ', 'de ', 'Camp'], [], []]);
+  isSplitNameWords('{-}ky Jean Claude', [['{-}ky ', 'Jean ', 'Claude'], [], []]);
+  isSplitNameWords('ky{-} Jean Claude', [['ky{-} ', 'Jean ', 'Claude'], [], []]);
+  isSplitNameWords('ky {-} Jean Claude', [['ky ', '{-} ', 'Jean ', 'Claude'], [], []]);
+
+  isSplitNameWords('Claude, Jon', [['Claude'], ['Jon'], []]);
+  isSplitNameWords('Claude the , Jon e', [['Claude ', 'the '], ['Jon ', 'e'], []]);
+  isSplitNameWords('the, jr, thing', [['the'], ['jr'], ['thing']]);
+
+  isSplitNameWords('Jean-Claude Van Damme', [['Jean-', 'Claude ', 'Van ', 'Damme'], [], []]);
+  isSplitNameWords('Jean{-}Claude Van Damme', [['Jean{-}Claude ', 'Van ', 'Damme'], [], []]);
+};
+
+subtest "getCase" => sub {
+  plan tests => 11;
+
+  sub isGetCase {
+    my ($input, $expected) = @_;
+    is_deeply(getCase($input), $expected, $input);
+  }
+
+  isGetCase('hello',       'l');
+  isGetCase('',            'l');
+  isGetCase('{\\`h}World', 'l');
+  isGetCase('{\von}',      'l');
+
+  isGetCase('{\relax von}', 'l');
+  isGetCase('{\relax Von}', 'u');
+
+  isGetCase('{von}',       'u');
+  isGetCase('{-}hello',    'u');
+  isGetCase('Hello',       'u');
+  isGetCase('{-}Hello',    'u');
+  isGetCase('{\\`H}world', 'u');
+};
+
+subtest "splitNameParts" => sub {
+  plan tests => 11;
+
+  sub isSplitNameParts {
+    my ($input, $expected) = @_;
+    is_deeply([splitNameParts($input)], $expected, $input);
+  }
+
+  # 'simple' cases
+  isSplitNameParts('Catherine Crook de Camp', [['Catherine ', 'Crook '], ['de '], [], ['Camp']]);
+  isSplitNameParts('{-}ky', [[], [], [], ['{-}ky']]);
+  isSplitNameParts('jean de la fontaine du bois joli', [[], ['jean ', 'de ', 'la ', 'fontaine ', 'du ', 'bois '], [], ['joli']]);
+  isSplitNameParts('Alfred Elton {van} Vogt', [['Alfred ', 'Elton ', '{van} '], [], [], ['Vogt']]);
+  isSplitNameParts('Alfred Elton {\relax van} Vogt', [['Alfred ', 'Elton '], ['{\relax van} '], [], ['Vogt']]);
+  isSplitNameParts('Alfred Elton {\relax Van} Vogt', [['Alfred ', 'Elton ', '{\relax Van} '], [], [], ['Vogt']]);
+  isSplitNameParts('Michael {Marshall Smith}', [['Michael '], [], [], ['{Marshall Smith}']]);
+
+  # 'hypenated' cases
+  isSplitNameParts('Jean-Claude {Smit-le-B{\`e}n{\`e}dicte}', [['Jean-', 'Claude '], [], [], ['{Smit-le-B{\`e}n{\`e}dicte}']]);
+  isSplitNameParts('Jean-Claude {Smit-le-B{\`e}n{\`e}dicte}', [['Jean-', 'Claude '], [], [], ['{Smit-le-B{\`e}n{\`e}dicte}']]);
+  isSplitNameParts('Kenneth~Robeson', [['Kenneth~'], [], [], ['Robeson']]);
+  isSplitNameParts('Louis-Albert', [[], [], [], ['Louis-Albert']]);
+
 };
