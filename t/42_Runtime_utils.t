@@ -1,5 +1,5 @@
 use BiBTeXML::Common::Test;
-use Test::More tests => 5;
+use Test::More tests => 6;
 
 subtest "requirements" => sub {
   plan tests => 1;
@@ -79,4 +79,18 @@ subtest "numNames" => sub {
   isNumNames("tom cat and jerry mouse",                                 2);
   isNumNames("tom cat and jerry mouse and nibbles",                     3);
   isNumNames("tom cat and jerry mouse and nibbles { and } Uncle Pecos", 3);
+};
+
+subtest "textLength" => sub {
+  plan tests => 4;
+
+  sub isTextLength {
+    my ($input, $expected) = @_;
+    is(textLength($input), $expected, $input);
+  }
+
+  isTextLength("a normal string",        15);
+  isTextLength("a {normal} string",      15);
+  isTextLength("a {no{r}mal} string",    15);
+  isTextLength("a {\\o{normal}} string", 10);
 };

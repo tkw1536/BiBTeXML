@@ -16,6 +16,11 @@ our @EXPORT = (
   qw( &changeAccent &changeCase ),
   # TODO: Implement format.name$
   qw( &numNames ),
+  # TODO: Implement purify$
+  # TODO: Implement substring$
+  qw( &textLength ),
+  # TODO: Implement text.prefix$
+  # TODO: Implement width$
 );
 
 # takes a string and adds a ‘.’ to it
@@ -176,4 +181,54 @@ sub numNames {
 
   # and count the number of times we have an 'and' surrounded by spaces
   return (() = $result =~ /\sand\s/ig) + 1;
+}
+
+# count's the text-length of a string
+# does not count braces, and counts any accent (i.e. brace followed by a backslash) as 1. )
+# implements text.length$
+sub textLength {
+  my ($string) = @_;
+
+  my $level = 0;
+  my $count = 0;
+  my $character;
+
+  # take the string and remove everything that is not of brace-level 0
+  my @characters = split(//, $string);
+
+  while ($character = shift(@characters)) {
+    if ($level eq 0) {
+      if ($character eq '{') {
+        $level++;
+
+        # pop the next character
+        $character = shift(@characters);
+        return $count unless defined($character);
+
+        $count++;
+
+        # if it has a backslash, eat every character
+        # until we are balanced again.
+        if ($character eq '\\') {
+          while ($character = shift(@characters)) {
+            $level++ if $character eq '{';
+            $level-- if $character eq '}';
+            last     if $level eq 0;
+          }
+        }
+      } else {
+        $count++;
+      }
+    } else {
+      if ($character eq '{') {
+        $level++;
+      } elsif ($character eq '}') {
+        $level--;
+      } else {
+        $count++;
+      }
+    }
+  }
+
+  return $count;
 }
