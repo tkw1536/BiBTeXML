@@ -13,13 +13,14 @@ use warnings;
 use base qw(Exporter);
 our @EXPORT = (
   qw( &addPeriod ),
-  qw( &changeAccent &changeCase ),
-  qw( &splitNameWords &getCase &splitNameParts ),    # TODO: Implement format.name$
+  qw( &splitLetters ),
+  qw( &changeAccent &changeCase &getCase &abbrevName),
+  qw( &splitNameWords &splitNameParts &formatNamePart &formatName ),
   qw( &splitNames &numNames ),
   # TODO: Implement purify$
   # TODO: Implement substring$
   qw( &textLength ),
-  # TODO: Implement text.prefix$
+  qw( &textPrefix ),
   # TODO: Implement width$
 );
 
@@ -45,6 +46,122 @@ sub addPeriod {
 }
 
 ###
+### Splitting text into characters
+###
+
+# splits text into an array of semantic characters (i.e. including accents).
+# includes a second array, stating the level of each characters
+sub splitLetters {
+  my ($string) = @_;
+
+  # split the string into characters
+  my @characters = split(//, $string);
+
+  # current letter and brace level
+  my ($buffer, $hadLetter, $level) = ('', 0, 0);
+  my @letters = ('');
+  my @levels  = (0);
+
+  my $char;
+  while (defined($char = shift(@characters))) {
+    if ($char eq '{') {
+      $level++;
+      if ($level eq 1) {
+
+        # if the next character is a \, then we need to go into accent handling
+        # and read up until the end of the accent.
+        $char = shift(@characters);
+        if (defined($char) && $char eq '\\') {
+          $buffer = '{\\';
+
+          # read characters until we are balanced again
+          while (defined($char = shift(@characters))) {
+            $buffer .= $char;
+            $level++ if $char eq '{';
+            $level-- if $char eq '}';
+            last     if $level eq 0;
+          }
+
+          # push the collected accent and go back into normal mode
+          shift(@letters) unless $hadLetter;
+          shift(@levels)  unless $hadLetter;
+          push(@letters, $buffer);
+          push(@levels,  0);
+          $hadLetter = 1;
+          next;
+        } else {
+          unshift(@characters, $char) if defined($char);
+          $char = '{';
+        }
+      }
+
+      # for nested opening braces
+      # add to the previous one
+      if ($hadLetter && substr($letters[-1], -1) eq '{') {
+        $letters[-1] .= '{';
+        $levels[-1] = $level;
+
+        # else create a new opening element
+      } else {
+        shift(@letters) unless $hadLetter;
+        shift(@levels)  unless $hadLetter;
+        push(@letters, $char);
+        push(@levels,  $level);
+        $hadLetter = 1;
+      }
+
+      # if we have a closing brace, just add it to the previous one
+      # and decrease the level (but never go negative)
+    } elsif ($char eq '}') {
+      $letters[-1] .= '}';
+      $hadLetter = 1;
+      $level-- unless $level eq 0;
+    } else {
+      # if we had an opening brace, append to it
+      if ($hadLetter && substr($letters[-1], -1) eq '{') {
+        $letters[-1] .= $char;
+
+        # else push a normal character
+      } else {
+        shift(@letters) unless $hadLetter;
+        shift(@levels)  unless $hadLetter;
+        push(@letters, $char);
+        push(@levels,  $level);
+        $hadLetter = 1;
+      }
+    }
+  }
+
+  my @theletters = ();
+  my @thelevels  = ();
+
+  my $letter;
+  while (defined($letter = shift(@letters))) {
+    $level = shift(@levels);
+
+    # if we have a letter that is only braces
+    if ($letter =~ /^[\{\}]*$/) {
+      # then try and prepend to the next letter
+      if (scalar(@letters) ne 0) {
+        $letters[0] = $letter . $letters[0];
+        # or the last letter in the output
+      } elsif (scalar(@theletters) ne 0) {
+        $theletters[-1] .= $letter;
+        # if we don't have anything, then only push the letter
+        # so that scalar(@levels) still indiciates the string length
+      } else {
+        push(@theletters, $letter);
+      }
+    } else {
+      push(@theletters, $letter);
+      push(@thelevels,  $level);
+    }
+
+  }
+  return [@theletters], [@thelevels];
+}
+
+###
 ### Changing case of a string
 ###
 
@@ -56,88 +173,53 @@ sub addPeriod {
 # implements the change.case$ built-in
 sub changeCase {
   my ($string, $spec) = @_;
-  $spec = lc($spec);
 
-  # split the string into characters
-  my @characters = split(//, $string);
-  my ($level, $firstpassed) = (0, 0);
-  my $result = '';
-  my $buffer = '';
+  # normalize the specification and split off letters
+  $spec = lc $spec;
+  my ($letters, $levels) = splitLetters($string);
 
-  # Iterate over the characters
-  my ($character, $theSpec);
-  while ($character = shift(@characters)) {
+  # things we will use
+  my $index = 1;
+  my ($result, $letter, $level);
+  my ($prefix, $accent);
+
+  # iterate over each level
+  foreach $letter (@$letters) {
+    $level = shift(@$levels);
+
+    # change case if we are on level 0
     if ($level eq 0) {
-      if ($character eq '{') {
-        # add the backslash for sure
-        $result .= $character;
-        $level++;
-
-        # read the next character
-        $character = shift(@characters);
-        last unless defined($character);
-
-        # if we do not have a backslash
-        # then put the character back and continue at level 1
-        unless ($character eq '\\') {
-          unshift(@characters, $character);
-          $firstpassed = 1;
-          next;
-        }
-        $result .= $character;
-
-        # buffer everything until we are at level 0 again
-        $buffer  = '';
-        $theSpec = $spec;
-        $theSpec = $firstpassed ? 'l' : 'u' if $spec eq 't';
-
-        # Gobble up everything until we are back at level 0
-        while (1) {
-          $character = shift(@characters);
-
-          # if we run out, before the bracket ends
-          # we change the partial buffer
-          # and then finish
-          unless (defined($character)) {
-            $result .= changeAccent($buffer, $theSpec);
-            return $result;
-          }
-
-          # keep reading {s
-          if ($character eq '{') {
-            $level++;
-          } elsif ($character eq '}') {
-            $level--;
-            last if $level eq 0;
-          }
-          $buffer .= $character;
-        }
-        $result .= changeAccent($buffer, $theSpec);
-        $result .= '}';
-      } else {
-        if ($spec eq 'l') {
-          $result .= lc $character;
-        } elsif ($spec eq 'u') {
-          $result .= uc $character;
+      # upper case (or first letter of t)
+      if ($spec eq 'u' or ($spec eq 't' && $index eq 1)) {
+        if ($letter =~ /^[\{\}]*\{\\/) {
+          my ($prefix, $accent) = ($letter =~ m/^([\{\}]*)\{\\(.*)$/);
+          $result .= $prefix . '{\\' . changeAccent(substr($accent, 0, -1), 'u') . '}';
         } else {
-          $result .= $firstpassed ? lc $character : uc $character;
+          $result .= uc $letter;
+        }
+        # lower case (or non-first letter of t)
+      } else {
+        if ($letter =~ /^[\{\}]*\{\\/) {
+          my ($prefix, $accent) = ($letter =~ m/^([\{\}]*)\{\\(.*)$/);
+          $result .= $prefix . '{\\' . changeAccent(substr($accent, 0, -1), 'l') . '}';
+        } else {
+          $result .= lc $letter;
         }
       }
 
-      # at positive levels, do not touch any characters
+      # do not touch anything
+      # of positive level
     } else {
-      $result .= $character;
-      $level++ if $character eq '{';
-      $level-- if $character eq '}';
+      $result .= $letter;
     }
-    $firstpassed = 1;
+    $index++;
   }
 
   return $result;
 }
 
 # changes an accent (in the BiBTeX sense) either to upper or lower case
-# assumes that outer '{', '\' and '}' have already been removed
+# assumes that outer '{', '\' have already been removed
 sub changeAccent {
   my ($accent, $spec) = @_;
 
@@ -150,7 +232,7 @@ sub changeAccent {
 
   # if we have a brace, leave everything before untouched
   # and change the case of everything after
-  my ($macro, $brace, $after) = ($accent =~ /^([^{]*)(\{|\s)(.*)$/m);
+  my ($macro, $brace, $after) = ($accent =~ m/^([^{]*)(\{|\s)(.*)$/);
   if ($brace) {
     return $macro . $brace . ($spec eq 'u' ? uc $after : lc $after);
 
@@ -158,61 +240,88 @@ sub changeAccent {
   } else {
     return $accent;
   }
+}
 
+# gets the 'case' of a single letter of a name in a BiBTeX sense
+# i.e. either 'u' or 'l'. If no alphabetic character exists, returns lower-case.
+sub getCase {
+  my ($string) = @_;
+  my ($char);
+
+  # if the string starts with { *and* it's not a TeX command its upper case
+  return 'u' if ($string =~ /^\{[^\\]/);
+
+  # if it is *not* a two letter accent
+  # and we are of the form {\macro {arguments}}
+  # then we are whatever that letter is
+  unless ($string =~ /\{\\[a-z]{2}\}/) {
+    ($char) = ($string =~ /\{\\[^\}\{\s]+(?:\{|\s)+([a-z])/im);
+    return (($char =~ /[A-Z]/) ? 'u' : 'l') if $char;
+  }
+
+  # It is enough to find the first alphabetic character
+  # because we can now assume we are a TeX Character
+  ($char) = ($string =~ /([a-z])/i);
+  return 'l' unless $char;
+  return ($char =~ /[A-Z]/) ? 'u' : 'l';
 }
 
 ###
-### Counting text length
+### Text Length and substring
 ###
 
-# count's the text-length of a string
-# does not count braces, and counts any accent (i.e. brace followed by a backslash) as 1. )
+# counts the text-length of a string
 # implements text.length$
 sub textLength {
   my ($string) = @_;
 
-  my $level = 0;
-  my $count = 0;
-  my $character;
+  my ($letters, $levels) = splitLetters($string);
+  return scalar(@$levels);
+}
 
-  # take the string and remove everything that is not of brace-level 0
-  my @characters = split(//, $string);
+# returns the prefix of length $length of a string
+# implements text.prefix$
+sub textPrefix {
+  my ($string,  $length) = @_;
+  my ($letters, $levels) = splitLetters($string);
 
-  while ($character = shift(@characters)) {
-    if ($level eq 0) {
-      if ($character eq '{') {
-        $level++;
+  # read a prefix of the string
+  my $index  = 0;
+  my $result = '';
+  my $letter;
+  while (defined($letter = shift(@$letters))) {
+    $result .= $letter;
+    $index++;
+    last if $index eq $length;
+  }
 
-        # pop the next character
-        $character = shift(@characters);
-        return $count unless defined($character);
+  # balance brackets magically
+  my $level = () = ($result =~ /{/g);
+  $level -= () = ($result =~ /}/g);
+  if ($level >= 0) {
+    $result .= ('}' x $level);
+  }
 
-        $count++;
+  return $result;
+}
 
-        # if it has a backslash, eat every character
-        # until we are balanced again.
-        if ($character eq '\\') {
-          while ($character = shift(@characters)) {
-            $level++ if $character eq '{';
-            $level-- if $character eq '}';
-            last     if $level eq 0;
-          }
-        }
-      } else {
-        $count++;
-      }
-    } else {
-      if ($character eq '{') {
-        $level++;
-      } elsif ($character eq '}') {
-        $level--;
-      } else {
-        $count++;
-      }
+# abbreviates a name
+sub abbrevName {
+  my ($string) = @_;
+  my ($letters, $levels) = splitLetters($string);
+
+  my $letter;
+  while (defined($letter = shift(@$letters))) {
+    return $letter if $letter =~ /^[\{\}]*\{\\/;
+    if ($letter =~ /[a-z]/i) {
+      ($letter) = ($letter =~ m/([a-z])/i);
+      return $letter;
     }
   }
 
-  return $count;
+  # we got no letter at all
+  # not sure what to return here
+  return undef;
 }
 
 ###
@@ -233,7 +342,7 @@ sub splitNames {
   # accumalate entries inside of a buffer
   # and then split the buffer, once we reach a non-zero level
   my @characters = split(//, $string);
-  while ($character = shift(@characters)) {
+  while (defined($character = shift(@characters))) {
     if ($level eq 0) {
       $buffer .= $character;
       if ($character eq '{') {
@@ -289,7 +398,7 @@ sub splitNameWords {
   my $character;
 
   my @characters = split(//, $string);
-  while ($character = shift(@characters)) {
+  while (defined($character = shift(@characters))) {
     if ($level eq 0) {
       $buffer .= $character;
       if ($character eq '{') {
@@ -324,7 +433,7 @@ sub splitNameWords {
 
   # iterate over our result array
   # and pop into the three appropriate lists
-  while ($buffer = shift(@result)) {
+  while (defined($buffer = shift(@result))) {
 
     # we did not yet have a comma
     # so push everything into the first array
@@ -356,30 +465,6 @@ sub splitNameWords {
   return [@precomma], [@midcomma], [@postcomma];
 }
 
-# gets the 'case' of a single word of a name in a BiBTeX sense
-# i.e. either 'u' or 'l'. If no alphabetic character exists, returns lower-case.
-sub getCase {
-  my ($string) = @_;
-  my ($char);
-
-  # if the string starts with { *and* it's not a TeX command its upper case
-  return 'u' if ($string =~ /^\{[^\\]/);
-
-  # if it is *not* a two letter accent
-  # and we are of the form {\macro {arguments}}
-  # then we are whatever that letter is
-  unless ($string =~ /\{\\[a-z]{2}\}/) {
-    ($char) = ($string =~ /\{\\[^\}\{\s]+(?:\{|\s)+([a-z])/im);
-    return (($char =~ /[A-Z]/) ? 'u' : 'l') if $char;
-  }
-
-  # It is enough to find the first alphabetic character
-  # because we can now assume we are a TeX Character
-  my ($char) = ($string =~ /([a-z])/i);
-  return 'l' unless $char;
-  return ($char =~ /[A-Z]/) ? 'u' : 'l';
-}
-
 # splits a single name into parts (first, von, jr, last)
 # uses the BiBTeX name location
 sub splitNameParts {
@@ -405,7 +490,7 @@ sub splitNameParts {
   # Style (i): "First von Last"
   if (scalar(@midc) eq 0 && scalar(@postc) eq 0) {
     # if we only have upper case letters, they are all last names
-    while ($word = shift(@prec)) {
+    while (defined($word = shift(@prec))) {
       # if we encounter a lower-case, everything before that is first name
       # and everything including and after it is "von Last"
       if (getCase($word) eq 'l') {
@@ -469,4 +554,170 @@ sub splitNameParts {
   }
 
   return [@first], [@von], [@jr], [@last];
+}
+
+# formats a single name part according to a specification by BiBLatEX
+sub formatNamePart {
+  my ($parts, $short, $seperator, $post) = @_;
+  my $result = '';
+
+  # if we have an explicit seperator, use it
+  # and trim off all the existing ones
+  if (defined($seperator)) {
+    my @names = map { my $name = $_; $name =~ s/([\s~-]+)$//; $name; } @$parts;
+    @names = map { abbrevName($_) } @names if $short;
+    $result = join($seperator, @names);
+  } else {
+    my ($name, $seperator, $index) = ('', '', 0);
+    my $lastIndex = scalar(@$parts) - 1;
+
+    # iterate through all the names
+    foreach $name (@$parts) {
+      # extract name and seperator
+      ($seperator) = ($name =~ m/([\s~-]+)$/);
+      $seperator = ' ' unless defined($seperator); # if a seperator is missing, assume it is ' ' just to be safe
+      $name =~ s/([\s~-]+)$//;
+
+      # add the current token to the result
+      $result .= $short ? abbrevName($name) : $name;
+      $result .= '.' if ($short && $index ne $lastIndex);
+
+      # first index (if we have at least three tokens, and the first one is 1 or 2 characters)
+      if ($index eq 0 && $lastIndex > 2 && ($short or textLength($name) <= 2)) {
+        $result .= ($seperator =~ m/^(\s+)$/) ? '~' : substr($seperator, 0, 1);
+        # insert a '~' for the next to last token
+      } elsif ($index eq $lastIndex - 1) {
+        $result .= ($seperator =~ m/^(\s+)$/) ? '~' : substr($seperator, 0, 1);
+
+        # all non-final tokens: insert the (first) seperator token
+      } elsif ($index ne $lastIndex) {
+        $result .= substr($seperator, 0, 1);
+      }
+
+      $index++;
+    }
+  }
+
+  # if we end with '~~', end with a single '~'
+  if ($post =~ /~~$/) {
+    $post =~ s/~~$/~/;
+
+    # if we end with non-double ~, end with a space
+  } elsif ($post =~ /~$/) {
+    $post =~ s/~$/ /;
+  }
+  return $result . $post;
+}
+
+# formats a BiBTeX name according to a specification
+# implements format.name$
+sub formatName {
+  my ($name, $spec) = @_;
+
+  # split the name into pieces, we will need this during formatting
+  my ($first, $von, $jr, $last) = splitNameParts($name);
+  my @currp;
+
+  # the specification, split into characters
+  my @characters = split(//, $spec);
+  my ($result, $partresult, $character);
+  my ($letter, $short, $seperator, $post);
+  my ($level);
+
+  while (defined($character = shift(@characters))) {
+
+    if ($character eq '{') {
+
+      # iterate through the subpattern
+      $partresult = '';
+      while ($character = shift(@characters)) {
+        # we finally hit the alphabetic character
+        if ($character =~ /[a-z]/i) {
+          $letter = $character;
+
+          # check which part we have
+          if ($letter eq 'f') {
+            @currp = @$first;
+          } elsif ($letter eq 'v') {
+            @currp = @$von;
+          } elsif ($letter eq 'j') {
+            @currp = @$jr;
+          } elsif ($letter eq 'l') {
+            @currp = @$last;
+          } else {
+            return undef, 'Invalid name part: ' . $letter;
+          }
+
+          # read the next pattern
+          $character = shift(@characters);
+          return undef, 'Unexpected end of pattern' unless defined($character);
+
+          # if we have the letter repeated, it is a long pattern
+          if ($character =~ /[a-z]/i) {
+            return undef, "Unexpected letter $character, $letter should be repeated. " unless $character eq $letter;
+            $short     = 0;
+            $character = shift(@characters);
+            return 'Unexpected end of pattern' unless defined($character);
+
+            # else if must be a short pattern.
+          } else {
+            $short = 1;
+          }
+
+          # if we have a '{', read the seperator
+          $seperator = undef;
+          if ($character eq '{') {
+            $level     = 1;
+            $seperator = '';
+            while (defined($character = shift(@characters))) {
+              $level++ if $character eq '{';
+              $level-- if $character eq '}';
+              last     if $level eq 0;
+              $seperator .= $character;
+            }
+          } else {
+            unshift(@characters, $character);
+          }
+
+          # read whatever comes next until we are balaned again
+          # until the closing '}' brace
+          $post  = '';
+          $level = 1;
+          while (defined($character = shift(@characters))) {
+            $level++ if $character eq '{';
+            $level-- if $character eq '}';
+            last     if $level eq 0;
+            $post .= $character;
+          }
+
+          # now format the current part according to what we read.
+          if (scalar(@currp) eq 0) {
+            $partresult = '';
+          } else {
+            my $r = formatNamePart([@currp], $short, $seperator, $post);
+            $partresult .= $r;
+          }
+          last;
+
+          # if we closed the part, without having anything alphabetic
+          # then something weird is going on, so insert it literally.
+        } elsif ($character eq '}') {
+          $partresult = '{' . $partresult . '}';
+          last;
+          # if we do not have a letter
+          # insert this part literally
+        } else {
+          $partresult .= $character;
+        }
+      }
+      $result .= $partresult;
+
+      # outside of a group
+      # characters are inserted undonditionally
+    } else {
+      $result .= $character;
+    }
+  }
+
+  return $result;
 }
