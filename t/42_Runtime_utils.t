@@ -1,5 +1,5 @@
 use BiBTeXML::Common::Test;
-use Test::More tests => 15;
+use Test::More tests => 16;
 
 subtest "requirements" => sub {
   plan tests => 1;
@@ -133,6 +133,20 @@ subtest "textLength" => sub {
   isTextLength("a {normal} string",      15);
   isTextLength("a {no{r}mal} string",    15);
   isTextLength("a {\\o{normal}} string", 10);
+};
+
+subtest "textSubstring" => sub {
+  plan tests => 4;
+
+  sub isTextSubstring {
+    my ($input, $start, $length, $expected) = @_;
+    is(textSubstring($input, $start, $length), $expected, $input);
+  }
+
+  isTextSubstring("Charles",           1,  1, "C");
+  isTextSubstring("{Ch}arles",         1,  1, "{");
+  isTextSubstring("{\\relax Ch}arles", 1,  2, "{\\");
+  isTextSubstring("B{\\`a}rt{\\`o}k",  -2, 3, "`o}");
 };
 
 subtest "textPrefix" => sub {

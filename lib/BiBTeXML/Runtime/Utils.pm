@@ -18,7 +18,7 @@ our @EXPORT = (
   qw( &splitNameWords &splitNameParts &formatNamePart &formatName ),
   qw( &splitNames &numNames ),
   # TODO: Implement purify$
-  # TODO: Implement substring$
+  qw( &textSubstring ),
   qw( &textLength ),
   qw( &textPrefix ),
   # TODO: Implement width$
@@ -303,6 +303,13 @@ sub textPrefix {
   }
 
   return $result;
+}
+
+# returns the prefix of length $length of a string
+# implements substring$
+sub textSubstring {
+  my ($string, $start, $length) = @_;
+  return substr($string, $start > 0 ? $start - 1 : $start - 2, $length);
 }
 
 # abbreviates a name
