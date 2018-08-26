@@ -266,7 +266,7 @@ sub getCase {
 }
 
 ###
-### Text Length and substring
+### Text Length, Width and substring
 ###
 
 # counts the text-length of a string
@@ -428,25 +428,6 @@ sub characterWidth {
 sub textSubstring {
   my ($string, $start, $length) = @_;
   return substr($string, $start > 0 ? $start - 1 : $start - 2, $length);
-}
-
-# abbreviates a name
-sub abbrevName {
-  my ($string) = @_;
-  my ($letters, $levels) = splitLetters($string);
-
-  my $letter;
-  while (defined($letter = shift(@$letters))) {
-    return $letter if $letter =~ /^[\{\}]*\{\\/;
-    if ($letter =~ /[a-z]/i) {
-      ($letter) = ($letter =~ m/([a-z])/i);
-      return $letter;
-    }
-  }
-
-  # we got no letter at all
-  # not sure what to return here
-  return undef;
 }
 
 ###
@@ -684,7 +665,27 @@ sub splitNameParts {
   return [@first], [@von], [@jr], [@last];
 }
 
-# formats a single name part according to a specification by BiBLatEX
+
+# abbreviates a name
+sub abbrevName {
+  my ($string) = @_;
+  my ($letters, $levels) = splitLetters($string);
+
+  my $letter;
+  while (defined($letter = shift(@$letters))) {
+    return $letter if $letter =~ /^[\{\}]*\{\\/;
+    if ($letter =~ /[a-z]/i) {
+      ($letter) = ($letter =~ m/([a-z])/i);
+      return $letter;
+    }
+  }
+
+  # we got no letter at all
+  # not sure what to return here
+  return undef;
+}
+
+# formats a single name part according to a specification by BibTeX
 sub formatNamePart {
   my ($parts, $short, $seperator, $post) = @_;
   my $result = '';
