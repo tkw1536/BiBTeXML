@@ -1,5 +1,5 @@
 use BiBTeXML::Common::Test;
-use Test::More tests => 16;
+use Test::More tests => 17;
 
 subtest "requirements" => sub {
   plan tests => 1;
@@ -133,6 +133,21 @@ subtest "textLength" => sub {
   isTextLength("a {normal} string",      15);
   isTextLength("a {no{r}mal} string",    15);
   isTextLength("a {\\o{normal}} string", 10);
+};
+
+subtest "textWidth" => sub {
+  plan tests => 5;
+
+  sub isTextWidth {
+    my ($input, $expected) = @_;
+    is(textWidth($input), $expected, $input);
+  }
+
+  isTextWidth("hello world",       4782);
+  isTextWidth("thing",             2279);
+  isTextWidth("{hello world}",     5782);
+  isTextWidth("{\\ae}",            722);
+  isTextWidth("{\\example thing}", 2279);
 };
 
 subtest "textSubstring" => sub {

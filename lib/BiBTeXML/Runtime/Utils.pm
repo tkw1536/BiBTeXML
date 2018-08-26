@@ -21,7 +21,7 @@ our @EXPORT = (
   qw( &textSubstring ),
   qw( &textLength ),
   qw( &textPrefix ),
-  # TODO: Implement width$
+  qw( &textWidth ),
 );
 
 ###
@@ -223,7 +223,7 @@ sub changeCase {
 sub changeAccent {
   my ($accent, $spec) = @_;
 
-  # if we have one of the special macros oe|ae|aa|o|l|ss 
+  # if we have one of the special macros oe|ae|aa|o|l|ss
   # or ', `, ^, ", ~, =, . + letter
   if ($accent =~ /^(oe|ae|aa|o|l|ss)$/i or $accent =~ /^[a-z'`\^"~=\.][a-z]$/i) {
     return $spec eq 'u' ? uc $accent : lc $accent;
@@ -302,6 +302,125 @@ sub textPrefix {
   }
 
   return $result;
+}
+
+# compute the width of text in hundredths of a point, as specified by the June 1987 version of the cmr10 font
+# implements width$
+sub textWidth {
+  my ($string) = @_;
+  my ($letters, $levels) = splitLetters($string);
+
+  # iterate over each of the letters
+  my $width = 0;
+  my @characters;
+  my ($prefix, $letter, $level);
+  foreach $letter (@$letters) {
+    $level = shift(@$levels);
+
+    # on level 0, check for accents
+    if (defined($level) && $level eq 0) {
+      ($prefix) = ($letter =~ m/^([\}\{]*)\{/);
+
+      # split off leading {}s
+      if (defined($prefix)) {
+        @characters = split(//, $prefix);
+        $width += characterWidth($_) foreach (@characters);
+        $letter =~ s/^([\}\{]*)\{/\{/;
+
+        # if we have an accent, do something special
+        if (substr($letter, 0, 2) eq '{\\') {
+          $prefix = substr($letter, 2);
+
+          # split of trailing '}{'s
+          $prefix =~ s/([\{\}]*)$//;
+
+          # if we have a two letter abbreviation, return the character of it
+          if ($prefix =~ /^(oe|ae|aa|o|l|ss)$/i or $prefix =~ /^[a-z'`\^"~=\.][a-z]$/i) {
+            $width += characterWidth($prefix);
+
+            # else get the width of everything afterwards
+          } else {
+            ($prefix) = ($prefix =~ m/^(?:[^{]*)(?:\{|\s)(.*)/);
+            # split of trailing '}{'s
+            $prefix =~ s/([\{\}]*)$//;
+            $width += textWidth($prefix);
+          }
+
+          # else compute it normally
+        } else {
+
+          @characters = split(//, $prefix);
+          $width += characterWidth($_) foreach (@characters);
+        }
+      } else {
+        @characters = split(//, $letter);
+        $width += characterWidth($_) foreach (@characters);
+      }
+
+      # on level 1+, we need to add up the width of each character individually
+    } else {
+      @characters = split(//, $letter);
+      $width += characterWidth($_) foreach (@characters);
+    }
+  }
+  return $width;
+}
+
+# table adpoted from
+# https://metacpan.org/source/NODINE/Text-BibTeX-BibStyle-0.03/lib/Text/BibTeX/BibStyle.pm
+# contains widths of accents and basic characters
+our %WIDTHS =
+  (0040 => 278, 0041 => 278, 0042 => 500, 0043 => 833, 0044 => 500,
+  0045 => 833, 0046 => 778, 0047 => 278, 0050 => 389, 0051 => 389,
+  0052 => 500, 0053 => 778, 0054 => 278, 0055 => 333, 0056 => 278,
+  0057 => 500, 0060 => 500, 0061 => 500, 0062 => 500, 0063 => 500,
+  0064 => 500, 0065 => 500, 0066 => 500, 0067 => 500, 0070 => 500,
+  0071 => 500, 0072 => 278, 0073 => 278, 0074 => 278, 0075 => 778,
+  0076 => 472, 0077 => 472, 0100 => 778,
+
+  # A-Z
+  0101 => 750, 0102 => 708, 0103 => 722,  0104 => 764, 0105 => 681,
+  0106 => 653, 0107 => 785, 0110 => 750,  0111 => 361, 0112 => 514,
+  0113 => 778, 0114 => 625, 0115 => 917,  0116 => 750, 0117 => 778,
+  0120 => 681, 0121 => 778, 0122 => 736,  0123 => 556, 0124 => 722,
+  0125 => 750, 0126 => 750, 0127 => 1028, 0130 => 750, 0131 => 750,
+  0132 => 611,
+
+  0133 => 278, 0134 => 500, 0135 => 278, 0136 => 500, 0137 => 278,
+  0140 => 278,
+
+  # a-z
+  0141 => 500, 0142 => 556, 0143 => 444,  0144 => 556, 0145 => 444,
+  0146 => 306, 0147 => 500, 0150 => 556,  0151 => 278, 0152 => 306,
+  0153 => 528, 0154 => 278, 0155 => 833,  0156 => 556, 0157 => 500,
+  0160 => 556, 0161 => 528, 0162 => 392,  0163 => 394, 0164 => 389,
+  0165 => 556, 0166 => 528, 0167 => 722,  0170 => 528, 0171 => 528,
+  0172 => 444, 0173 => 500, 0174 => 1000, 0175 => 500, 0176 => 500,
+
+  aa => 500, AA => 750, o  => 500, O  => 778, l  => 278,  L    => 625,
+  ss => 500, ae => 722, oe => 778, AE => 903, OE => 1014, '?`' => 472,
+  '!`' => 278,
+);
+
+# computes the width of a single character
+sub characterWidth {
+  my ($char) = @_;
+  my $width;
+
+  # if we have a single character
+  # return the width of that character or 0
+  if(length($char) eq 1){
+    $width = $WIDTHS{ ord $char };
+    return $width if defined($width);
+    return 0;
+  }
+
+  # return the width of that accent if defined
+  $width = $WIDTHS{ $char };
+  return $width if defined($width);
+
+  # width of base + width of character itself
+  return ($WIDTHS{ substr($char, 0, 1) } || 0) + characterWidth(substr($char, 1, 1));
 }
 
 # returns the prefix of length $length of a string
