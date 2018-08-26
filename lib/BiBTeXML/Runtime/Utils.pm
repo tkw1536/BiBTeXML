@@ -223,10 +223,9 @@ sub changeCase {
 sub changeAccent {
   my ($accent, $spec) = @_;
 
-  # if we have a length of 2, the second character needs to be alphabetical
-  # the first character needs to be either alphabetical or one of: ', `, ^, ", ~, =, .
-  if (length($accent) eq 2) {
-    return $accent unless $accent =~ /^[a-z'`\^"~=\.][a-z]/i;
+  # if we have one of the special macros oe|ae|aa|o|l|ss 
+  # or ', `, ^, ", ~, =, . + letter
+  if ($accent =~ /^(oe|ae|aa|o|l|ss)$/i or $accent =~ /^[a-z'`\^"~=\.][a-z]$/i) {
     return $spec eq 'u' ? uc $accent : lc $accent;
   }
 
