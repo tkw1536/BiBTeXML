@@ -433,7 +433,10 @@ sub splitNameWords {
 
   # iterate over our result array
   # and pop into the three appropriate lists
+  my $seperator;
   while (defined($buffer = shift(@result))) {
+    # split off everything except for the first seperator
+    $buffer =~ s/([\s~-])[\s~-]*$/$1/;
 
     # we did not yet have a comma
     # so push everything into the first array

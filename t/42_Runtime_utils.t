@@ -197,7 +197,7 @@ subtest "numNames" => sub {
 };
 
 subtest "splitNameWords" => sub {
-  plan tests => 9;
+  plan tests => 13;
 
   sub isSplitNameWords {
     my ($input, $expected) = @_;
@@ -215,6 +215,12 @@ subtest "splitNameWords" => sub {
 
   isSplitNameWords('Jean-Claude Van Damme', [['Jean-', 'Claude ', 'Van ', 'Damme'], [], []]);
   isSplitNameWords('Jean{-}Claude Van Damme', [['Jean{-}Claude ', 'Van ', 'Damme'], [], []]);
+
+  # from Names in BibTEX and MlBibTEX, page 245
+  isSplitNameWords('Edgar  Rice', [['Edgar ', 'Rice'],  [], []]);
+  isSplitNameWords('Edgar ~Rice', [['Edgar ', 'Rice'],  [], []]);
+  isSplitNameWords('Edgar~ Rice', [['Edgar~', 'Rice'],  [], []]);
+  isSplitNameWords('Karl- Heinz', [['Karl-',  'Heinz'], [], []]);
 };
 
 subtest "splitNameParts" => sub {
