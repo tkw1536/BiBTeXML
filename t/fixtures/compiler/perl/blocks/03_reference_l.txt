@@ -1,1 +1,1 @@
-lookupFunction($context, $config, \&builtin__addZoperiodZs, StyString('REFERENCE', 'add.period$', [(1, 2, 1, 9)])); 
+lookupFunction($context, $config, \&builtinAddPeriod, StyString('REFERENCE', 'add.period$', [(1, 2, 1, 9)])); 

@@ -1,24 +1,24 @@
 sub bst__chopZoword { 
   my ($context, $config) = @_; 
   lookupGlobalString($context, $config, 's', StyString('REFERENCE', 's', [(2, 2, 2, 4)])); 
-  builtin__ZcZe($context, $config, StyString('LITERAL', ':=', [(2, 5, 2, 7)])); 
+  builtinZcZe($context, $config, StyString('LITERAL', ':=', [(2, 5, 2, 7)])); 
   lookupGlobalInteger($context, $config, 'len', StyString('REFERENCE', 'len', [(3, 2, 3, 6)])); 
-  builtin__ZcZe($context, $config, StyString('LITERAL', ':=', [(3, 7, 3, 9)])); 
+  builtinZcZe($context, $config, StyString('LITERAL', ':=', [(3, 7, 3, 9)])); 
   pushGlobalString($context, $config, 's', StyString('LITERAL', 's', [(4, 2, 4, 3)])); 
   pushInteger($context, $config, 1, StyString('NUMBER', 1, [(4, 4, 4, 6)])); 
   pushGlobalInteger($context, $config, 'len', StyString('LITERAL', 'len', [(4, 7, 4, 10)])); 
-  builtin__substringZs($context, $config, StyString('LITERAL', 'substring$', [(4, 11, 4, 21)])); 
-  builtin__Ze($context, $config, StyString('LITERAL', '=', [(4, 22, 4, 23)])); 
+  builtinSubstring($context, $config, StyString('LITERAL', 'substring$', [(4, 11, 4, 21)])); 
+  builtinZe($context, $config, StyString('LITERAL', '=', [(4, 22, 4, 23)])); 
   pushFunction($context, $config, sub { 
     my ($context, $config) = @_; 
     pushGlobalString($context, $config, 's', StyString('LITERAL', 's', [(5, 6, 5, 7)])); 
     pushGlobalInteger($context, $config, 'len', StyString('LITERAL', 'len', [(5, 8, 5, 11)])); 
     pushInteger($context, $config, 1, StyString('NUMBER', 1, [(5, 12, 5, 14)])); 
-    builtin__Zp($context, $config, StyString('LITERAL', '+', [(5, 15, 5, 16)])); 
+    builtinZp($context, $config, StyString('LITERAL', '+', [(5, 15, 5, 16)])); 
     pushGlobalInteger($context, $config, 'global.max$', StyString('LITERAL', 'global.max$', [(5, 17, 5, 28)])); 
-    builtin__substringZs($context, $config, StyString('LITERAL', 'substring$', [(5, 29, 5, 39)])); 
+    builtinSubstring($context, $config, StyString('LITERAL', 'substring$', [(5, 29, 5, 39)])); 
   }, StyString('BLOCK', [(StyString('LITERAL', 's', [(5, 6, 5, 7)]), StyString('LITERAL', 'len', [(5, 8, 5, 11)]), StyString('NUMBER', 1, [(5, 12, 5, 14)]), StyString('LITERAL', '+', [(5, 15, 5, 16)]), StyString('LITERAL', 'global.max$', [(5, 17, 5, 28)]), StyString('LITERAL', 'substring$', [(5, 29, 5, 39)]))], [(5, 4, 5, 41)])); 
   lookupGlobalString($context, $config, 's', StyString('REFERENCE', 's', [(6, 4, 6, 6)])); 
-  builtin__ifZs($context, $config, StyString('LITERAL', 'if$', [(7, 2, 7, 5)])); 
+  builtinIf($context, $config, StyString('LITERAL', 'if$', [(7, 2, 7, 5)])); 
 } 
 registerFunctionDefinition($context, $config, 'chop.word', \&bst__chopZoword, StyCommand(StyString('LITERAL', 'FUNCTION', [(0, 0, 1, 8)]), [(StyString('BLOCK', [(StyString('LITERAL', 'chop.word', [(1, 10, 1, 19)]))], [(1, 9, 1, 20)]), StyString('BLOCK', [(StyString('REFERENCE', 's', [(2, 2, 2, 4)]), StyString('LITERAL', ':=', [(2, 5, 2, 7)]), StyString('REFERENCE', 'len', [(3, 2, 3, 6)]), StyString('LITERAL', ':=', [(3, 7, 3, 9)]), StyString('LITERAL', 's', [(4, 2, 4, 3)]), StyString('NUMBER', 1, [(4, 4, 4, 6)]), StyString('LITERAL', 'len', [(4, 7, 4, 10)]), StyString('LITERAL', 'substring$', [(4, 11, 4, 21)]), StyString('LITERAL', '=', [(4, 22, 4, 23)]), StyString('BLOCK', [(StyString('LITERAL', 's', [(5, 6, 5, 7)]), StyString('LITERAL', 'len', [(5, 8, 5, 11)]), StyString('NUMBER', 1, [(5, 12, 5, 14)]), StyString('LITERAL', '+', [(5, 15, 5, 16)]), StyString('LITERAL', 'global.max$', [(5, 17, 5, 28)]), StyString('LITERAL', 'substring$', [(5, 29, 5, 39)]))], [(5, 4, 5, 41)]), StyString('REFERENCE', 's', [(6, 4, 6, 6)]), StyString('LITERAL', 'if$', [(7, 2, 7, 5)]))], [(1, 21, 8, 2)]))], [(0, 0, 8, 2)])); ; 

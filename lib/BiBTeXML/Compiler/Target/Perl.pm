@@ -62,7 +62,18 @@ sub escapeName {
 
 # escapeBuiltinName($name) - escapes the name of a built-in function
 # - $name:  the name of the function to be escaped
-sub escapeBuiltinName { 'builtin__' . escapeName(@_); }
+sub escapeBuiltinName {
+  my ($class, $name) = @_;
+
+  # we can remove some more relax encoding
+  # because we know that the symbols are going to be rather contained
+  $name =~ s/\$$//g;             # remove trailing '$'s
+  $name =~ s/\.(.)/uc($1)/ge;    # change period seperator to CamelCase
+  $name =~ s/^(.)/uc($1)/e;      # upper-case the first letter
+
+  # finally we still need to escape all our characters (just because)
+  'builtin' . escapeName($class, $name);
+}
 
 # escapeFunctionName($name) - escapes the name of a user-defined function
 # - $name:  the name of the function to be escaped
