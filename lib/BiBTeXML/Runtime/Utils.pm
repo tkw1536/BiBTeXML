@@ -12,7 +12,7 @@ use warnings;
 
 use base qw(Exporter);
 our @EXPORT = (
-  qw( &concatString &simplifyString ),
+  qw( &concatString &simplifyString &applyPatch ),
 );
 
 # given two runtime strings, join them and their sources together
@@ -65,4 +65,27 @@ sub simplifyString {
   return join('', @$string), $source;
 }
 
+# given an runtime old string with source references
+# and apply a plain-text patch function $patch to it.
+sub applyPatch {
+  my ($oldString, $oldSource, $patch) = @_;
+
+  # TODO: For the moment this function is pretty stupid
+  # and only knows about unchanged and changed strings
+
+  # simplify the old string
+  my ($theOldString, $theOldSource) = simplifyString($oldString, $oldSource);
+
+  # apply the patch
+  my $theNewString = &{$patch}($theOldString);
+
+  # if nothing changed, return as is
+  if ($theOldString eq $theNewString) {
+    return $oldString, $oldSource;
+
+    # else return the simplified source
+  } else {
+    return [$theNewString], [$theOldSource];
+  }
+}
 1;
