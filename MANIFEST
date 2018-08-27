@@ -58,6 +58,7 @@ lib/BiBTeXML/Runtime/Context.pm
 lib/BiBTeXML/Runtime/Functions.pm
 lib/BiBTeXML/Runtime/Names.pm
 lib/BiBTeXML/Runtime/Strings.pm
+lib/BiBTeXML/Runtime/Utils.pm
 
 #==================================================
 # Test Suite.
@@ -74,6 +75,7 @@ t/40_Runtime_state.t
 t/41_Runtime_entries.t
 t/42_Runtime_strings.t
 t/43_Runtime_names.t
+t/43_Runtime_utils.t
 
 t/fixtures/streamreader/empty.txt
 t/fixtures/streamreader/helloworld.txt
