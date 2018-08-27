@@ -245,4 +245,5 @@ sub readQuote {
   # we can add a +1 here, because we did not read a \n
   return BiBTeXML::BibStyle::StyString->new('QUOTE', $result, [($sr, $sc, $line, $col + 1)]);
 }
+
 1;

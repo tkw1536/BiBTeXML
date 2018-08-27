@@ -12,8 +12,8 @@ use strict;
 use warnings;
 
 use base qw(Exporter);
-our @EXPORT = (
-  qw( &escapeString &startsWith ),
+our @EXPORT = qw(
+  &escapeString &startsWith
 );
 
 # escapes a string so that it can be used as a perl literal

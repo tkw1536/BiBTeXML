@@ -11,9 +11,9 @@ use strict;
 use warnings;
 
 use base qw(Exporter);
-our @EXPORT = (
-  qw( &concatString &simplifyString &applyPatch ),
-  qw( &popType ),
+our @EXPORT = qw(
+  &concatString &simplifyString &applyPatch
+  &popType
 );
 
 # given two runtime strings, join them and their sources together
@@ -95,13 +95,13 @@ sub popType {
   my ($context, $config, $type, $onMissing, $source) = @_;
   my ($tp, $value, $src) = $context->popStack;
 
-  unless(defined($tp)){
+  unless (defined($tp)) {
     $config->log('WARN', 'Attempted to pop the empty stack', $source->getSource);
     return undef, undef, undef;
   }
 
-  if($tp ne $type){
-    if($tp eq 'MISSING' && defined($onMissing)){
+  if ($tp ne $type) {
+    if ($tp eq 'MISSING' && defined($onMissing)) {
       return @$onMissing;
     }
     $config->log('WARN', "Expected to pop type $type from stack, but got type $tp", $source->getSource);

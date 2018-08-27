@@ -11,6 +11,7 @@ use strict;
 use warnings;
 
 use BiBTeXML::Runtime::Utils;
+use BiBTeXML::Runtime::Strings;
 
 use base qw(Exporter);
 our @EXPORT = qw(
@@ -166,8 +167,8 @@ sub builtinPreamble {
 # builtin function purify$
 sub builtinPurify {
   my ($context, $config, $source) = @_;
-  die("Unimplemented")
-};
+  die("Unimplemented");
+}
 
 # builtin function quote$
 sub builtinQuote {
@@ -245,14 +246,14 @@ sub builtinWidth {
 sub builtinWrite {
   my ($context, $config, $source) = @_;
   my ($type, $strings, $sources) = popType($context, $config, 'STRING', undef, $source);
-  
+
   # if we have a string, that's ok.
-  if(defined($type)){
-      my ($str, $src);
-      foreach $str (@$strings){
-        $src = shift(@$sources);
-        $config->write($str, $src);
-      }
+  if (defined($type)) {
+    my ($str, $src);
+    foreach $str (@$strings) {
+      $src = shift(@$sources);
+      $config->write($str, $src);
+    }
   }
 
 }

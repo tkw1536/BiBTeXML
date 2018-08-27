@@ -18,10 +18,10 @@ use File::Basename qw(dirname);
 use File::Spec;
 
 use base qw(Exporter);
-our @EXPORT = (
-  qw( &fixture &slurp &puts &isResult ),
-  qw( &makeStringReader &makeFixtureReader ),
-  qw( &measureBegin &measureEnd ),
+our @EXPORT = qw(
+  &fixture &slurp &puts &isResult
+  &makeStringReader &makeFixtureReader
+  &measureBegin &measureEnd
 );
 
 # read an entire file into a string

@@ -12,17 +12,17 @@ use strict;
 use warnings;
 
 use base qw(Exporter);
-our @EXPORT = (
-  qw(&callDefineEntryField &callDefineEntryInteger &callDefineEntryString),
-  qw(&callDefineGlobalString &callDefineGlobalInteger),
-  qw(&callDefineMacro),
-  qw(&callReadEntries &callSortEntries),
-  qw(&callIterateFunction &callIterateBuiltin),
-  qw(&callReverseFunction &callReverseBuiltin),
-  qw(&callPushFunction),
-  qw(&callPushGlobalString &callPushGlobalInteger &callPushEntryField &callPushEntryString &callPushEntryInteger &callCallFunction &callCallBuiltin),
-  qw(&callLookupGlobalString &callLookupGlobalInteger &callLookupEntryField &callLookupEntryString &callLookupEntryInteger &callLookupFunction &callLookupBuiltin),
-  qw(&callPushString &callPushInteger),
+our @EXPORT = qw(
+  &callDefineEntryField &callDefineEntryInteger &callDefineEntryString
+  &callDefineGlobalString &callDefineGlobalInteger
+  &callDefineMacro
+  &callReadEntries &callSortEntries
+  &callIterateFunction &callIterateBuiltin
+  &callReverseFunction &callReverseBuiltin
+  &callPushFunction
+  &callPushGlobalString &callPushGlobalInteger &callPushEntryField &callPushEntryString &callPushEntryInteger &callCallFunction &callCallBuiltin
+  &callLookupGlobalString &callLookupGlobalInteger &callLookupEntryField &callLookupEntryString &callLookupEntryInteger &callLookupFunction &callLookupBuiltin
+  &callPushString &callPushInteger
 );
 
 ### entry

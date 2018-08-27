@@ -10,15 +10,15 @@ package BiBTeXML::Runtime::Functions;
 use strict;
 use warnings;
 
-use BibTeXML::Runtime::Strings qw(textPurify);
+use BiBTeXML::Runtime::Strings qw(textPurify);
 
 use base qw(Exporter);
-our @EXPORT = (
-  qw( &defineEntryField &defineEntryInteger &defineEntryString &defineGlobalString &defineGlobalInteger &defineGlobalInteger &registerFunctionDefinition &defineMacro ),
-  qw( &readEntries &sortries &iterateFunction &reverseFunction ),
-  qw( &pushString &pushInteger &pushFunction ),
-  qw( &pushFunction &pushGlobalString &pushGlobalInteger &pushEntryField &pushEntryString &pushEntryInteger ),
-  qw( &lookupGlobalString &lookupGlobalInteger &lookupEntryString &lookupEntryInteger &lookupFunction ),
+our @EXPORT = qw(
+  &defineEntryField &defineEntryInteger &defineEntryString &defineGlobalString &defineGlobalInteger &defineGlobalInteger &registerFunctionDefinition &defineMacro
+  &readEntries &sortries &iterateFunction &reverseFunction
+  &pushString &pushInteger &pushFunction
+  &pushFunction &pushGlobalString &pushGlobalInteger &pushEntryField &pushEntryString &pushEntryInteger
+  &lookupGlobalString &lookupGlobalInteger &lookupEntryString &lookupEntryInteger &lookupFunction
 );
 
 ###

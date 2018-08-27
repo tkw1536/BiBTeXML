@@ -15,10 +15,10 @@ use BiBTeXML::Compiler::Calls;
 use BiBTeXML::Compiler::Block;
 
 use base qw(Exporter);
-our @EXPORT = (
-  qw( &compileProgram ),
-  qw( &compileCommand ),
-  qw( &compileEntry &compileStrings &compileIntegers &compileMacro &compileFunction &compileExecute &compileRead &compileSort &compileIterate &compileReverse )
+our @EXPORT = qw(
+  &compileProgram
+  &compileCommand
+  &compileEntry &compileStrings &compileIntegers &compileMacro &compileFunction &compileExecute &compileRead &compileSort &compileIterate &compileReverse
 );
 
 # Compiles a program from (parsed) .bst

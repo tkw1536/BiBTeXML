@@ -22,3 +22,5 @@ our @EXPORT = (
   qw( &compileInlineBlock &compileBlock ),
   qw( &compileEntry &compileStrings &compileIntegers &compileMacro &compileFunction &compileExecute &compileRead &compileSort &compileIterate &compileReverse )
 );
+
+1;

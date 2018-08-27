@@ -16,9 +16,9 @@ use BiBTeXML::Bibliography::BibTag;
 use BiBTeXML::Bibliography::BibEntry;
 
 use base qw(Exporter);
-our @EXPORT = (
-  qw( &readFile &readEntry ),
-  qw( &readLiteral &readBrace &readQuote )
+our @EXPORT = qw(
+  &readFile &readEntry
+  &readLiteral &readBrace &readQuote
 );
 
 # ======================================================================= #
@@ -368,4 +368,5 @@ sub readQuote {
   # we can add a +1 here, because we did not read a \n
   return BiBTeXML::Bibliography::BibString->new('QUOTE', $result, [($sr, $sc, $line, $col + 1)]);
 }
+
 1;

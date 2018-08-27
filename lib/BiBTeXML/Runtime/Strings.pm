@@ -11,15 +11,15 @@ use strict;
 use warnings;
 
 use base qw(Exporter);
-our @EXPORT = (
-  qw( &addPeriod ),
-  qw( &splitLetters &parseAccent ),
-  qw( &changeCase &getCase ),
-  qw( &textSubstring ),
-  qw( &textLength ),
-  qw( &textPrefix ),
-  qw( &textWidth ),
-  qw( &textPurify ),
+our @EXPORT = qw(
+  &addPeriod
+  &splitLetters &parseAccent
+  &changeCase &getCase
+  &textSubstring
+  &textLength
+  &textPrefix
+  &textWidth
+  &textPurify
 );
 
 ###

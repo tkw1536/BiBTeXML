@@ -14,12 +14,12 @@ use warnings;
 use BiBTeXML::Compiler::Calls;
 
 use base qw(Exporter);
-our @EXPORT = (
-  qw( &compileQuote ),
-  qw( &compileInteger ),
-  qw( &compileReference ),
-  qw( &compileLiteral ),
-  qw( &compileInlineBlock &compileBlockBody ),
+our @EXPORT = qw(
+  &compileQuote
+  &compileInteger
+  &compileReference
+  &compileLiteral
+  &compileInlineBlock &compileBlockBody
 );
 
 sub compileInstruction {

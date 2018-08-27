@@ -13,10 +13,10 @@ use warnings;
 use BiBTeXML::Runtime::Strings;
 
 use base qw(Exporter);
-our @EXPORT = (
-  qw( &splitNames &numNames ),
-  qw( &splitNameParts &splitNameWords ),
-  qw( &abbrevName &formatNamePart &formatName ),
+our @EXPORT = qw(
+  &splitNames &numNames
+  &splitNameParts &splitNameWords
+  &abbrevName &formatNamePart &formatName
 );
 
 ###
