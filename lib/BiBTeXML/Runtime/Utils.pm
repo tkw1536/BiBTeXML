@@ -162,15 +162,17 @@ sub splitLetters {
 }
 
 # checks if a balanced string is an accent,
-# and if so returns (1, $outerPrefix, $innerPrefix, $content, $innerSuffix, $outerSuffix)
+# and if so returns (1, $outerPrefix, $innerPrefix, $content, $innerSuffix, $outerSuffix, $command, $commandArgs)
 # - $outerPrefix is a string prefixing the accent, but not belonging to it at all
 # - $innerPrefix is the part of the accent that is not-case sensitive
 # - $content is the case-sensitive part of the accent
 # - $innerSuffix is a string following the accent, and belonging to it
 # - $outerSuffix is a string following the accent, but not belonging to it at all
+# - $command is the command used to built the accent (if any)
+# - $commandArgs is the arguments of the command (if any)
 # the following inequality holds:
 # $string eq $outerPrefix . $innerPrefix . $content . $innerSuffix . $outerSuffix
-# if not returns (0, '', '', $string, '', '')
+# if not returns (0, '', '', $string, '', '', undef, undef)
 sub parseAccent {
   my ($string) = @_;
 
@@ -206,7 +208,7 @@ sub parseAccent {
     $accent = $content;
     $accent =~ s/^\s+|\s+$//g;
 
-    my ($prefix, $suffix);
+    my ($prefix, $suffix, $command, $commandArgs);
 
     # if we have one of the special accents
     if (
@@ -221,6 +223,10 @@ sub parseAccent {
       $accent eq 'L'  or
       $accent eq 'ss'
     ) {
+      # hey, we know this command
+      $command     = $accent;
+      $commandArgs = '';
+
       # we need to keep track fo the prefix and suffix of it
       ($prefix) = ($accent =~ m/^(\s+)/);
       $innerPrefix .= $prefix if defined($prefix);
@@ -234,9 +240,22 @@ sub parseAccent {
       ($prefix, $accent) = ($content =~ m/^([^\s\{]*)([\s\{].*)$/);
       if (defined($accent)) {
         $innerPrefix .= $prefix if defined($prefix);
+        $command = $prefix if defined($prefix);
+
+        $commandArgs = $accent;
+        $commandArgs =~ s/^\s+|\s+$//g;
+        $commandArgs =~ s/\{(.*)\}/$1/g;
+
         # everything if we do not have any spaces or brackets
       } else {
         $accent = $content;
+
+        # if we have some non-alphabetical characters then those are the command
+        ($command, $commandArgs) = ($accent =~ m/^([^a-z]+)([a-z]+)$/i);
+        unless (defined($command)) {
+          $command     = $accent;
+          $commandArgs = '';
+        }
       }
 
       # remove prefixed spaces (if any)
@@ -256,11 +275,11 @@ sub parseAccent {
         $accent = substr($accent, 1, -1);
       }
     }
-    return 1, $outerPrefix, $innerPrefix, $accent, $innerSuffix, $outerSuffix;
+    return 1, $outerPrefix, $innerPrefix, $accent, $innerSuffix, $outerSuffix, $command, $commandArgs;
 
     # this isn't an accent -- what did you pass?
   } else {
-    return 0, '', '', $string, '', '';
+    return 0, '', '', $string, '', '', undef, undef;
   }
 }
 
@@ -384,7 +403,7 @@ sub textWidth {
   # iterate over each of the letters
   my $width = 0;
   my @characters;
-  my ($isAccent, $oPrefix, $iPrefix, $accent, $iSuffix, $oSuffix, $letter, $level);
+  my ($isAccent, $oPrefix, $iPrefix, $accent, $iSuffix, $oSuffix, $command, $commandArgs, $letter, $level);
   foreach $letter (@$letters) {
     $level = shift(@$levels);
 
@@ -392,11 +411,10 @@ sub textWidth {
     if (defined($level) && $level eq 0) {
 
       # parse the accent
-      ($isAccent, $oPrefix, $iPrefix, $accent, $iSuffix, $oSuffix) = parseAccent($string);
-
+      ($isAccent, $oPrefix, $iPrefix, $accent, $iSuffix, $oSuffix, $command, $commandArgs) = parseAccent($string);
       # if we have a command in $accent, add the width of that 'character'
-      if ($isAccent && substr($iPrefix, -1) eq '\\') {
-        $width += characterWidth('\\' . $accent);
+      if (defined($command)) {
+        $width += commandWidth($command, $commandArgs);
 
         # and add the length of the outer prefix and suffix
         @characters = split(//, $oPrefix);
@@ -469,28 +487,28 @@ our %WIDTHS =
   );
 
 # computes the width of a single character
-# which has to be either exactly one character or start with '\\'.
 sub characterWidth {
   my ($char) = @_;
-  my $width;
 
-  # if we have a single character
-  # return the width of that character or 0
-  if (length($char) eq 1) {
-    $width = $WIDTHS{ ord $char };
-    return $width if defined($width);
-    return 0;
-  }
+  my $width = $WIDTHS{ ord $char };
+  return $width if defined($width);
+  return 500;
+}
 
-  # trim off the leading '\\'
-  $char = substr($char, 1);
+# computes the width of a command call
+sub commandWidth {
+  my ($command, $args) = @_;
 
-  # return the width of that accent if defined
-  $width = $WIDTHS{$char};
+  # if it is a known command, return the width of that command
+  my $width = $WIDTHS{$command};
   return $width if defined($width);
 
-  # width of base + width of character itself
-  return ($WIDTHS{ substr($char, 1, 1) } || 0) + characterWidth(substr($char, 2, 1));
+  # else return the width of each character
+  # and add them up
+  $width = 0;
+  my @characters = split(//, $args);
+  $width += characterWidth($_) foreach (@characters);
+  return $width;
 }
 
 # returns the prefix of length $length of a string

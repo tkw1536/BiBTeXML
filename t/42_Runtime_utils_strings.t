@@ -47,17 +47,17 @@ subtest "parseAccent" => sub {
   }
 
   # not an accent
-  IsParseAccent("{w", [0, '', '', "{w", '', '']);
+  IsParseAccent("{w", [0, '', '', "{w", '', '', undef, undef]);
 
   # well-known accents
-  IsParseAccent("{\\ae}",   [1, '', '{\\',  'ae', '}',  '']);
-  IsParseAccent("{\\`a}",   [1, '', '{\\',  '`a', '}',  '']);
-  IsParseAccent("{\\`{a}}", [1, '', '{\`{', 'a',  '}}', '']);
+  IsParseAccent("{\\ae}",   [1, '', '{\\',  'ae', '}',  '', 'ae', '']);
+  IsParseAccent("{\\`a}",   [1, '', '{\\',  '`a', '}',  '', '`',  'a']);
+  IsParseAccent("{\\`{a}}", [1, '', '{\`{', 'a',  '}}', '', '`',  'a']);
 
   # custom accents
-  IsParseAccent("{\\ab}",            [1, '', '{\\',       'ab',     '}',  '']);
-  IsParseAccent("{\\hello world}",   [1, '', '{\\hello ', 'world',  '}',  '']);
-  IsParseAccent("{\\hello{ thing}}", [1, '', '{\\hello{', ' thing', '}}', '']);
+  IsParseAccent("{\\ab}",            [1, '', '{\\',       'ab',     '}',  '', 'ab',    '']);
+  IsParseAccent("{\\hello world}",   [1, '', '{\\hello ', 'world',  '}',  '', 'hello', 'world']);
+  IsParseAccent("{\\hello{ thing}}", [1, '', '{\\hello{', ' thing', '}}', '', 'hello', ' thing']);
 };
 
 subtest "addPeriod" => sub {
@@ -146,7 +146,7 @@ subtest "textLength" => sub {
 };
 
 subtest "textWidth" => sub {
-  plan tests => 5;
+  plan tests => 6;
 
   sub isTextWidth {
     my ($input, $expected) = @_;
@@ -157,6 +157,7 @@ subtest "textWidth" => sub {
   isTextWidth("thing",             2279);
   isTextWidth("{hello world}",     5782);
   isTextWidth("{\\ae}",            722);
+  isTextWidth("{\\ab}",            0);
   isTextWidth("{\\example thing}", 2279);
 };
 
