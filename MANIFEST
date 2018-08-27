@@ -71,7 +71,8 @@ t/31_Compiler_Perl_commands.t
 t/32_Compiler_Perl_file.t
 t/40_Runtime_state.t
 t/41_Runtime_entries.t
-t/42_Runtime_utils.t
+t/42_Runtime_utils_strings.t
+t/43_Runtime_utils_names.t
 
 t/fixtures/streamreader/empty.txt
 t/fixtures/streamreader/helloworld.txt
