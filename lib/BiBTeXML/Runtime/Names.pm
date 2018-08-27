@@ -447,3 +447,5 @@ sub formatName {
 
   return $result;
 }
+
+1;

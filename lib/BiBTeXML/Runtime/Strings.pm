@@ -576,3 +576,5 @@ sub textPurify {
   }
   return $purified;
 }
+
+1;

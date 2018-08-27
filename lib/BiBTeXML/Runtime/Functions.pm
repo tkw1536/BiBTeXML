@@ -91,8 +91,8 @@ sub readEntries {
 
   if ($status eq 0) {
     my $warning;
-    foreach $warning (@warnings) {
-      $config->log('WARN', $warning, shift($locations));
+    foreach $warning (@$warnings) {
+      $config->log('WARN', $warning, shift(@$locations));
     }
   } elsif ($status eq 1) {
     $config->log('WARN', 'Can not read entries: Already read entries', $styString->getSource);
@@ -104,7 +104,7 @@ sub readEntries {
 # sortEntries() -- sorts (already read) entries
 sub sortEntries {
   my ($context, $config, $styString) = @_;
-  my $keys = ();
+  my %keys = ();
 
   # find all the entries
   my $entries = $context->getEntries;
@@ -142,9 +142,9 @@ sub iterateFunction {
     $config->log('WARN', 'Can not iterate entries: No entries have been read', $styString->getSource);
   } else {
     my $entry;
-    foreach $entry (@entries) {
+    foreach $entry (@$entries) {
       $context->setEntry($entry);
-      &{$function}($contex, $config);
+      &{$function}($context, $config);
     }
     $context->leaveEntry;
   }
@@ -160,9 +160,9 @@ sub reverseFunction {
     $config->log('WARN', 'Can not iterate entries: No entries have been read. ', $styString->getSource);
   } else {
     my $entry;
-    foreach $entry (reverse(@entries)) {
+    foreach $entry (reverse(@$entries)) {
       $context->setEntry($entry);
-      &{$function}($contex, $config);
+      &{$function}($context, $config);
     }
     $context->leaveEntry;
   }
@@ -231,7 +231,7 @@ sub pushEntryInteger {
 # lookupGlobalString($name) -- pushes the value of a global string onto the stack
 sub lookupGlobalString {
   my ($context, $config, $name, $sourceRef) = @_;
-  my ($t, $v, $s) = $context->getVariable($t);
+  my ($t, $v, $s) = $context->getVariable($name);
   if (defined($t)) {
     $context->pushStack($t, $v, $s);
   } else {
@@ -242,7 +242,7 @@ sub lookupGlobalString {
 # lookupGlobalInteger($name) -- pushes the value of a integer onto the stack
 sub lookupGlobalInteger {
   my ($context, $config, $name, $sourceRef) = @_;
-  my ($t, $v, $s) = $context->getVariable($t);
+  my ($t, $v, $s) = $context->getVariable($name);
   if (defined($t)) {
     $context->pushStack($t, $v, $s);
   } else {
@@ -253,7 +253,7 @@ sub lookupGlobalInteger {
 # lookupEntryField($name) -- pushes the value of an entry field onto the stack
 sub lookupEntryField {
   my ($context, $config, $name, $sourceRef) = @_;
-  my ($t, $v, $s) = $context->getVariable($t);
+  my ($t, $v, $s) = $context->getVariable($name);
   if (defined($t)) {
     $context->pushStack($t, $v, $s);
   } else {
@@ -264,7 +264,7 @@ sub lookupEntryField {
 # lookupEntryString($name) -- pushes the value of an entry string onto the stack
 sub lookupEntryString {
   my ($context, $config, $name, $sourceRef) = @_;
-  my ($t, $v, $s) = $context->getVariable($t);
+  my ($t, $v, $s) = $context->getVariable($name);
   if (defined($t)) {
     $context->pushStack($t, $v, $s);
   } else {
@@ -275,7 +275,7 @@ sub lookupEntryString {
 # lookupEntryInteger($name) -- pushes the value of an entry integer onto the stack
 sub lookupEntryInteger {
   my ($context, $config, $name, $sourceRef) = @_;
-  my ($t, $v, $s) = $context->getVariable($t);
+  my ($t, $v, $s) = $context->getVariable($name);
   if (defined($t)) {
     $context->pushStack($t, $v, $s);
   } else {
@@ -288,3 +288,5 @@ sub lookupFunction {
   my ($context, $config, $function, $sourceRef) = @_;
   $context->pushStack('FUNCTION', $function, undef);
 }
+
+1;
