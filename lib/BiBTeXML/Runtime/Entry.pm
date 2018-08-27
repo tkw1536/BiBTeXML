@@ -90,6 +90,11 @@ sub new {
   return $self, undef, undef;
 }
 
+sub getKey {
+  my ($self) = @_;
+  return $$self{key};
+}
+
 # gets the value of a given variable
 # get a variable (type, value, source) or undef if it doesn't exist
 sub getVariable {

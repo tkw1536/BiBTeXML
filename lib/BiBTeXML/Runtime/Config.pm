@@ -11,7 +11,7 @@ use strict;
 use warnings;
 
 use BiBTeXML::Runtime::Context;
-use BiBTeXML::Runtime::Functions;
+use BiBTeXML::Runtime::Builtins;
 
 sub new {
   my ($class, $resultHandle, $outputHandle, $readers) = @_;
@@ -75,43 +75,42 @@ sub initContext {
 
   # define all the built-in functions
   # TODO: We want to actually make references to all of them.
-  $context->assignVariable('>',  'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('>',  'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('<',  'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('=',  'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('+',  'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('-',  'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('*',  'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable(':=', 'FUNCTION', ['FUNCTION', undef, undef]);
+  $context->assignVariable('>',  'FUNCTION', ['FUNCTION', &builtinZg,   undef]);
+  $context->assignVariable('<',  'FUNCTION', ['FUNCTION', &builtinZl,   undef]);
+  $context->assignVariable('=',  'FUNCTION', ['FUNCTION', &builtinZe,   undef]);
+  $context->assignVariable('+',  'FUNCTION', ['FUNCTION', &builtinZp,   undef]);
+  $context->assignVariable('-',  'FUNCTION', ['FUNCTION', &builtinZm,   undef]);
+  $context->assignVariable('*',  'FUNCTION', ['FUNCTION', &builtinZa,   undef]);
+  $context->assignVariable(':=', 'FUNCTION', ['FUNCTION', &builtinZcZe, undef]);
 
-  $context->assignVariable('add.period$',  'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('call.type$',   'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('change.case$', 'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('chr.to.int$',  'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('cite$',        'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('duplicate$',   'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('empty$',       'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('format.name$', 'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('if$',          'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('int.to.chr$',  'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('int.to.str$',  'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('missing$',     'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('newline$',     'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('num.names$',   'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('pop$',         'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('preamble$',    'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('purify$',      'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('quote$',       'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('skip$',        'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('stack$',       'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('substring$',   'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('swap$',        'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('text.length$', 'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('text.prefix$', 'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('top$',         'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('type$',        'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('warning$',     'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('while$',       'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('width$',       'FUNCTION', ['FUNCTION', undef, undef]);
-  $context->assignVariable('write$',       'FUNCTION', ['FUNCTION', undef, undef]);
+  $context->assignVariable('add.period$',  'FUNCTION', ['FUNCTION', &builtinAddPeriod,  undef]);
+  $context->assignVariable('call.type$',   'FUNCTION', ['FUNCTION', &builtinCallType,   undef]);
+  $context->assignVariable('change.case$', 'FUNCTION', ['FUNCTION', &builtinChangeCase, undef]);
+  $context->assignVariable('chr.to.int$',  'FUNCTION', ['FUNCTION', &builtinChrToInt,   undef]);
+  $context->assignVariable('cite$',        'FUNCTION', ['FUNCTION', &builtinCite,       undef]);
+  $context->assignVariable('duplicate$',   'FUNCTION', ['FUNCTION', &builtinDuplicate,  undef]);
+  $context->assignVariable('empty$',       'FUNCTION', ['FUNCTION', &builtinEmpty,      undef]);
+  $context->assignVariable('format.name$', 'FUNCTION', ['FUNCTION', &builtinFormatName, undef]);
+  $context->assignVariable('if$',          'FUNCTION', ['FUNCTION', &builtinIf,         undef]);
+  $context->assignVariable('int.to.chr$',  'FUNCTION', ['FUNCTION', &builtinIntToChr,   undef]);
+  $context->assignVariable('int.to.str$',  'FUNCTION', ['FUNCTION', &builtinIntToStr,   undef]);
+  $context->assignVariable('missing$',     'FUNCTION', ['FUNCTION', &builtinMissing,    undef]);
+  $context->assignVariable('newline$',     'FUNCTION', ['FUNCTION', &builtinNewline,    undef]);
+  $context->assignVariable('num.names$',   'FUNCTION', ['FUNCTION', &builtinNumNames,   undef]);
+  $context->assignVariable('pop$',         'FUNCTION', ['FUNCTION', &builtinPop,        undef]);
+  $context->assignVariable('preamble$',    'FUNCTION', ['FUNCTION', &builtinPreamble,   undef]);
+  $context->assignVariable('purify$',      'FUNCTION', ['FUNCTION', &builtinPurify,     undef]);
+  $context->assignVariable('quote$',       'FUNCTION', ['FUNCTION', &builtinQuote,      undef]);
+  $context->assignVariable('skip$',        'FUNCTION', ['FUNCTION', &builtinSkip,       undef]);
+  $context->assignVariable('stack$',       'FUNCTION', ['FUNCTION', &builtinStack,      undef]);
+  $context->assignVariable('substring$',   'FUNCTION', ['FUNCTION', &builtinSubstring,  undef]);
+  $context->assignVariable('swap$',        'FUNCTION', ['FUNCTION', &builtinSwap,       undef]);
+  $context->assignVariable('text.length$', 'FUNCTION', ['FUNCTION', &builtinTextLength, undef]);
+  $context->assignVariable('text.prefix$', 'FUNCTION', ['FUNCTION', &builtinTextPrefix, undef]);
+  $context->assignVariable('top$',         'FUNCTION', ['FUNCTION', &builtinTop,        undef]);
+  $context->assignVariable('type$',        'FUNCTION', ['FUNCTION', &builtinType,       undef]);
+  $context->assignVariable('warning$',     'FUNCTION', ['FUNCTION', &builtinWarning,    undef]);
+  $context->assignVariable('while$',       'FUNCTION', ['FUNCTION', &builtinWhile,      undef]);
+  $context->assignVariable('width$',       'FUNCTION', ['FUNCTION', &builtinWidth,      undef]);
+  $context->assignVariable('write$',       'FUNCTION', ['FUNCTION', &builtinWrite,      undef]);
 }

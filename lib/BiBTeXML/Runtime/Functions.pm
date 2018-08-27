@@ -10,10 +10,12 @@ package BiBTeXML::Runtime::Functions;
 use strict;
 use warnings;
 
+use BibTeXML::Runtime::Strings qw(textPurify);
+
 use base qw(Exporter);
 our @EXPORT = (
   qw( &defineEntryField &defineEntryInteger &defineEntryString &defineGlobalString &defineGlobalInteger &defineGlobalInteger &registerFunctionDefinition &defineMacro ),
-  qw( &readEntries &sortEntries &iterateFunction &reverseFunction ),
+  qw( &readEntries &sortries &iterateFunction &reverseFunction ),
   qw( &pushString &pushInteger &pushFunction ),
   qw( &pushFunction &pushGlobalString &pushGlobalInteger &pushEntryField &pushEntryString &pushEntryInteger ),
   qw( &lookupGlobalString &lookupGlobalInteger &lookupEntryString &lookupEntryInteger &lookupFunction ),
@@ -102,8 +104,33 @@ sub readEntries {
 # sortEntries() -- sorts (already read) entries
 sub sortEntries {
   my ($context, $config, $styString) = @_;
-  # TODO: Implement sorting
-  $config->log('WARN', 'Sorting of entries is not implemented yet', $styString->getSource);
+  my $keys = ();
+
+  # find all the entries
+  my $entries = $context->getEntries;
+  unless (defined($entries)) {
+    $config->log('ERROR', 'Can not sort entries:  No entries read yet. ', $styString->getSource);
+    return;
+  }
+
+  # determine their purified key
+  my ($entry, $key);
+  foreach $entry (@$entries) {
+
+    # get the sort.key$ variable
+    ($key) = $entry->getVariable('sort.key$');
+    $key = [''] unless defined($key);    # iff it is undefined
+    $key = join('', @$key);
+
+    # and purify it
+    $keys{ $entry->getKey } = textPurify($key);
+  }
+
+  # sort entries using the purified sorting key
+  $context->sortEntries(sub {
+      my ($entryA, $entryB) = @_;
+      return $keys{ $entryA->getKey } cmp $keys{ $entryB->getKey };
+  });
 }
 
 # iterateFunction($function) -- iterates a function over all entries
