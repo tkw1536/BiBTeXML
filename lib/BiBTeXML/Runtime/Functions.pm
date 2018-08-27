@@ -30,7 +30,7 @@ sub defineEntryField {
   my ($context, $config, $name, $styString) = @_;
 
   $config->log('warn', "Can not define entry field $name: Already defined", $styString->getSource)
-    unless $context->defineVariable('ENTRY_FIELD', $name);
+    unless $context->defineVariable($name, 'ENTRY_FIELD');
 }
 
 # defineEntryInteger($name) -- defines a new entry integer
@@ -38,7 +38,7 @@ sub defineEntryInteger {
   my ($context, $config, $name, $styString) = @_;
 
   $config->log('warn', "Can not define entry integer $name: Already defined", $styString->getSource)
-    unless $context->defineVariable('ENTRY_INTEGER', $name);
+    unless $context->defineVariable($name, 'ENTRY_INTEGER');
 }
 
 # defineEntryString($name) -- defines a new entry string
@@ -46,7 +46,7 @@ sub defineEntryString {
   my ($context, $config, $name, $styString) = @_;
 
   $config->log('warn', "Can not define entry string $name: Already defined", $styString->getSource)
-    unless $context->defineVariable('ENTRY_STRING', $name);
+    unless $context->defineVariable($name, 'ENTRY_STRING');
 }
 
 # defineGlobalString($name) -- defines a new global string
@@ -54,7 +54,7 @@ sub defineGlobalString {
   my ($context, $config, $name, $styString) = @_;
 
   $config->log('warn', "Can not define global string $name: Already defined", $styString->getSource)
-    unless $context->defineVariable('GLOBAL_STRING', $name);
+    unless $context->defineVariable($name, 'GLOBAL_STRING');
 }
 
 # defineGlobalInteger($name) -- defines a new global integer
@@ -62,14 +62,14 @@ sub defineGlobalInteger {
   my ($context, $config, $name, $styString) = @_;
 
   $config->log('warn', "Can not define global string $name: Already defined", $styString->getSource)
-    unless $context->defineVariable('GLOBAL_INTEGER', $name);
+    unless $context->defineVariable($name, 'GLOBAL_INTEGER');
 }
 
 # perl runtime specific: register a function defintion
 sub registerFunctionDefinition {
   my ($context, $config, $name, $function, $styString) = @_;
   $config->log('warn', "Can not define function $name: Already defined", $styString->getSource)
-    unless $context->assignVariable('FUNCTION', $name) eq 0;
+    unless $context->assignVariable($name, 'FUNCTION', ['FUNCTION', $function, undef]) eq 0;
 }
 
 # defineMacro($name, $value) -- defines a new macro
@@ -197,31 +197,31 @@ sub pushFunction {
 # pushGlobalString($name) -- pushes a global string onto the stack
 sub pushGlobalString {
   my ($context, $config, $name, $sourceRef) = @_;
-  $context->pushStack('REFERENCE', ('GLOBAL_STRING', $name), undef);
+  $context->pushStack('REFERENCE', [('GLOBAL_STRING', $name)], undef);
 }
 
 # pushGlobalInteger($name) -- pushes a global integer onto the stack
 sub pushGlobalInteger {
   my ($context, $config, $name, $sourceRef) = @_;
-  $context->pushStack('REFERENCE', ('GLOBAL_INTEGER', $name), undef);
+  $context->pushStack('REFERENCE', [('GLOBAL_INTEGER', $name)], undef);
 }
 
 # pushEntryField($name) -- pushes an entry field onto the stack
 sub pushEntryField {
   my ($context, $config, $name, $sourceRef) = @_;
-  $context->pushStack('REFERENCE', ('ENTRY_FIELD', $name), undef);
+  $context->pushStack('REFERENCE', [('ENTRY_FIELD', $name)], undef);
 }
 
 # pushEntryString($name) -- pushes an entry string onto the stack
 sub pushEntryString {
   my ($context, $config, $name, $sourceRef) = @_;
-  $context->pushStack('REFERENCE', ('ENTRY_STRING', $name), undef);
+  $context->pushStack('REFERENCE', [('ENTRY_STRING', $name)], undef);
 }
 
 # pushEntryInteger($name) -- pushes an entry integer onto the stack
 sub pushEntryInteger {
   my ($context, $config, $name, $sourceRef) = @_;
-  $context->pushStack('REFERENCE', ('ENTRY_INTEGER', $name), undef);
+  $context->pushStack('REFERENCE', [('ENTRY_INTEGER', $name)], undef);
 }
 
 ###

@@ -118,8 +118,8 @@ sub peekStack {
 sub pushStack {
   my ($self, $type, $value, $source) = @_;
   push(@{ $$self{typeStack} },   $type);
-  push(@{ $$self{valueStack} },  $type);
-  push(@{ $$self{sourceStack} }, $type);
+  push(@{ $$self{valueStack} },  $value);
+  push(@{ $$self{sourceStack} }, $source);
   return 1;
 }
 
@@ -295,10 +295,9 @@ sub assignVariable {
 
   # define the variable
   my $def = $self->defineVariable($name, $type);
-  return 1 if $def eq 0;
+  return 1 unless $def eq 1;
 
-  # assign it
-  return $self->assignVariable($name, $value);
+  return $self->setVariable($name, $value);
 }
 
 ###

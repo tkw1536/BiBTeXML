@@ -167,7 +167,13 @@ sub builtinPreamble {
 # builtin function purify$
 sub builtinPurify {
   my ($context, $config, $source) = @_;
-  die("Unimplemented");
+  my ($type, $strings, $sources) = popType($context, $config, 'STRING', undef, $source);
+
+  # if we have a string, that's ok.
+  if (defined($type)) {
+    my ($newStrings, $newSources) = applyPatch($strings, $sources, \&textPurify);
+    $context->pushStack('STRING', $newStrings, $newSources);
+  }
 }
 
 # builtin function quote$
