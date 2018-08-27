@@ -1,10 +1,10 @@
 use BiBTeXML::Common::Test;
-use Test::More tests => 10;
+use Test::More tests => 11;
 
 subtest "requirements" => sub {
   plan tests => 1;
 
-  use_ok("BiBTeXML::Runtime::Utils");
+  use_ok("BiBTeXML::Runtime::Strings");
 };
 
 subtest "splitLetters" => sub {
@@ -186,4 +186,29 @@ subtest "textPrefix" => sub {
   isTextPrefix("hello world",          2, "he");
   isTextPrefix("{{hello world}}",      2, "{{he}}");
   isTextPrefix("{\\accent world}1234", 2, "{\\accent world}1");
+};
+
+subtest "purify" => sub {
+  plan tests => 9;
+
+  sub IsTextPurify {
+    my ($input, $expected) = @_;
+    is(textPurify($input), $expected, $input);
+  }
+
+  # an example which encapsulates pretty much everything
+  IsTextPurify('The {\relax stuff} and {\ae} things~-42', 'The stuff and ae things  42');
+
+  # examples from Tame the BeaST, page 22
+  IsTextPurify('t\^ete',     'tete');
+  IsTextPurify('t{\^e}te',   'tete');
+  IsTextPurify('t{\^{e}}te', 'tete');
+
+  IsTextPurify('Bib{\TeX}', 'Bib');
+  IsTextPurify('Bib\TeX',   'BibTeX');
+
+  IsTextPurify('\OE', 'OE');
+
+  IsTextPurify('The {\LaTeX} {C}ompanion',  'The  Companion');
+  IsTextPurify('The { \LaTeX} {C}ompanion', 'The  LaTeX Companion');
 };

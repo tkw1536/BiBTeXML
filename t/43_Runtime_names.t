@@ -4,7 +4,7 @@ use Test::More tests => 8;
 subtest "requirements" => sub {
   plan tests => 1;
 
-  use_ok("BiBTeXML::Runtime::Utils");
+  use_ok("BiBTeXML::Runtime::Names");
 };
 
 subtest "abbrevName" => sub {
