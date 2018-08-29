@@ -72,7 +72,7 @@ print STDERR "Parsed   $bstfile in $durationParse seconds. \n";
 
 # compile the file and print how long it took
 my $startCompile = time;
-my ($compile, $compileError) = eval { compileProgram($target, $parsed) } or do {
+my ($compile, $compileError) = eval { compileProgram($target, $parsed, $bstfile) } or do {
   print STDERR "Unable to compile $bstfile. \n";
   print STDERR $@;
   exit 5;

@@ -64,8 +64,9 @@ sub bstFunctionCall { die("Unimplemented"); }
 # - @arguments:     a set of appropriatly escaped arguments to give to the call
 sub runtimeFunctionCall { die("Unimplemented"); }
 
-# wrapProgram($program) - function used to wrap a compiled program
+# wrapProgram($program, $name) - function used to wrap a compiled program
 # - $program:      the compiled program
+# - $name:         the (string escaped) file name of the program to be compiled
 sub wrapProgram { die("Unimplemented"); }
 
 ### Some general notes:

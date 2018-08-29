@@ -20,12 +20,17 @@ sub new {
   my $context = BiBTeXML::Runtime::Context->new();
 
   return bless {
-    name         => $name,           # the .bst (compiled) file name
+    name         => $name,
     context      => $context,
     resultHandle => $resultHandle,
     outputHandle => $outputHandle,
     readers      => [@{$readers}]
   }, $class;
+}
+
+sub setName {
+  my ($self, $name) = @_;
+  $$self{name} = $name;
 }
 
 # writes a message of a given level to the output.

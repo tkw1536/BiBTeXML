@@ -20,7 +20,7 @@ sub doesCompileFile {
     ok(!defined($error), "parses $name without error");
 
     # compile the parsed code
-    my ($program, $perror) = compileProgram($target, $results);
+    my ($program, $perror) = compileProgram($target, $results, '');
     diag($perror) if $perror;
     # puts($path, $program); # to generate test cases
     is($program, slurp($path), "evaluates $name correctly");

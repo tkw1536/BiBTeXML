@@ -24,7 +24,7 @@ our @EXPORT = qw(
 # Compiles a program from (parsed) .bst
 # into a string representing perl
 sub compileProgram {
-  my ($target, $program) = @_;
+  my ($target, $program, $name) = @_;
 
   # to be compiled
   my $code = '';
@@ -85,7 +85,7 @@ sub compileProgram {
     $code .= $result;
   }
 
-  return $target->wrapProgram($code);
+  return $target->wrapProgram($code, $target->escapeString($name));
 }
 
 # compiles a command in a given context
