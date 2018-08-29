@@ -19,7 +19,12 @@ use BiBTeXML::Common::Utils;
 ### An entry consists of the following values:
 
 sub new {
-  my ($class, $context, $entry) = @_;
+  my ($class, $name, $context, $entry) = @_;
+
+  sub locationOf {
+    my ($n, $source) = @_;
+    return $n, @{ $source->getSource };
+  }
 
   # read our type, skip 'string's and 'comment's
   my $type = lc $entry->getType->getValue;
@@ -30,17 +35,17 @@ sub new {
 
   # if we have a preamble, return the conent of the preamble
   if ($type eq 'preamble') {
-    return undef, ['Missing content for preamble'], [$entry->getSource] unless scalar(@tags) eq 1;
+    return undef, ['Missing content for preamble'], [locationOf($name, $entry)] unless scalar(@tags) eq 1;
     my $preamble = shift(@tags);
-    return $preamble->getContent->getValue, [('', 'preamble')];
+    return $preamble->getContent->getValue, [($name, '', 'preamble')];
   }
 
   # Make sure that we have something
-  return undef, ['Missing key for entry', [$entry->getSource]] unless scalar(@tags) > 0;
+  return undef, ['Missing key for entry', [locationOf($name, $entry)]] unless scalar(@tags) > 0;
 
   # make sure that we have a key
   my $key = shift(@tags)->getContent->getValue;
-  return undef, ['Expected non-empty key', [$entry->getSource]] unless $key;
+  return undef, ['Expected non-empty key', [locationOf($name, $entry)]] unless $key;
 
   my ($tag, $value, $valueKey);
   my %values      = ();
@@ -53,8 +58,8 @@ sub new {
 
     # we need a key=value in this tag
     unless (defined($valueKey)) {
-      push(@warnings,  'Missing key for value');
-      push(@locations, $tag->getContent->getSource);
+      push(@warnings, 'Missing key for value');
+      push(@locations, locationOf($name, $tag->getContent));
       next;
     }
 
@@ -62,14 +67,16 @@ sub new {
 
     # if we have a duplicate valye
     if (defined($values{$valueKey})) {
-      push(@warnings,  'Duplicate value in entry ' . $key . ': Tag ' . $valueKey . ' already defined. ');
-      push(@locations, $tag->getContent->getSource);
+      push(@warnings, 'Duplicate value in entry ' . $key . ': Tag ' . $valueKey . ' already defined. ');
+      push(@locations, locationOf($name, $tag->getContent->getSource));
       next;
     }
     $values{$valueKey} = $value;
   }
 
   my $self = bless {
+    name => $name,
+
     # the context corresponding to this entry
     context => $context,
 
@@ -110,8 +117,8 @@ sub getVariable {
   if ($type eq 'ENTRY_FIELD') {
     my $field = $$self{values}{ lc $name };
 
-    return 'STRING', [$field], [[($$self{key}, lc $name)]] if defined($field);
-    return 'MISSING', undef, [($$self{key}, lc $name)];
+    return 'STRING', [$field], [[($$self{name}, $$self{key}, lc $name)]] if defined($field);
+    return 'MISSING', undef, [($$self{name}, $$self{key}, lc $name)];
   }
 
   my $value = $$self{variables}{$name};

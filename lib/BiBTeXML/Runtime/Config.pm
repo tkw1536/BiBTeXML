@@ -14,12 +14,13 @@ use BiBTeXML::Runtime::Context;
 use BiBTeXML::Runtime::Builtins;
 
 sub new {
-  my ($class, $resultHandle, $outputHandle, $readers) = @_;
+  my ($class, $name, $resultHandle, $outputHandle, $readers) = @_;
 
   # a new configuration for us to use
   my $context = BiBTeXML::Runtime::Context->new();
 
   return bless {
+    name         => $name,           # the .bst (compiled) file name
     context      => $context,
     resultHandle => $resultHandle,
     outputHandle => $outputHandle,
@@ -29,21 +30,32 @@ sub new {
 
 # writes a message of a given level to the output.
 # supported levels are 'INFO', 'WARNING', 'ERROR'.
+# location is going to be one of:
+
+# - undef (no location information available)
+# - 5-tuple (filename, sr, sc, er, ec) indicating a location within a file name
+# - 3-tuple (filename, key, value) inidicating the location within a bib file
 sub log {
-  my ($self, $level, $message, $location) = @_;
+  my ($self, $level, $message, $filename, $location) = @_;
 
   # call the handle we passed during construction
   &{ $$self{outputHandle} }($level, $message, $location);
 }
 
 # writes a message to the output
-# gets passed a source which is either undef or a tuple ($key, $name) where this value comes from.
+# gets passed a source which is either undef or a tuple ($filename, $key, $name) if it is known where this value comes from.
 # this will get called frequently, so should be fast
 sub write {
   my ($self, $string, $source) = @_;
 
   # call the handle we passed during construction
   &{ $$self{resultHandle} }($string, $source);
+}
+
+# returns the location of a given StyString within this file
+sub location {
+  my ($self, $styString) = @_;
+  return [$$self{name}, @{ $styString->getSource }];
 }
 
 # gets the readers associated with this configuration
@@ -74,7 +86,6 @@ sub initContext {
   $context->assignVariable('entry.max$',  'GLOBAL_INTEGER', ['INTEGER', 1000, undef]);
 
   # define all the built-in functions
-  # TODO: We want to actually make references to all of them.
   $context->assignVariable('>',  'FUNCTION', ['FUNCTION', \&builtinZg,   undef]);
   $context->assignVariable('<',  'FUNCTION', ['FUNCTION', \&builtinZl,   undef]);
   $context->assignVariable('=',  'FUNCTION', ['FUNCTION', \&builtinZe,   undef]);

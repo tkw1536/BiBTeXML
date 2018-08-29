@@ -96,7 +96,7 @@ sub popType {
   my ($tp, $value, $src) = $context->popStack;
 
   unless (defined($tp)) {
-    $config->log('WARN', 'Attempted to pop the empty stack', $source->getSource);
+    $config->log('WARN', 'Attempted to pop the empty stack', $config->location($source));
     return undef, undef, undef;
   }
 
@@ -104,7 +104,7 @@ sub popType {
     if ($tp eq 'MISSING' && defined($onMissing)) {
       return @$onMissing;
     }
-    $config->log('WARN', "Expected to pop type $type from stack, but got type $tp", $source->getSource);
+    $config->log('WARN', "Expected to pop type $type from stack, but got type $tp", $config->location($source));
     return undef, undef, undef;
   }
 

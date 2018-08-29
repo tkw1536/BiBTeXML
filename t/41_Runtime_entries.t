@@ -9,18 +9,17 @@ subtest "requirements" => sub {
 };
 
 my $context = BiBTeXML::Runtime::Context->new();
+my ($reader, $path) = makeFixtureReader(__FILE__, 'bibfiles', 'complicated.bib');
 
 subtest "reading entries" => sub {
   plan tests => 2;
 
-  my ($reader, $path) = makeFixtureReader(__FILE__, 'bibfiles', 'complicated.bib');
-
   # read them for the first time
-  my ($result, $error) = $context->readEntries($reader);
+  my ($result, $error) = $context->readEntries($path, $reader);
   is_deeply([$result, $error], [0, []], 'reading entries');
 
   # read them again
-  ($result, $error) = $context->readEntries($reader);
+  ($result, $error) = $context->readEntries($path, $reader);
   is_deeply([$result, $error], [1, undef], 'reading entries again');
 };
 
@@ -36,8 +35,8 @@ subtest "getting defined values" => sub {
   $context->setEntry($context->getEntries->[0]);
 
   # try and get a couple of things of it
-  is_deeply([$context->getVariable('author')], ['STRING', ['Bart KiersMr. X'], [['MRx05', 'author']]], 'Getting a defined field');
-  is_deeply([$context->getVariable('conference')], ['MISSING', undef, ['MRx05', 'conference']], 'Getting a missing field');
+  is_deeply([$context->getVariable('author')], ['STRING', ['Bart KiersMr. X'], [[$path, 'MRx05', 'author']]], 'Getting a defined field');
+  is_deeply([$context->getVariable('conference')], ['MISSING', undef, [$path, 'MRx05', 'conference']], 'Getting a missing field');
   is_deeply([$context->getVariable('acount')], ['UNSET', undef, undef], 'Getting an unset variable ');
 
   # define and get again
@@ -48,6 +47,6 @@ subtest "getting defined values" => sub {
   # switch to another entry, and we should get different values
   $context->setEntry($context->getEntries->[1]);
   is_deeply([$context->getVariable('acount')], ['UNSET', undef, undef], 'Getting an unset variable ');
-  is_deeply([$context->getVariable('author')], ['STRING', ['Oren Patashnik'], [['patashnik-bibtexing', 'author']]], 'Getting a defined field');
+  is_deeply([$context->getVariable('author')], ['STRING', ['Oren Patashnik'], [[$path, 'patashnik-bibtexing', 'author']]], 'Getting a defined field');
 
 };

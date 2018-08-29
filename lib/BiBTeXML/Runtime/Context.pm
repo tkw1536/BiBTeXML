@@ -322,8 +322,9 @@ sub readEntries {
   my @warnings  = ();
   my @locations = ();
 
-  my ($reader, $parse, $parseError, $entry, $warning, $location);
-  while ($reader = pop(@readers)) {
+  my ($name, $reader, $parse, $parseError, $entry, $warning, $location);
+  while (defined($name = shift(@readers))) {
+    $reader = shift(@readers);
     ($parse, $parseError) = readFile($reader, 1, %{ $$self{macros} });
     $reader->finalize;
 
@@ -337,7 +338,7 @@ sub readEntries {
 
     # iterate over all the entries
     foreach $entry (@{$parse}) {
-      ($entry, $warning, $location) = BiBTeXML::Runtime::Entry->new($self, $entry);
+      ($entry, $warning, $location) = BiBTeXML::Runtime::Entry->new($name, $self, $entry);
       if (defined($entry)) {
         # if we got back a ref, it's a proper entry
         if (ref $entry) {
