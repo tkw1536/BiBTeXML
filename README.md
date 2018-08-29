@@ -78,8 +78,34 @@ bibtexmlc plain.bst --destination plain.bst.pl
 
 ### Running the runtime stage
 
-(Work in progress)
+To run some compiled `.bst` code, you can use `bibtexmlr` ( *r* as in *run*). 
+This only works with code generated for the Perl Target. 
+It has the following syntax:
 
+```
+bibtexmlr [--help] [--destination $DEST] $COMPILED_BST [$BIBFILE [$BIBFILE ...]]
+```
+
+- `$DEST` is the name of the output file to write output (think .bbl) to. If omitted, output is sent to `STDOUT`. 
+- `$COMPILED_BST` is the (absolute or relative to the working directory) path to the compiled `.bst` file
+- `$BIBFILE` is the name of a bibfile to include. 
+
+All messages and errors are written to STDERR. 
+
+The executable has the following exit codes:
+- `0` if everything worked as normal
+- `1` if there was trouble parsing command line options
+- `2` if the compiled `.bst` file could not be found
+- `3` if the compiled `.bst` file was corrupted
+- `4` if one of the `.bib` files could not be found
+- `5` if there was an error opening the output file
+- `6` if something went wrong at runtime
+
+For example, to run the compiled `plain.bst.pl` file from above using a bib file called `data.bib`
+
+```
+bibtexmlr plain.bst.pl data.bib
+```
 
 ### See also
 

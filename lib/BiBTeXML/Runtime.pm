@@ -14,6 +14,8 @@ use warnings;
 use BiBTeXML::Runtime::Functions;
 use BiBTeXML::Runtime::Builtins;
 
+use BiBTeXML::BibStyle;
+
 use base qw(Exporter);
 our @EXPORT = qw(
   &defineEntryField &defineEntryInteger &defineEntryString &defineGlobalString &defineGlobalInteger &defineGlobalInteger &registerFunctionDefinition &defineMacro
@@ -31,6 +33,8 @@ our @EXPORT = qw(
   &builtinStack &builtinSubstring &builtinSwap &builtinTextLength
   &builtinTextPrefix &builtinTop &builtinType &builtinWarning
   &builtinWhile &builtinWidth &builtinWrite
+
+  &StyString
 );
 
 1;

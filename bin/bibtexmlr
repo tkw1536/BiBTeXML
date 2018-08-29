@@ -1,0 +1,51 @@
+#!/usr/bin/env perl
+# /=====================================================================\ #
+# |  bibtexmlr                                                          | #
+# | Run compiled .bst code                                              | #
+# |=====================================================================| #
+# | Part of BibTeXML                                                    | #
+# |---------------------------------------------------------------------| #
+# | Tom Wiesing <tom.wiesing@gmail.com>                                 | #
+# \=====================================================================/ #
+
+use strict;
+use warnings;
+
+use Encode;
+use Getopt::Long;
+use Module::Load;
+
+use Time::HiRes qw(time);
+
+use BiBTeXML::Runner;
+
+my ($output, $help) = (undef, 0);
+GetOptions(
+  "destination=s" => \$output,
+  "help"          => \$help,
+) or usageAndExit(1);
+
+# if we requested help, or we had a wrong number of arguments, exit
+usageAndExit(1) if scalar(@ARGV) eq 0;
+usageAndExit(0) if ($help);
+
+# parse arguments
+my ($input, @bibfiles) = @ARGV;
+
+# create a run
+my ($status, $code) = createRun($input, [@bibfiles], $output);
+if ($status ne 0) {
+  exit $status;
+}
+
+# and run the code
+exit &{$code}();
+
+# helper function to print usage information and exit
+sub usageAndExit {
+  my ($code) = @_;
+  print STDERR 'bibtexmlr [--help] [--destination $DEST] $COMPILED_BST [$BIBFILE [$BIBFILE ...]]' . "\n";
+  exit $code;
+}
+
+1;

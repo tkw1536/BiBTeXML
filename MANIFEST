@@ -13,6 +13,7 @@ LICENSE
 # Bin
 #==================================================
 bin/bibtexmlc
+bin/bibtexmlr
 
 #==================================================
 # Common Modules
@@ -60,6 +61,11 @@ lib/BiBTeXML/Runtime/Functions.pm
 lib/BiBTeXML/Runtime/Names.pm
 lib/BiBTeXML/Runtime/Strings.pm
 lib/BiBTeXML/Runtime/Utils.pm
+
+#==================================================
+# Misc
+#==================================================
+lib/BiBTeXML/Runner.pm
 
 #==================================================
 # Test Suite.
