@@ -145,6 +145,7 @@ sub iterateFunction {
     foreach $entry (@$entries) {
       $context->setEntry($entry);
       &{$function}($context, $config);
+      # TODO: Warn if we do not have anything left.
     }
     $context->leaveEntry;
   }
@@ -163,6 +164,7 @@ sub reverseFunction {
     foreach $entry (reverse(@$entries)) {
       $context->setEntry($entry);
       &{$function}($context, $config);
+      # TODO: Warn if we do not have anything left.
     }
     $context->leaveEntry;
   }

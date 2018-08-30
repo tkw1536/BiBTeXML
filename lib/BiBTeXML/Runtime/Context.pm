@@ -209,6 +209,17 @@ sub hasMacro {
 ### VARIABLES
 ###
 
+sub hasVariable {
+  my ($self, $name, $type) = @_;
+  if (defined($$self{variableTypes}{$name})) {
+    if (defined($type)) {
+      return ($$self{variableTypes} eq $type) ? 1 : 0;
+    }
+    return 1;
+  }
+  return 0;
+}
+
 # defines a new variable for use in the stack
 # return 1 if ok, 0 if already defined
 sub defineVariable {
@@ -358,6 +369,11 @@ sub readEntries {
   # store all the warnings and exit
   $$self{entries} = [@entries];
   return 0, [@warnings], [@locations];
+}
+
+sub getPreamble {
+  my ($self) = @_;
+  return $$self{preambleString}, $$self{preambleSource};
 }
 
 # sort entries in-place using a comparison function

@@ -97,9 +97,19 @@ sub new {
   return $self, undef, undef;
 }
 
+sub getName {
+  my ($self) = @_;
+  return $$self{name};
+}
+
 sub getKey {
   my ($self) = @_;
   return $$self{key};
+}
+
+sub getType {
+  my ($self) = @_;
+  return $$self{type};
 }
 
 # gets the value of a given variable

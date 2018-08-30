@@ -13,7 +13,7 @@ use warnings;
 use base qw(Exporter);
 our @EXPORT = qw(
   &concatString &simplifyString &applyPatch
-  &popType
+  &popType &formatType
 );
 
 # given two runtime strings, join them and their sources together
@@ -109,6 +109,24 @@ sub popType {
   }
 
   return $tp, $value, $src;
+}
+
+sub formatType {
+  my ($type, $value) = @_;
+  if ($type eq 'UNSET' or $type eq 'MISSING') {
+    return "($type)";
+  } elsif ($type eq 'STRING') {
+    return "($type) " . join('', @$value);
+  } elsif ($type eq 'INTEGER') {
+    return "($type) $value";
+  } elsif ($type eq 'FUNCTION') {
+    return "($type) <reference>";
+  } elsif ($type eq 'REFERENCE') {
+    my ($rtype, $rname) = @$value;
+    return "($type) ($rtype) $rname";
+  } else {
+    return '(unknown)';
+  }
 }
 
 1;
