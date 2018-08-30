@@ -1,1 +1,1 @@
-lookupFunction($context, $config, \&builtinAddPeriod, StyString('REFERENCE', 'add.period$', [(1, 2, 1, 9)])); 
+pushFunction($context, $config, \&builtinAddPeriod, StyString('REFERENCE', 'add.period$', [(1, 2, 1, 9)])); 

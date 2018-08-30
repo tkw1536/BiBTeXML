@@ -53,26 +53,27 @@ sub compileLiteral {
 
   my $result;
   if ($type eq 'GLOBAL_STRING' or $type eq 'BUILTIN_GLOBAL_STRING') {
-    $result = callPushGlobalString($target, $variable);
+    $result = callLookupGlobalString($target, $variable);
   } elsif ($type eq 'GLOBAL_INTEGER' or $type eq 'BUILTIN_GLOBAL_INTEGER') {
-    $result = callPushGlobalInteger($target, $variable);
-  } elsif ($type eq 'ENTRY_FIELD' or $type eq 'BUILTIN_ENTRY_FIELD') {
-    $result = callPushEntryField($target, $variable);
+    $result = callLookupGlobalInteger($target, $variable);
   } elsif ($type eq 'ENTRY_STRING' or $type eq 'BUILTIN_ENTRY_STRING') {
-    $result = callPushEntryString($target, $variable);
+    $result = callLookupEntryString($target, $variable);
+  } elsif ($type eq 'ENTRY_FIELD' or $type eq 'BUILTIN_ENTRY_FIELD') {
+    $result = callLookupEntryField($target, $variable);
   } elsif ($type eq 'ENTRY_INTEGER' or $type eq 'BUILTIN_ENTRY_INTEGER') {
-    $result = callPushEntryInteger($target, $variable);
+    $result = callLookupEntryInteger($target, $variable);
   } elsif ($type eq 'FUNCTION') {
     $result .= callCallFunction($target, $variable);
   } elsif ($type eq 'BUILTIN_FUNCTION') {
     $result .= callCallBuiltin($target, $variable);
   } else {
-    return undef, "Attempted to resolve " . $name . " of type $type in literal", $variable->getSource;
+    return undef, "Attempted to reference " . $name . " of type $type in literal", $variable->getSource;
   }
+
   return $target->makeIndent($indent) . $result . "\n";
 }
 
-# compiles a single reference
+# compiles a single reference (i.e. 'something)
 sub compileReference {
   my ($target, $reference, $indent, %context) = @_;
   return undef, 'Expected a REFERENCE', $reference->getSource unless $reference->getKind eq 'REFERENCE';
@@ -84,23 +85,22 @@ sub compileReference {
 
   my $result;
   if ($type eq 'GLOBAL_STRING' or $type eq 'BUILTIN_GLOBAL_STRING') {
-    $result = callLookupGlobalString($target, $reference);
+    $result = callPushGlobalString($target, $reference);
   } elsif ($type eq 'GLOBAL_INTEGER' or $type eq 'BUILTIN_GLOBAL_INTEGER') {
-    $result = callLookupGlobalInteger($target, $reference);
-  } elsif ($type eq 'ENTRY_STRING' or $type eq 'BUILTIN_ENTRY_STRING') {
-    $result = callLookupEntryString($target, $reference);
+    $result = callPushGlobalInteger($target, $reference);
   } elsif ($type eq 'ENTRY_FIELD' or $type eq 'BUILTIN_ENTRY_FIELD') {
-    $result = callLookupEntryField($target, $reference);
+    $result = callPushEntryField($target, $reference);
+  } elsif ($type eq 'ENTRY_STRING' or $type eq 'BUILTIN_ENTRY_STRING') {
+    $result = callPushEntryString($target, $reference);
   } elsif ($type eq 'ENTRY_INTEGER' or $type eq 'BUILTIN_ENTRY_INTEGER') {
-    $result = callLookupEntryInteger($target, $reference);
+    $result = callPushEntryInteger($target, $reference);
   } elsif ($type eq 'FUNCTION') {
-    $result .= callLookupFunction($target, $reference);
+    $result .= callPushFunction($target, $reference);
   } elsif ($type eq 'BUILTIN_FUNCTION') {
-    $result .= callLookupBuiltin($target, $reference);
+    $result .= callPushBuiltin($target, $reference);
   } else {
-    return undef, "Attempted to reference " . $name . " of type $type in reference", $reference->getSource;
+    return undef, "Attempted to resolve " . $name . " of type $type in literal", $reference->getSource;
   }
-
   return $target->makeIndent($indent) . $result . "\n";
 }
 
@@ -116,7 +116,7 @@ sub compileInlineBlock {
   # wrap it in an appropriate definition
   $body = $target->escapeBstInlineBlock($body, $block, $target->makeIndent($indent), $target->makeIndent($indent + 1));
 
-  return $target->makeIndent($indent) . callPushFunction($target, $block, $body) . "\n";
+  return $target->makeIndent($indent) . callPushBlock($target, $block, $body) . "\n";
 }
 
 # compiles the body of a block

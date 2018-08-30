@@ -19,9 +19,9 @@ our @EXPORT = qw(
   &callReadEntries &callSortEntries
   &callIterateFunction &callIterateBuiltin
   &callReverseFunction &callReverseBuiltin
-  &callPushFunction
+  &callPushBlock &callPushFunction &callPushBuiltin
   &callPushGlobalString &callPushGlobalInteger &callPushEntryField &callPushEntryString &callPushEntryInteger &callCallFunction &callCallBuiltin
-  &callLookupGlobalString &callLookupGlobalInteger &callLookupEntryField &callLookupEntryString &callLookupEntryInteger &callLookupFunction &callLookupBuiltin
+  &callLookupGlobalString &callLookupGlobalInteger &callLookupEntryField &callLookupEntryString &callLookupEntryInteger
   &callPushString &callPushInteger
 );
 
@@ -152,7 +152,7 @@ sub callReverseBuiltin {
 
 ### block
 
-sub callPushFunction {
+sub callPushBlock {
   my ($target, $styString, $function) = @_;
   return $target->runtimeFunctionCall(
     'pushFunction',
@@ -271,10 +271,10 @@ sub callLookupEntryInteger {
   );
 }
 
-sub callLookupFunction {
+sub callPushFunction {
   my ($target, $styString) = @_;
   return $target->runtimeFunctionCall(
-    'lookupFunction',
+    'pushFunction',
     $styString,
     $target->escapeBstFunctionReference(
       $target->escapeFunctionName($styString->getValue)
@@ -282,10 +282,10 @@ sub callLookupFunction {
   );
 }
 
-sub callLookupBuiltin {
+sub callPushBuiltin {
   my ($target, $styString) = @_;
   return $target->runtimeFunctionCall(
-    'lookupFunction',
+    'pushFunction',
     $styString,
     $target->escapeBstFunctionReference(
       $target->escapeBuiltinName($styString->getValue)

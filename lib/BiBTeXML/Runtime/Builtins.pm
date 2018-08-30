@@ -66,7 +66,7 @@ sub builtinZe {
     my ($s2tp, $s2) = popType($context, $config, 'STRING', undef, $source);
     return unless defined($s2tp);
     $s2 = join('', @$s2);
-    $context->pushString($s1 eq $s2 ? 1 : 0);
+    $context->pushInteger($s1 eq $s2 ? 1 : 0);
   } else {
     $config->log('WARN', 'Expected to find a STRING or an INTEGER on the stack. ', $config->location($source));
   }
@@ -148,7 +148,7 @@ sub builtinAddPeriod {
 # builtin function call.type$
 sub builtinCallType {
   my ($context, $config, $source) = @_;
-  my $entry = $config->getEntry;
+  my $entry = $context->getEntry;
   if ($entry) {
     my $tp = $entry->getType;
     my ($ftype, $value) = $context->getVariable($tp);
@@ -160,7 +160,7 @@ sub builtinCallType {
       }
     }
     # call the type function
-    &{$context}($context, $config);
+    &{$value}($context, $config);
   } else {
     $config->log('WARN', 'Can not call.type$: No active entry. ', $config->location($source));
   }
@@ -183,7 +183,7 @@ sub builtinChangeCase {
   my ($newStrings, $newSources) = applyPatch($strings, $sources, sub {
       return changeCase('' . $_[0], $cstrings);
   });
-  $context->pushStack('STRING', [$newStrings], [$newSources]);
+  $context->pushStack('STRING', $newStrings, $newSources);
 }
 
 # builtin function chr.to.int$
@@ -195,7 +195,7 @@ sub builtinChrToInt {
   if (defined($type)) {
     my ($str, $src) = simplifyString($strings, $sources);
     if (length($str) ne 1) {
-      $config->pushStack('INTEGER', ord($str), [$src]);
+      $context->pushStack('INTEGER', ord($str), [$src]);
     } else {
       $config->log('WARN', 'Expected a single character string on the stack, but got ' . length($str) . ' characters. ', $config->location($source));
     }
@@ -205,9 +205,9 @@ sub builtinChrToInt {
 # builtin function cite$
 sub builtinCite {
   my ($context, $config, $source) = @_;
-  my $entry = $config->getEntry;
+  my $entry = $context->getEntry;
   if ($entry) {
-    $context->pushStack('STRING', $entry->getKey, [$entry->getName, $entry->getKey, '']);
+    $context->pushStack('STRING', [$entry->getKey], [[$entry->getName, $entry->getKey, '']]);
   } else {
     $config->log('WARN', 'Can not push the entry key: No active entry. ', $config->location($source));
   }
@@ -320,7 +320,7 @@ sub builtinNumNames {
   # if we have a string, that's ok.
   if (defined($type)) {
     my ($str, $src) = simplifyString($strings, $sources);
-    $config->pushStack('INTEGER', numNames($str), [$src]);
+    $context->pushStack('INTEGER', numNames($str), [$src]);
   }
 }
 
@@ -374,7 +374,7 @@ sub builtinStack {
   my ($context, $config, $source) = @_;
   my ($tp,      $value,  $src)    = $context->popStack;
   while (defined($tp)) {
-    $context->log('DEBUG', formatType($tp, $value, $src));
+    $config->log('DEBUG', formatType($tp, $value, $src));
     ($tp, $value, $src) = $context->popStack;
   }
 }
@@ -404,7 +404,7 @@ sub builtinSwap {
   my ($at,      $as,     $ass)    = $context->popStack;
   my ($bt,      $bs,     $bss)    = $context->popStack;
   if (defined($bt)) {
-    $context->log('WARN', 'Need at least two elements on the stack to swap. ', $config->location($source));
+    $config->log('WARN', 'Need at least two elements on the stack to swap. ', $config->location($source));
     return;
   }
   $context->pushStack($at, $as, $ass);
@@ -419,7 +419,7 @@ sub builtinTextLength {
   # if we have a string, that's ok.
   if (defined($type)) {
     my ($str, $src) = simplifyString($strings, $sources);
-    $config->pushStack('INTEGER', length($str), [$src]);
+    $context->pushStack('INTEGER', length($str), [$src]);
   }
 }
 
@@ -448,7 +448,7 @@ sub builtinTop {
   my ($context, $config, $source) = @_;
   my ($tp,      $value,  $src)    = $context->popStack;
   unless (defined($tp)) {
-    $context->log('DEBUG', formatType($tp, $value, $src));
+    $config->log('DEBUG', formatType($tp, $value, $src));
   } else {
     $config->log('WARN', "Unable to pop empty stack", $config->location($source));
   }
@@ -457,13 +457,13 @@ sub builtinTop {
 # builtin function type$
 sub builtinType {
   my ($context, $config, $source) = @_;
-  my $entry = $config->getEntry;
+  my $entry = $context->getEntry;
   if ($entry) {
     my $tp = $entry->getType;
     $tp = '' unless $context->hasVariable($tp, 'FUNCTION');
-    $context->pushStack('STRING', $tp, [$entry->getName, $entry->getKey]);
+    $context->pushStack('STRING', [$tp], [[$entry->getName, $entry->getKey]]);
   } else {
-    $context->pushStack('STRING', ['STRING', '', undef]);
+    $context->pushStack('STRING', [''], [undef]);
   }
 }
 
@@ -473,7 +473,7 @@ sub builtinWarning {
   my ($type, $strings, $sources) = popType($context, $config, 'STRING', undef, $source);
   if (defined($type)) {
     my ($str, $src) = simplifyString($strings, $sources);
-    $context->log('WARN', $str, $src);
+    $config->log('WARN', $str, $src);
   }
 }
 
@@ -507,7 +507,7 @@ sub builtinWidth {
   # if we have a string, that's ok.
   if (defined($type)) {
     my ($str, $src) = simplifyString($strings, $sources);
-    $config->pushStack('INTEGER', textWidth($str), [$src]);
+    $context->pushStack('INTEGER', textWidth($str), [$src]);
   }
 }
 

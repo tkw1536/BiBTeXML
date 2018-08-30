@@ -125,6 +125,7 @@ sub bstFunctionDefinition {
   my ($class, $name, $sourceString, $body, $outerIndent, $innerIndent) = @_;
   my $code = "sub " . $class->escapeFunctionName($name) . " { \n";
   $code .= $innerIndent . 'my ($context, $config) = @_; ' . "\n";    # TODO: Fix indent
+    # $code .= $innerIndent . 'print("Entering bst function " . ' . escapeString($class, $name) . " . \"\\n\"); \n";
   $code .= $body . $outerIndent . "} \n";
   # perl-specific runtime-call
   $code .= $outerInden . $class->runtimeFunctionCall(
@@ -153,7 +154,7 @@ sub bstFunctionCall {
 sub runtimeFunctionCall {
   my ($class, $name, $sourceString, @arguments) = @_;
   my $call = join(", ", @arguments, $sourceString->stringify);
-  return "$name(\$context, \$config, " . $call . '); ';
+  return "$name(\$context, \$config, " . $call . '); ';    #DEBUG DEBUG DEBUG
 }
 
 # wrapProgram($program, $name) - function used to wrap a compiled program

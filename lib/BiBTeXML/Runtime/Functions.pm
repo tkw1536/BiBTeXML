@@ -18,7 +18,8 @@ our @EXPORT = qw(
   &readEntries &sortries &iterateFunction &reverseFunction
   &pushString &pushInteger &pushFunction
   &pushFunction &pushGlobalString &pushGlobalInteger &pushEntryField &pushEntryString &pushEntryInteger
-  &lookupGlobalString &lookupGlobalInteger &lookupEntryString &lookupEntryInteger &lookupFunction
+  &lookupGlobalString &lookupGlobalInteger &lookupEntryString &lookupEntryField &lookupEntryInteger
+  &sortEntries
 );
 
 ###
@@ -114,11 +115,11 @@ sub sortEntries {
   }
 
   # determine their purified key
-  my ($entry, $key);
+  my ($entry, $tp, $key);
   foreach $entry (@$entries) {
 
     # get the sort.key$ variable
-    ($key) = $entry->getVariable('sort.key$');
+    ($tp, $key) = $entry->getVariable('sort.key$');
     $key = [''] unless defined($key);    # iff it is undefined
     $key = join('', @$key);
 
@@ -145,7 +146,7 @@ sub iterateFunction {
     foreach $entry (@$entries) {
       $context->setEntry($entry);
       &{$function}($context, $config);
-      # TODO: Warn if we do not have anything left.
+      $config->log("WARN", "Stack is not empty for entry " . $entry->getKey, $config->location($styString));
     }
     $context->leaveEntry;
   }
@@ -164,6 +165,9 @@ sub reverseFunction {
     foreach $entry (reverse(@$entries)) {
       $context->setEntry($entry);
       &{$function}($context, $config);
+      if ($context->stackLength > 0) {
+        $config->log("WARN", "Stack is not empty for entry " . $entry->getKey, $config->location($styString));
+      }
       # TODO: Warn if we do not have anything left.
     }
     $context->leaveEntry;
@@ -283,12 +287,6 @@ sub lookupEntryInteger {
   } else {
     $config->log('WARN', "Can not push entry integer $name: Does not exist", $config->location($sourceRef));
   }
-}
-
-# lookupFunction($function) -- pushes a reference to a given (builtin or bst) function onto the stack
-sub lookupFunction {
-  my ($context, $config, $function, $sourceRef) = @_;
-  $context->pushStack('FUNCTION', $function, undef);
 }
 
 1;

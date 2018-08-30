@@ -22,7 +22,8 @@ our @EXPORT = qw(
   &readEntries &sortEntries &iterateFunction &reverseFunction
   &pushString &pushInteger &pushFunction
   &pushFunction &pushGlobalString &pushGlobalInteger &pushEntryField &pushEntryString &pushEntryInteger
-  &lookupGlobalString &lookupGlobalInteger &lookupEntryString &lookupEntryInteger &lookupFunction
+  &lookupGlobalString &lookupGlobalInteger &lookupEntryString &lookupEntryField &lookupEntryInteger
+  &sortEntries
 
   &builtinZg &builtinZl &builtinZe &builtinZp &builtinZm &builtinZa
   &builtinZcZe &builtinAddPeriod &builtinCallType &builtinChangeCase
@@ -35,6 +36,7 @@ our @EXPORT = qw(
   &builtinWhile &builtinWidth &builtinWrite
 
   &StyString
+  &StyCommand
 );
 
 1;

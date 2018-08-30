@@ -171,7 +171,4 @@ sub wrapProgram { die("Unimplemented"); }
 # lookupEntryInteger($name) -- pushes the value of an entry integer onto the stack
 # - $name:  name of the entry integer
 
-# lookupFunction($function) -- pushes a reference to a given (builtin or bst) function onto the stack
-# - $function: reference to the function to push
-
 1;

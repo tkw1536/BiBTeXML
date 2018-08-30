@@ -41,7 +41,7 @@ sub setName {
 # - 5-tuple (filename, sr, sc, er, ec) indicating a location within a file name
 # - 3-tuple (filename, key, value) inidicating the location within a bib file
 sub log {
-  my ($self, $level, $message, $filename, $location) = @_;
+  my ($self, $level, $message, $location) = @_;
 
   # call the handle we passed during construction
   &{ $$self{outputHandle} }($level, $message, $location);

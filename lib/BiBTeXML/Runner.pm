@@ -91,10 +91,17 @@ sub createRun {
       print $ofh $string;
     }, sub {
       my ($level, $message, $source) = @_;
-      print STDERR "[$level] $message\n";
-    }, []);
+      if (defined($source) && ref $source eq 'ARRAY') {
+        $source = join(' ', @$source);
+      } else {
+        $source = 'unknown location';
+      }
+
+      print STDERR "[$level] $message ($source)\n";
+    }, [@readers]);
 
   # and get the context
+  $config->initContext;
   my $context = $config->getContext;
 
   # return the magic code to be run

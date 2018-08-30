@@ -1,1 +1,1 @@
-pushEntryString($context, $config, 'sort.key$', StyString('LITERAL', 'sort.key$', [(1, 2, 1, 9)])); 
+lookupEntryString($context, $config, 'sort.key$', StyString('LITERAL', 'sort.key$', [(1, 2, 1, 9)])); 

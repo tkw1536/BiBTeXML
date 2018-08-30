@@ -1,1 +1,1 @@
-lookupGlobalString($context, $config, 'example', StyString('REFERENCE', 'example', [(1, 2, 1, 9)])); 
+pushGlobalString($context, $config, 'example', StyString('REFERENCE', 'example', [(1, 2, 1, 9)])); 
