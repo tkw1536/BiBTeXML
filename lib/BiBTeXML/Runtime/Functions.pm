@@ -146,7 +146,7 @@ sub iterateFunction {
     foreach $entry (@$entries) {
       $context->setEntry($entry);
       &{$function}($context, $config);
-      $config->log("WARN", "Stack is not empty for entry " . $entry->getKey, $config->location($styString));
+      $config->log("WARN", "Stack is not empty for entry " . $entry->getKey, $config->location($styString)) if $context->stackLength ne 0;
     }
     $context->leaveEntry;
   }
@@ -166,7 +166,7 @@ sub reverseFunction {
       $context->setEntry($entry);
       &{$function}($context, $config);
       if ($context->stackLength > 0) {
-        $config->log("WARN", "Stack is not empty for entry " . $entry->getKey, $config->location($styString));
+        $config->log("WARN", "Stack is not empty for entry " . $entry->getKey, $config->location($styString)) if $context->stackLength ne 0;
       }
       # TODO: Warn if we do not have anything left.
     }

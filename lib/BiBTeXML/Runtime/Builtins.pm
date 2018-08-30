@@ -195,7 +195,7 @@ sub builtinChrToInt {
   if (defined($type)) {
     my ($str, $src) = simplifyString($strings, $sources);
     if (length($str) ne 1) {
-      $context->pushStack('INTEGER', ord($str), [$src]);
+      $context->pushStack('INTEGER', ord($str), $src);
     } else {
       $config->log('WARN', 'Expected a single character string on the stack, but got ' . length($str) . ' characters. ', $config->location($source));
     }
@@ -242,7 +242,7 @@ sub builtinFormatName {
   # get the format string
   my ($ftp, $fstrings) = popType($context, $config, 'STRING', undef, $source);
   return unless $ftp;
-  $fstrings = join('', $fstrings);
+  $fstrings = join('', @$fstrings);
 
   # get the length
   my ($itp, $integer, $isource) = popType($context, $config, 'INTEGER', undef, $source);
@@ -256,17 +256,19 @@ sub builtinFormatName {
   my ($newStrings, $newSources) = applyPatch($strings, $sources, sub {
       my @names = splitNames($_[0] . '');
       my $name = $names[$integer - 1] || '';    # TODO: Warn if missing
-      return formatName($name, $fstrings);
+      my ($fname, $error) = formatName("$name", $fstrings);
+      $config->log('WARN', "Unable to format name: $error", $config->location($source)) if defined($error);
+      return defined($fname) ? $fname : '';
   });
-  $context->pushStack('STRING', [$newStrings], [$newSources]);
+  $context->pushStack('STRING', $newStrings, $newSources);
 }
 
 # builtin function if$
 sub builtinIf {
   my ($context, $config, $source) = @_;
-  my ($f1type, $f1) = popType($context, $config, 'FUNCTION', undef, $source);
+  my ($f1type, $f1) = popFunction($context, $config, $source);
   return unless defined($f1type);
-  my ($f2type, $f2) = popType($context, $config, 'FUNCTION', undef, $source);
+  my ($f2type, $f2) = popFunction($context, $config, $source);
   return unless defined($f2type);
 
   my ($itype, $integer) = popType($context, $config, 'INTEGER', undef, $source);
@@ -338,11 +340,7 @@ sub builtinPreamble {
   my ($context, $config, $source) = @_;
   my ($strings, $sources) = $context->getPreamble;
 
-  my ($str, $src);
-  foreach $str (@$strings) {
-    $src = shift(@$sources);
-    $config->write($str, $src);
-  }
+  $context->pushStack('STRING', $strings, $sources);
 }
 
 # builtin function purify$
@@ -383,9 +381,13 @@ sub builtinStack {
 sub builtinSubstring {
   my ($context, $config, $source) = @_;
 
-  # pop the integer
-  my ($itype, $integer, $isource) = popType($context, $config, 'INTEGER', undef, $source);
-  return unless defined($itype);
+  # pop the first integer
+  my ($i1t, $i1, $i1source) = popType($context, $config, 'INTEGER', undef, $source);
+  return unless defined($i1t);
+
+  # pop the second integer
+  my ($i2t, $i2, $i2source) = popType($context, $config, 'INTEGER', undef, $source);
+  return unless defined($i2t);
 
   # pop the string
   my ($stype, $strings, $sources) = popType($context, $config, 'STRING', undef, $source);
@@ -393,9 +395,9 @@ sub builtinSubstring {
 
   # add the text prefix and push it to the stack
   my ($newStrings, $newSources) = applyPatch($strings, $sources, sub {
-      return textSubstring($_[0] . '', $integer);
+      return textSubstring($_[0] . '', $i2, $i1);
   });
-  $context->pushStack('STRING', [$newStrings], [$newSources]);
+  $context->pushStack('STRING', $newStrings, $newSources);
 }
 
 # builtin function swap$
@@ -403,7 +405,7 @@ sub builtinSwap {
   my ($context, $config, $source) = @_;
   my ($at,      $as,     $ass)    = $context->popStack;
   my ($bt,      $bs,     $bss)    = $context->popStack;
-  if (defined($bt)) {
+  if (!defined($bt)) {
     $config->log('WARN', 'Need at least two elements on the stack to swap. ', $config->location($source));
     return;
   }
@@ -419,7 +421,7 @@ sub builtinTextLength {
   # if we have a string, that's ok.
   if (defined($type)) {
     my ($str, $src) = simplifyString($strings, $sources);
-    $context->pushStack('INTEGER', length($str), [$src]);
+    $context->pushStack('INTEGER', length($str), $src);
   }
 }
 
@@ -439,7 +441,7 @@ sub builtinTextPrefix {
   my ($newStrings, $newSources) = applyPatch($strings, $sources, sub {
       return textPrefix($_ . '', $integer);
   });
-  $context->pushStack('STRING', [$newStrings], [$newSources]);
+  $context->pushStack('STRING', $newStrings, $newSources);
 
 }
 
@@ -480,18 +482,19 @@ sub builtinWarning {
 # builtin function while$
 sub builtinWhile {
   my ($context, $config, $source) = @_;
-  my ($f1type, $f1) = popType($context, $config, 'FUNCTION', undef, $source);
+  my ($f1type, $f1) = popFunction($context, $config, $source);
   return unless defined($f1type);
-  my ($f2type, $f2) = popType($context, $config, 'FUNCTION', undef, $source);
+  my ($f2type, $f2) = popFunction($context, $config, $source);
   return unless defined($f2type);
 
   while (1) {
-    &{$f1}($context, $config);
+    &{$f2}($context, $config, $source);
+
     my ($itype, $integer) = popType($context, $config, 'INTEGER', undef, $source);
     return unless defined($itype);
 
     if ($integer > 0) {
-      &{$f2}($context, $config);
+      &{$f1}($context, $config, $source);
     } else {
       last;
     }
@@ -507,7 +510,7 @@ sub builtinWidth {
   # if we have a string, that's ok.
   if (defined($type)) {
     my ($str, $src) = simplifyString($strings, $sources);
-    $context->pushStack('INTEGER', textWidth($str), [$src]);
+    $context->pushStack('INTEGER', textWidth($str), $src);
   }
 }
 

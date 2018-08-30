@@ -60,7 +60,11 @@ sub write {
 # returns the location of a given StyString within this file
 sub location {
   my ($self, $styString) = @_;
-  return [$$self{name}, @{ $styString->getSource }];
+  if (defined($styString)) {
+    return [$$self{name}, @{ $styString->getSource }];
+  } else {
+    return undef;
+  }
 }
 
 # gets the readers associated with this configuration

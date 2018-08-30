@@ -13,7 +13,7 @@ use warnings;
 use base qw(Exporter);
 our @EXPORT = qw(
   &concatString &simplifyString &applyPatch
-  &popType &formatType
+  &popType &formatType &popFunction
 );
 
 # given two runtime strings, join them and their sources together
@@ -109,6 +109,36 @@ sub popType {
   }
 
   return $tp, $value, $src;
+}
+
+# pops a function from the stack, or converts a popped Reference to a function
+sub popFunction {
+  my ($context, $config, $source) = @_;
+  my ($tp,      $value,  $src)    = $context->popStack;
+
+  unless (defined($tp)) {
+    $config->log('WARN', 'Attempted to pop the empty stack', $config->location($source));
+    return undef, undef, undef;
+  }
+
+  if ($tp eq 'FUNCTION') {
+    return $tp, $value, $src;
+  } elsif ($tp eq 'REFERENCE') {
+    my ($vtype, $vname) = @$value;
+    return $tp, sub {
+      my ($ctx, $cfg, $cs) = @_;
+      my ($t,   $v,   $s)  = $ctx->getVariable($vname);
+      if (defined($t)) {
+        $ctx->pushStack($t, $v, $s);
+      } else {
+        $cfg->log('WARN', "Can not push variable $vname: Does not exist", $cs);
+      }
+    }, $src;
+  } else {
+    $config->log('WARN', "Expected to pop type 'FUNCTION' or 'REFERENCE' from stack, but got type $tp", $config->location($source));
+  }
+
+  return undef, undef, undef;
 }
 
 sub formatType {
