@@ -308,7 +308,7 @@ sub changeCase {
     $level = shift(@$levels);
 
     # change case if we are on level 0
-    if ($level eq 0) {
+    if (defined($level) && $level eq 0) {
       ($isAccent, $oPrefix, $iPrefix, $accent, $iSuffix, $oSuffix, $command) = parseAccent($letter);
 
       # upper case (or first letter of t)

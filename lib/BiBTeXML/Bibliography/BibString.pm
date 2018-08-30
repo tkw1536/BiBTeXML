@@ -66,7 +66,7 @@ sub evaluate {
     $$self{kind} = 'EVALUATED';
     my $value = $context{ lc($$self{value}) };
     return 0 unless defined($value);
-    $$self{value} = $value->getValue;
+    $$self{value} = ref $value ? $value->getValue : $value;
   }
 
   return 1;

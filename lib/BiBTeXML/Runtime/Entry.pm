@@ -11,6 +11,7 @@ use strict;
 use warnings;
 
 use BiBTeXML::Common::Utils;
+use Scalar::Util qw(blessed);
 
 ###
 ### Read entries
@@ -23,7 +24,8 @@ sub new {
 
   sub locationOf {
     my ($n, $source) = @_;
-    return $n, @{ $source->getSource };
+    $source = $source->getSource if blessed($source);
+    return $n, $source;
   }
 
   # read our type, skip 'string's and 'comment's
