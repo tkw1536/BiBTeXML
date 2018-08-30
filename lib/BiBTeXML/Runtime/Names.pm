@@ -135,7 +135,6 @@ sub splitNameParts {
     # Style (ii): "von Last, First"
   } elsif (scalar(@postc) eq 0) {
     @von   = @prec;
-    @last  = @prec;
     @first = @midc;
 
     # Style (iii): "von Last, Jr, First"

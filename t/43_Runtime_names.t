@@ -56,7 +56,7 @@ subtest "numNames" => sub {
 };
 
 subtest "splitNameWords" => sub {
-  plan tests => 13;
+  plan tests => 14;
 
   sub isSplitNameWords {
     my ($input, $expected) = @_;
@@ -70,7 +70,9 @@ subtest "splitNameWords" => sub {
 
   isSplitNameWords('Claude, Jon', [['Claude'], ['Jon'], []]);
   isSplitNameWords('Claude the , Jon e', [['Claude ', 'the '], ['Jon ', 'e'], []]);
+
   isSplitNameWords('the, jr, thing', [['the'], ['jr'], ['thing']]);
+  isSplitNameWords('Freely, I.P.', [['Freely'], ['I.P.'], []]);
 
   isSplitNameWords('Jean-Claude Van Damme', [['Jean-', 'Claude ', 'Van ', 'Damme'], [], []]);
   isSplitNameWords('Jean{-}Claude Van Damme', [['Jean{-}Claude ', 'Van ', 'Damme'], [], []]);
@@ -83,7 +85,7 @@ subtest "splitNameWords" => sub {
 };
 
 subtest "splitNameParts" => sub {
-  plan tests => 12;
+  plan tests => 13;
 
   sub isSplitNameParts {
     my ($input, $expected) = @_;
@@ -105,8 +107,9 @@ subtest "splitNameParts" => sub {
   isSplitNameParts('Kenneth~Robeson', [['Kenneth~'], [], [], ['Robeson']]);
   isSplitNameParts('Louis-Albert', [[], [], [], ['Louis-Albert']]);
 
-  #
+  # complete real-life examples
   isSplitNameParts('Charles Louis Xavier Joseph de la Vall{\`e}e Poussin', [['Charles ', 'Louis ', 'Xavier ', 'Joseph '], ['de ', 'la '], [], ['Vall{\`e}e ', 'Poussin']]);
+  isSplitNameParts('Freely, I.P.', [['I.P.'], [], [], ['Freely']]);
 };
 
 subtest "formatNamePart" => sub {
