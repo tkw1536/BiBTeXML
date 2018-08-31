@@ -366,8 +366,17 @@ sub readEntries {
     }
   }
 
-  # store all the warnings and exit
+  # resolve all the cross references
+  my $eref = [@entries];
+  foreach $entry (@entries) {
+    ($warning, $location) = $entry->resolveCrossReferences($eref);
+  }
+
+  # TODO: Filter entries to only include a sub-set
+
+  # send all the references
   $$self{entries} = [@entries];
+
   return 0, [@warnings], [@locations];
 }
 

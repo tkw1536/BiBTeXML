@@ -99,6 +99,34 @@ sub new {
   return $self, undef, undef;
 }
 
+sub resolveCrossReferences {
+  my ($self, $entries) = @_;
+
+  # if we have a crossref field, try to look it up.
+  my $crossref = $$self{values}{crossref};
+  if (defined($crossref)) {
+    my $related;
+    my $entry;
+    foreach $entry (@$entries) {
+      if ($entry->getKey eq $crossref) {
+        $related = $entry;
+        last;
+      }
+    }
+
+    unless (defined($related)) {
+      return "Cross-referenced entry $crossref does not exist. ", $entry;
+    } else {
+      my ($k, $v);
+      while (($k, $v) = each(%{ $$related{values} })) {
+        $$self{values}{$k} = $v unless defined($$self{values}{$k});
+      }
+    }
+  }
+
+  return undef, undef;
+}
+
 sub getName {
   my ($self) = @_;
   return $$self{name};
