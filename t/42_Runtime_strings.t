@@ -61,13 +61,14 @@ subtest "parseAccent" => sub {
 };
 
 subtest "addPeriod" => sub {
-  plan tests => 5;
+  plan tests => 6;
 
   sub isAddPeriod {
     my ($input, $expected) = @_;
     is(addPeriod($input), $expected, $input);
   }
 
+  isAddPeriod("",              "");
   isAddPeriod("}}",            "}}.");
   isAddPeriod("hello world!",  "hello world!");
   isAddPeriod("hello world",   "hello world.");

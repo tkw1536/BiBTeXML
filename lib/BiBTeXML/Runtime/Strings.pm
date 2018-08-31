@@ -32,6 +32,9 @@ our @EXPORT = qw(
 sub addPeriod {
   my ($string) = @_;
 
+  # do not add a period if the string is empty
+  return "" if $string eq "";
+
   # find the last character that is not a '}'
   my ($match) = ($string =~ m/(.)(?:\})*$/);
 
