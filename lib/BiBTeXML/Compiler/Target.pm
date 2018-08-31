@@ -8,6 +8,9 @@
 # \=====================================================================/ #
 
 package BiBTeXML::Compiler::Target;
+use strict;
+use warnings;
+
 
 ### A Compiler Target serves as an abstraction for the different kinds of output the bst AST can be compiled to.
 ### This file does not do any compilation, instead it serves as documentation to implement your own.

@@ -8,6 +8,8 @@
 # \=====================================================================/ #
 
 package BiBTeXML::Compiler;
+use strict;
+use warnings;
 
 use BiBTeXML::Compiler::Program;
 use BiBTeXML::Compiler::Block;

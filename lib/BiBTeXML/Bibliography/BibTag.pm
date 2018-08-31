@@ -10,10 +10,11 @@
 package BiBTeXML::Bibliography::BibTag;
 use strict;
 use warnings;
+
 use List::Util qw(reduce);
+use BiBTeXML::Common::Utils;
 
 use base qw(BiBTeXML::Common::Object);
-use BiBTeXML::Common::Utils;
 
 sub new {
   my ($class, $name, $content, $source) = @_;

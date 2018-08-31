@@ -8,6 +8,8 @@
 # \=====================================================================/ #
 
 package BiBTeXML::Bibliography;
+use strict;
+use warnings;
 
 use BiBTeXML::Bibliography::BibEntry;
 use BiBTeXML::Bibliography::BibTag;

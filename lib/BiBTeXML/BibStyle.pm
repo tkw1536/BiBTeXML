@@ -8,6 +8,8 @@
 # \=====================================================================/ #
 
 package BiBTeXML::BibStyle;
+use strict;
+use warnings;
 
 use BiBTeXML::BibStyle::StyCommand;
 use BiBTeXML::BibStyle::StyString;
