@@ -8,6 +8,8 @@
 # \=====================================================================/ #
 
 package BiBTeXML::Compiler::Target::Perl;
+use strict;
+use warnings;
 
 use base qw(BiBTeXML::Compiler::Target);
 
@@ -128,7 +130,7 @@ sub bstFunctionDefinition {
     # $code .= $innerIndent . 'print("Entering bst function " . ' . escapeString($class, $name) . " . \"\\n\"); \n";
   $code .= $body . $outerIndent . "} \n";
   # perl-specific runtime-call
-  $code .= $outerInden . $class->runtimeFunctionCall(
+  $code .= $outerIndent . $class->runtimeFunctionCall(
     'registerFunctionDefinition',
     $sourceString,
     $class->escapeString($name),
