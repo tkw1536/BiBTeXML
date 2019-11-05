@@ -98,18 +98,19 @@ subtest "simplifyString" => sub {
 };
 
 subtest "applyPatch" => sub {
-  plan tests => 2;
+  plan tests => 4;
 
   sub isApplyPatch {
-    my ($a, $b, $c, $expected, $name) = @_;
+    my ($a, $b, $c, $d, $expected, $name) = @_;
 
-    is_deeply([applyPatch($a, $b, $c)], $expected, $name);
+    is_deeply([applyPatch($a, $b, $c, $d)], $expected, $name);
   }
 
   isApplyPatch(
     ['hello', 'world'],
     [['key1', 'item1'], undef],
     sub { $_[0]; },
+    0,
 
     [['hello', 'world'], [['key1', 'item1'], undef]],
     'apply identity patch'
@@ -119,9 +120,30 @@ subtest "applyPatch" => sub {
     ['hello ', 'world'],
     [['key1', 'item1'], ['key2', 'item2']],
     sub { $_[0] . 'a'; },
+    0,
 
     [['hello worlda'], [['key1', 'item1']]],
     'apply diffing patch'
+  );
+
+  isApplyPatch(
+    ['hello', 'world'],
+    [['key1', 'item1'], undef],
+    sub { $_[0]; },
+    'inplace',
+
+    [['hello', 'world'], [['key1', 'item1'], undef]],
+    'apply inplace identity patch'
+  );
+
+  isApplyPatch(
+    ['hello'],
+    [['key1', 'item1']],
+    sub { $_[0] . '.'; },
+    'inplace',
+
+    [['hello', '.'], [['key1', 'item1'], undef]],
+    'apply inplace-diffing patch'
   );
 
 };

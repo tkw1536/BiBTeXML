@@ -140,7 +140,7 @@ sub builtinAddPeriod {
 
   # if we have a string, that's ok.
   if (defined($type)) {
-    my ($newStrings, $newSources) = applyPatch($strings, $sources, \&addPeriod);
+    my ($newStrings, $newSources) = applyPatch($strings, $sources, \&addPeriod, 'inplace');
     $context->pushStack('STRING', $newStrings, $newSources);
   }
 }
@@ -182,7 +182,7 @@ sub builtinChangeCase {
   # add the text prefix and push it to the stack
   my ($newStrings, $newSources) = applyPatch($strings, $sources, sub {
       return changeCase('' . $_[0], $cstrings);
-  });
+  }, 'inplace');
   $context->pushStack('STRING', $newStrings, $newSources);
 }
 
@@ -350,7 +350,7 @@ sub builtinPurify {
 
   # if we have a string, that's ok.
   if (defined($type)) {
-    my ($newStrings, $newSources) = applyPatch($strings, $sources, \&textPurify);
+    my ($newStrings, $newSources) = applyPatch($strings, $sources, \&textPurify, 'inplace');
     $context->pushStack('STRING', $newStrings, $newSources);
   }
 }
@@ -396,7 +396,7 @@ sub builtinSubstring {
   # add the text prefix and push it to the stack
   my ($newStrings, $newSources) = applyPatch($strings, $sources, sub {
       return textSubstring($_[0] . '', $i2, $i1);
-  });
+  }, 'inplace');
   $context->pushStack('STRING', $newStrings, $newSources);
 }
 
@@ -439,7 +439,7 @@ sub builtinTextPrefix {
 
   # add the text prefix and push it to the stack
   my ($newStrings, $newSources) = applyPatch($strings, $sources, sub {
-      return textPrefix($_ . '', $integer);
+      return textPrefix($_ . '', $integer, 'inplace');
   });
   $context->pushStack('STRING', $newStrings, $newSources);
 

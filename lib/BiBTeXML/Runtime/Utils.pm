@@ -66,13 +66,23 @@ sub simplifyString {
   return join('', @$string), $source;
 }
 
-# given an runtime old string with source references
-# and apply a plain-text patch function $patch to it.
+# Given a runtime string (which might be a complex object
+# consisting of several parts) and it's corresponding source
+# references, apply a plain-text patch() function to it. 
+# applyPatch attempts to maintain reasonable source references
+# where possible. It does this based on the 'semantics' parameter. 
+# - 'inplace':
+#              When the length of the patched string is longer than
+#              the length of the original string, split the resulting
+#              string in two parts, one with the original source
+#              reference, and one ontouched. 
+# - any other value:
+#              Return the patched string as having the source reference of the
+#              old string. 
+# Whenever the patch() function returns the original string, the original source
+# references are maintained in their entirety. 
 sub applyPatch {
-  my ($oldString, $oldSource, $patch) = @_;
-
-  # TODO: For the moment this function is pretty stupid
-  # and only knows about unchanged and changed strings
+  my ($oldString, $oldSource, $patch, $semantics) = @_;
 
   # simplify the old string
   my ($theOldString, $theOldSource) = simplifyString($oldString, $oldSource);
@@ -83,8 +93,16 @@ sub applyPatch {
   # if nothing changed, return as is
   if ($theOldString eq $theNewString) {
     return $oldString, $oldSource;
+  
+  # when we the semantics state 'inplace'
+  } elsif ($semantics eq 'inplace' && length($oldString) != 0 && length($theNewString) > length($theOldString)) {
+    $theOldString = substr($theNewString, 0, length($theOldString));
+    $theNewString = substr($theNewString, length($theOldString));
 
-    # else return the simplified source
+    # we had an in-place e
+    return [$theOldString, $theNewString], [$theOldSource, undef];
+
+  # else, return only the simplified source
   } else {
     return [$theNewString], [$theOldSource];
   }
