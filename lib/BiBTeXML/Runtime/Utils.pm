@@ -13,7 +13,7 @@ use warnings;
 use base qw(Exporter);
 our @EXPORT = qw(
   &concatString &simplifyString &applyPatch
-  &popType &formatType &popFunction
+  &popType &formatType &popFunction &wrapWithSourceMacro
 );
 
 # given two runtime strings, join them and their sources together
@@ -157,6 +157,17 @@ sub formatType {
   } else {
     return '(unknown)';
   }
+}
+
+# wraps string with the source inside a macro
+# when source is undef, or the source is not a field,
+# returns string unchanged
+sub wrapWithSourceMacro {
+  my ($string, $source, $macro) = @_;
+  return $string unless defined($source) && $macro;
+  my ($fn, $entry, $field) = @{ $source }; # TODO: Escape fn for tex
+  return $string unless $field;
+  return '\\' . $macro . '{' . $fn . '}{' . $entry . '}{' . $field . '}{' . $string . '}';
 }
 
 1;

@@ -19,9 +19,10 @@ use Time::HiRes qw(time);
 
 use BiBTeXML::Runner;
 
-my ($output, $help) = (undef, 0);
+my ($output, $macro, $help) = (undef, undef, 0);
 GetOptions(
   "destination=s" => \$output,
+  "macro=s" => \$macro,
   "help"          => \$help,
 ) or usageAndExit(1);
 
@@ -33,7 +34,7 @@ usageAndExit(0) if ($help);
 my ($input, @bibfiles) = @ARGV;
 
 # create a run
-my ($status, $code) = createRun($input, [@bibfiles], $output);
+my ($status, $code) = createRun($input, [@bibfiles], $macro, $output);
 if ($status ne 0) {
   exit $status;
 }
@@ -44,7 +45,7 @@ exit &{$code}();
 # helper function to print usage information and exit
 sub usageAndExit {
   my ($code) = @_;
-  print STDERR 'bibtexmlr [--help] [--destination $DEST] $COMPILED_BST [$BIBFILE [$BIBFILE ...]]' . "\n";
+  print STDERR 'bibtexmlr [--help] [--destination $DEST] [--macro $MACRO] $COMPILED_BST [$BIBFILE [$BIBFILE ...]]' . "\n";
   exit $code;
 }
 

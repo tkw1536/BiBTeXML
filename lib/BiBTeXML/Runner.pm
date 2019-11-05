@@ -13,6 +13,7 @@ use warnings;
 use Encode;
 
 use BiBTeXML::Runtime::Config;
+use BiBTeXML::Runtime::Utils;
 use BiBTeXML::Common::StreamReader;
 
 use base qw(Exporter);
@@ -32,7 +33,7 @@ our @EXPORT = qw(
 # - 5: Error opening outfile
 # - 6: something went wrong at runtime
 sub createRun {
-  my ($input, $bibfiles, $output) = @_;
+  my ($input, $bibfiles, $macro, $output) = @_;
 
   # open input file
   my $cfh;
@@ -88,7 +89,7 @@ sub createRun {
   # TODO: Allow interception of sources
   my $config = BiBTeXML::Runtime::Config->new(undef, sub {
       my ($string, $source) = @_;
-      print $ofh $string;
+      print $ofh wrapWithSourceMacro($string, $source, $macro);
     }, sub {
       my ($level, $message, $source) = @_;
       if (defined($source) && ref $source eq 'ARRAY') {

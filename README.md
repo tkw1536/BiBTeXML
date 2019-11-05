@@ -83,10 +83,11 @@ This only works with code generated for the Perl Target.
 It has the following syntax:
 
 ```
-bibtexmlr [--help] [--destination $DEST] $COMPILED_BST [$BIBFILE [$BIBFILE ...]]
+bibtexmlr [--help] [--destination $DEST] [--macro $MACRO] $COMPILED_BST [$BIBFILE [$BIBFILE ...]]
 ```
 
 - `$DEST` is the name of the output file to write output (think .bbl) to. If omitted, output is sent to `STDOUT`. 
+- `$MACRO` is a macro to wrap all source references in. If omitted, source references are not shown in the output. 
 - `$COMPILED_BST` is the (absolute or relative to the working directory) path to the compiled `.bst` file
 - `$BIBFILE` is the name of a bibfile to include. 
 
