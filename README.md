@@ -1,6 +1,6 @@
 # BiBTeXML
 
-[![Build Status](https://travis-ci.org/tkw1536/BibTeXML.svg?branch=master)](https://travis-ci.org/tkw1536/BibTeXML)
+[![Build Status](https://travis-ci.com/tkw1536/BibTeXML.svg?branch=master)](https://travis-ci.com/tkw1536/BibTeXML)
 
 __Still a work in progress__
 
