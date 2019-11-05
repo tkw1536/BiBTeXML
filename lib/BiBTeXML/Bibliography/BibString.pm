@@ -28,8 +28,8 @@ sub copy {
   my ($self) = @_;
 
   # we need to deep-copy the source
-  my ($sr, $sc, $er, $ec) = @{ $$self{source} };
-  return new($$self{kind}, $$self{value}, [($sr, $sc, $er, $ec)]);
+  my ($fn, $sr, $sc, $er, $ec) = @{ $$self{source} };
+  return new($$self{kind}, $$self{value}, [($fn, $sr, $sc, $er, $ec)]);
 }
 
 # get the kind this BibString represents. One of:
@@ -83,9 +83,9 @@ sub append {
   $$self{value} .= $other->getValue;
 
   # update the source reference
-  my ($sr, $sc) = @{ $$self{source} };
-  my ($a, $b, $er, $ec) = @{ $other->getSource };
-  $$self{source} = [($sr, $sc, $er, $ec)];
+  my ($fn, $sr, $sc) = @{ $$self{source} };
+  my ($a, $b, $c, $er, $ec) = @{ $other->getSource };
+  $$self{source} = [($fn, $sr, $sc, $er, $ec)];
 }
 
 # turns this BibString into a string representing code to create this object
@@ -94,8 +94,8 @@ sub stringify {
   my ($kind)  = $$self{kind};
   my ($value) = $$self{value};
 
-  my ($sr, $sc, $er, $ec) = @{ $self->getSource };
-  return 'BibString(' . escapeString($kind) . ', ' . escapeString($value) . ", [($sr, $sc, $er, $ec)])";
+  my $ss = $self->getSourceString;
+  return 'BibString(' . escapeString($kind) . ', ' . escapeString($value) . ", $ss)";
 }
 
 1;

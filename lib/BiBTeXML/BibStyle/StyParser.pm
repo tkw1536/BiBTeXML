@@ -112,10 +112,10 @@ sub readCommand {
 
   # get the ending position of the last arguments
   my ($a, $b);
-  my ($sr, $sc, $er, $ec) = @{ $name->getSource };
-  ($a, $b, $er, $ec) = @{ $argument->getSource } if defined($argument);
+  my ($fn, $sr, $sc, $er, $ec) = @{ $name->getSource };
+  ($_, $a, $b, $er, $ec) = @{ $argument->getSource } if defined($argument);
 
-  return BiBTeXML::BibStyle::StyCommand->new($name, [@arguments], [($sr, $sc, $er, $ec)]);
+  return BiBTeXML::BibStyle::StyCommand->new($name, [@arguments], [($fn, $sr, $sc, $er, $ec)]);
 }
 
 # ======================================================================= #
@@ -172,7 +172,8 @@ sub readBlock {
 
   $reader->eatChar;
   # we can add +1, because we did not read a \n
-  return BiBTeXML::BibStyle::StyString->new('BLOCK', [@values], [($sr, $sc, $er, $ec + 1)]);
+  my $fn = $reader->getFilename;
+  return BiBTeXML::BibStyle::StyString->new('BLOCK', [@values], [($fn, $sr, $sc, $er, $ec + 1)]);
 }
 
 # reads a number, consisting of numbers, from the input
@@ -195,7 +196,8 @@ sub readNumber {
   my ($literal, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /\d/; });
   return undef, 'expected a non-empty number', $reader->getPosition unless $literal ne "";
 
-  return BiBTeXML::BibStyle::StyString->new('NUMBER', ($sign . $literal) + 0, [($sr, $sc, $er, $ec)]);
+  my $fn = $reader->getFilename;
+  return BiBTeXML::BibStyle::StyString->new('NUMBER', ($sign . $literal) + 0, [($fn, $sr, $sc, $er, $ec)]);
 }
 
 # Reads a reference, delimited by spaces, from the input
@@ -209,7 +211,8 @@ sub readReference {
   my ($reference, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /[^\s\}]/; });
   return undef, 'expected a non-empty argument', $reader->getPosition unless $reference ne "";
 
-  return BiBTeXML::BibStyle::StyString->new('REFERENCE', $reference, [($sr, $sc, $er, $ec)]);
+  my $fn = $reader->getFilename;
+  return BiBTeXML::BibStyle::StyString->new('REFERENCE', $reference, [($fn, $sr, $sc, $er, $ec)]);
 }
 
 # Reads a literal, delimited by spaces, from the input
@@ -221,7 +224,8 @@ sub readLiteral {
   my ($literal, $er, $ec) = $reader->readCharWhile(sub { $_[0] =~ /[^\s\{\}]/; });
   return undef, 'expected a non-empty literal', $reader->getPosition unless $literal;
 
-  return BiBTeXML::BibStyle::StyString->new('LITERAL', $literal, [($sr, $sc, $er, $ec)]);
+  my $fn = $reader->getFilename;
+  return BiBTeXML::BibStyle::StyString->new('LITERAL', $literal, [($fn, $sr, $sc, $er, $ec)]);
 }
 
 # read a quoted quote from reader
@@ -243,7 +247,8 @@ sub readQuote {
   return undef, 'expected to find an \'"\'', $reader->getPosition unless defined($char) && $char eq '"';
 
   # we can add a +1 here, because we did not read a \n
-  return BiBTeXML::BibStyle::StyString->new('QUOTE', $result, [($sr, $sc, $line, $col + 1)]);
+  my $fn = $reader->getFilename;
+  return BiBTeXML::BibStyle::StyString->new('QUOTE', $result, [($fn, $sr, $sc, $line, $col + 1)]);
 }
 
 1;

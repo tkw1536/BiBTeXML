@@ -24,20 +24,20 @@ subtest "requirements" => sub {
 subtest "compileInteger" => sub {
   plan tests => 2;
 
-  doesCompileBlock('Integer', 'integer 1', '01_integer_a.txt', StyString('NUMBER', 1, [(1, 1, 1, 3)]));
-  doesCompileBlock('Integer', 'integer -1', '01_integer_b.txt', StyString('NUMBER', -1, [(1, 1, 1, 4)]));
+  doesCompileBlock('Integer', 'integer 1', '01_integer_a.txt', StyString('NUMBER', 1, [(undef, 1, 1, 1, 3)]));
+  doesCompileBlock('Integer', 'integer -1', '01_integer_b.txt', StyString('NUMBER', -1, [(undef, 1, 1, 1, 4)]));
 };
 
 subtest "compileQuote" => sub {
   plan tests => 2;
 
-  doesCompileBlock('Quote', 'quote with spaces', '02_quote_a.txt', StyString('QUOTE', 'hello world', [(1, 1, 1, 15)]));
-  doesCompileBlock('Quote', 'empty quote', '02_quote_b.txt', StyString('QUOTE', '', [(1, 1, 1, 2)]));
+  doesCompileBlock('Quote', 'quote with spaces', '02_quote_a.txt', StyString('QUOTE', 'hello world', [(undef, 1, 1, 1, 15)]));
+  doesCompileBlock('Quote', 'empty quote', '02_quote_b.txt', StyString('QUOTE', '', [(undef, 1, 1, 1, 2)]));
 };
 
 subtest "compileVariable" => sub {
   plan tests => 12;
-  sub refname { StyString('REFERENCE', $_[0], [(1, 2, 1, 9)]), $_[0] }
+  sub refname { StyString('REFERENCE', $_[0], [(undef, 1, 2, 1, 9)]), $_[0] }
 
   doesCompileBlock('Reference', 'GLOBAL_STRING', '03_reference_a.txt', refname('example'), 'GLOBAL_STRING');
   doesCompileBlock('Reference', 'BUILTIN_GLOBAL_STRING', '03_reference_b.txt', refname('example'), 'BUILTIN_GLOBAL_STRING');
@@ -60,7 +60,7 @@ subtest "compileVariable" => sub {
 
 subtest "compileLiteral" => sub {
   plan tests => 12;
-  sub litname { StyString('LITERAL', $_[0], [(1, 2, 1, 9)]), $_[0] }
+  sub litname { StyString('LITERAL', $_[0], [(undef, 1, 2, 1, 9)]), $_[0] }
 
   doesCompileBlock('Literal', 'GLOBAL_STRING', '04_literal_a.txt', litname('example'), 'GLOBAL_STRING');
   doesCompileBlock('Literal', 'BUILTIN_GLOBAL_STRING', '04_literal_b.txt', litname('example'), 'BUILTIN_GLOBAL_STRING');
@@ -84,8 +84,8 @@ subtest "compileLiteral" => sub {
 subtest "compileInlineBlock" => sub {
   plan tests => 2;
 
-  doesCompileBlock('InlineBlock', 'simple block', '05_block_a.txt', StyString('BLOCK', [(StyString('QUOTE', 'content', [(1, 5, 1, 10)]))], [(1, 4, 1, 11)]));
-  doesCompileBlock('InlineBlock', 'nested block', '05_block_b.txt', StyString('BLOCK', [(StyString('QUOTE', 'outer', [(1, 1, 1, 7)]), StyString('BLOCK', [(StyString('QUOTE', 'inner', [(2, 2, 2, 7)]))], [(2, 1, 2, 8)]), StyString('QUOTE', 'outer', [(3, 1, 3, 7)]))], [(1, 4, 3, 8)]));
+  doesCompileBlock('InlineBlock', 'simple block', '05_block_a.txt', StyString('BLOCK', [(StyString('QUOTE', 'content', [(undef, 1, 5, 1, 10)]))], [(undef, 1, 4, 1, 11)]));
+  doesCompileBlock('InlineBlock', 'nested block', '05_block_b.txt', StyString('BLOCK', [(StyString('QUOTE', 'outer', [(undef, 1, 1, 1, 7)]), StyString('BLOCK', [(StyString('QUOTE', 'inner', [(undef, 2, 2, 2, 7)]))], [(undef, 2, 1, 2, 8)]), StyString('QUOTE', 'outer', [(undef, 3, 1, 3, 7)]))], [(undef, 1, 4, 3, 8)]));
 };
 
 1;

@@ -1,1 +1,1 @@
-pushEntryString($context, $config, 'example', StyString('REFERENCE', 'example', [(1, 2, 1, 9)])); 
+pushEntryString($context, $config, 'example', StyString('REFERENCE', 'example', [(undef, 1, 2, 1, 9)])); 

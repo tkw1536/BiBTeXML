@@ -43,8 +43,8 @@ sub stringify {
   my @arguments = map { $_->stringify; } @{ $$self{arguments} };
   my $value = '[(' . join(', ', @arguments) . ')]';
 
-  my ($sr, $sc, $er, $ec) = @{ $self->getSource };
-  return 'StyCommand(' . $name . ', ' . $value . ", [($sr, $sc, $er, $ec)])";
+  my $ss = $self->getSourceString;
+  return 'StyCommand(' . $name . ', ' . $value . ", $ss)";
 }
 
 1;

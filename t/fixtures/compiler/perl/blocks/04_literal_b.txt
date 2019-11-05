@@ -1,1 +1,1 @@
-lookupGlobalString($context, $config, 'example', StyString('LITERAL', 'example', [(1, 2, 1, 9)])); 
+lookupGlobalString($context, $config, 'example', StyString('LITERAL', 'example', [(undef, 1, 2, 1, 9)])); 

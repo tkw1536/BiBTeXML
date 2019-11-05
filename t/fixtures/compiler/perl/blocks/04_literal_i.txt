@@ -1,1 +1,1 @@
-lookupEntryInteger($context, $config, 'example', StyString('LITERAL', 'example', [(1, 2, 1, 9)])); 
+lookupEntryInteger($context, $config, 'example', StyString('LITERAL', 'example', [(undef, 1, 2, 1, 9)])); 

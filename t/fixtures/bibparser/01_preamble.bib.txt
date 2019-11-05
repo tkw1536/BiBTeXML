@@ -1,4 +1,4 @@
-BibTag(BibString('LITERAL', 'PREAMBLE', [(1, 1, 1, 9)]), [(BibTag(undef, [(BibString('BRACKET', '\\providecommand\\seen{seen }
+BibTag(BibString('LITERAL', 'PREAMBLE', [('t/fixtures/bibparser/01_preamble.bib', 1, 1, 1, 9)]), [(BibTag(undef, [(BibString('BRACKET', '\\providecommand\\seen{seen }
 \\providecommand\\selfedit{}
 \\providecommand\\webpageat{web page at }
 \\providecommand\\homepageat{home page at }
@@ -37,4 +37,4 @@ BibTag(BibString('LITERAL', 'PREAMBLE', [(1, 1, 1, 9)]), [(BibTag(undef, [(BibSt
 \\providecommand\\PROC{Proceedings}
 \\providecommand\\omdoc{OMDoc}
 \\providecommand\\activemath{ActiveMath} 
-\\hyphenation{Wiki-Sym}', [(1, 11, 41, 23)]))], [(1, 11, 41, 23)]))], [(0, 0, 41, 24)])
+\\hyphenation{Wiki-Sym}', [('t/fixtures/bibparser/01_preamble.bib', 1, 11, 41, 23)]))], [('t/fixtures/bibparser/01_preamble.bib', 1, 11, 41, 23)]))], [('t/fixtures/bibparser/01_preamble.bib', 0, 0, 41, 24)])

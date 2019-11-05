@@ -19,6 +19,9 @@ sub new {
     # input and stuff
     IN => undef, encoding => undef, string => undef, buffer => undef,
 
+    # filename of this reader
+    filename => undef,
+
     # current line information
     line => '', nchars => 0, colno => 0,
     lineno => 0, eof => 0,
@@ -47,10 +50,11 @@ sub openFile {
   $$self{encoding} = find_encoding($encoding || 'utf-8');
 
   # reset the state
-  $$self{lineno} = 0;
-  $$self{colno}  = 0;
-  $$self{line}   = '';
-  $$self{nchars} = 0;
+  $$self{filename} = $pathname;
+  $$self{lineno}   = 0;
+  $$self{colno}    = 0;
+  $$self{line}     = '';
+  $$self{nchars}   = 0;
 
   return 1; }
 
@@ -58,10 +62,11 @@ sub openFile {
 sub openString {
   my ($self, $string) = @_;
   # reset the state
-  $$self{lineno} = 0;
-  $$self{colno}  = 0;
-  $$self{line}   = '';
-  $$self{nchars} = 0;
+  $$self{filename} = undef;
+  $$self{lineno}   = 0;
+  $$self{colno}    = 0;
+  $$self{line}     = '';
+  $$self{nchars}   = 0;
 
   $$self{string} = $string;
   $$self{buffer} = [(defined $string ? splitLines($string) : ())];
@@ -79,12 +84,20 @@ sub finalize {
   }
   $$self{IN} = undef;
 
-  $$self{buffer} = [];
-  $$self{lineno} = 0;
-  $$self{colno}  = 0;
-  $$self{line}   = '';
-  $$self{nchars} = 0;
+  $$self{filename} = undef;
+  $$self{buffer}   = [];
+  $$self{lineno}   = 0;
+  $$self{colno}    = 0;
+  $$self{line}     = '';
+  $$self{nchars}   = 0;
   return; }
+
+# returns the filename corresponding to this reader
+# (or undef if none is set)
+sub getFilename {
+  my ($self) = @_;
+  return $$self{filename};
+}
 
 # ===================================================================== #
 # Reading Primitives

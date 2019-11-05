@@ -146,7 +146,9 @@ sub readEntry {
   }
 
   my ($er, $ec) = $reader->getPosition;
-  return BiBTeXML::Bibliography::BibEntry->new($type, [@tags], [$sr, $sc, $er, $ec]);
+
+  my $fn = $reader->getFilename;
+  return BiBTeXML::Bibliography::BibEntry->new($type, [@tags], [$fn, $sr, $sc, $er, $ec]);
 }
 
 # ======================================================================= #
@@ -255,7 +257,8 @@ sub readTag {
   my $name;
   $name = shift(@content) if ($hadEqualSign);
 
-  return BiBTeXML::Bibliography::BibTag->new($name, [@content], [($sr, $sc, $er, $ec)]);
+  my $fn = $reader->getFilename;
+  return BiBTeXML::Bibliography::BibTag->new($name, [@content], [($fn, $sr, $sc, $er, $ec)]);
 }
 
 # ======================================================================= #
@@ -297,7 +300,8 @@ sub readLiteral {
 
   # unread the character that isn't part of the special literal and return
   $reader->unreadChar($char, $line, $col, $eof);
-  return BiBTeXML::Bibliography::BibString->new('LITERAL', $keyword, [($sr, $sc, $er, $ec)]);
+  my $fn = $reader->getFilename;
+  return BiBTeXML::Bibliography::BibString->new('LITERAL', $keyword, [($fn, $sr, $sc, $er, $ec)]);
 }
 
 # read a string of balanced braces from the input
@@ -332,7 +336,8 @@ sub readBrace {
   }
 
   # we can add a +1 here, because we did not read a \n
-  return BiBTeXML::Bibliography::BibString->new('BRACKET', $result, [($sr, $sc, $line, $col + 1)]);
+  my $fn = $reader->getFilename;
+  return BiBTeXML::Bibliography::BibString->new('BRACKET', $result, [($fn, $sr, $sc, $line, $col + 1)]);
 }
 
 # read a quoted quote from reader
@@ -366,7 +371,8 @@ sub readQuote {
   }
 
   # we can add a +1 here, because we did not read a \n
-  return BiBTeXML::Bibliography::BibString->new('QUOTE', $result, [($sr, $sc, $line, $col + 1)]);
+  my $fn = $reader->getFilename;
+  return BiBTeXML::Bibliography::BibString->new('QUOTE', $result, [($fn, $sr, $sc, $line, $col + 1)]);
 }
 
 1;

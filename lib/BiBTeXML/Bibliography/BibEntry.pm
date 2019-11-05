@@ -57,8 +57,8 @@ sub stringify {
   my @tags = map { $_->stringify; } @{ $self->getTags };
   my $tagStr = '[(' . join(',', @tags) . ')]';
 
-  my ($sr, $sc, $er, $ec) = @{ $self->getSource };
-  return 'BibTag(' . $type . ', ' . $tagStr . ", [($sr, $sc, $er, $ec)])";
+  my $ss = $self->getSourceString;
+  return 'BibTag(' . $type . ', ' . $tagStr . ", $ss)";
 }
 
 1;

@@ -85,8 +85,8 @@ sub stringify {
     $content = $content->stringify;
   }
 
-  my ($sr, $sc, $er, $ec) = @{ $self->getSource };
-  return 'BibTag(' . $name . ', ' . $content . ", [($sr, $sc, $er, $ec)])";
+  my $ss = $self->getSourceString;
+  return 'BibTag(' . $name . ', ' . $content . ", $ss)";
 }
 
 1;

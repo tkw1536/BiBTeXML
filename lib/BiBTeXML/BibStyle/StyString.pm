@@ -56,8 +56,8 @@ sub stringify {
     $value = escapeString($$self{value});
   }
 
-  my ($sr, $sc, $er, $ec) = @{ $self->getSource };
-  return 'StyString(' . escapeString($kind) . ', ' . $value . ", [($sr, $sc, $er, $ec)])";
+  my $ss = $self->getSourceString;
+  return 'StyString(' . escapeString($kind) . ', ' . $value . ", $ss)";
 }
 
 1;
