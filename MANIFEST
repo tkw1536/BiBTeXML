@@ -16,6 +16,12 @@ bin/bibtexmlc
 bin/bibtexmlr
 
 #==================================================
+# Entry Points
+#==================================================
+lib/BiBTeXML/Cmd/bibtexmlc.pm
+lib/BiBTeXML/Cmd/bibtexmlr.pm
+
+#==================================================
 # Common Modules
 #==================================================
 lib/BiBTeXML/Common/Object.pm
