@@ -75,7 +75,7 @@ sub createRun {
 
     # create an output file (or STDOUT)
     my $ofh;
-    if ( defined($ofh) ) {
+    if ( defined($output) ) {
         open( $ofh, ">", $output );
     }
     else {
