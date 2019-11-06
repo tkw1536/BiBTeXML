@@ -33,7 +33,7 @@ our @EXPORT = qw(
 # - 5: Error opening outfile
 # - 6: something went wrong at runtime
 sub createRun {
-  my ($input, $bibfiles, $macro, $output) = @_;
+  my ($input, $bibfiles, $cites, $macro, $output) = @_;
 
   # open input file
   my $cfh;
@@ -99,7 +99,7 @@ sub createRun {
       }
 
       print STDERR "[$level] $message ($source)\n";
-    }, [@readers]);
+    }, [@readers], [@$cites]); # TODO: Read cite keys from somewhere
 
   # and get the context
   $config->initContext;

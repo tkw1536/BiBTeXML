@@ -15,11 +15,11 @@ subtest "reading entries" => sub {
   plan tests => 2;
 
   # read them for the first time
-  my ($result, $error) = $context->readEntries($path, $reader);
+  my ($result, $error) = $context->readEntries([$path, $reader], ["*"]);
   is_deeply([$result, $error], [0, []], 'reading entries');
 
   # read them again
-  ($result, $error) = $context->readEntries($path, $reader);
+  ($result, $error) = $context->readEntries([$path, $reader], ["*"]);
   is_deeply([$result, $error], [1, undef], 'reading entries again');
 };
 

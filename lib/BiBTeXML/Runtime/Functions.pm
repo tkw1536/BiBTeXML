@@ -87,8 +87,9 @@ sub defineMacro {
 sub readEntries {
   my ($context, $config, $styString) = @_;
   my @readers = $config->getReaders;
+  my @cites = $config->getCites;
 
-  my ($status, $warnings, $locations) = $context->readEntries(@readers);
+  my ($status, $warnings, $locations) = $context->readEntries([@readers], [@cites]);
 
   if ($status eq 0) {
     my $warning;

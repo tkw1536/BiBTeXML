@@ -14,7 +14,7 @@ use BiBTeXML::Runtime::Context;
 use BiBTeXML::Runtime::Builtins;
 
 sub new {
-  my ($class, $name, $resultHandle, $outputHandle, $readers) = @_;
+  my ($class, $name, $resultHandle, $outputHandle, $readers, $cites) = @_;
 
   # a new configuration for us to use
   my $context = BiBTeXML::Runtime::Context->new();
@@ -24,7 +24,8 @@ sub new {
     context      => $context,
     resultHandle => $resultHandle,
     outputHandle => $outputHandle,
-    readers      => [@{$readers}]
+    readers      => [@{$readers}],
+    cites        => [@${cites}]
   }, $class;
 }
 
@@ -71,6 +72,12 @@ sub location {
 sub getReaders {
   my ($self) = @_;
   return @{ $$self{readers} };
+}
+
+# gets the cites associated with this configuration
+sub getCites {
+  my ($self) = @_;
+  return @{ $$self{cites} };
 }
 
 # gets the context associated with this Configuration

@@ -325,7 +325,10 @@ sub getEntries {
 # returns (0, warnings) if ok, (1, undef) if entries were already read and (2, error) if something went wrong while reading
 # always closes all readers, if status != 1.
 sub readEntries {
-  my ($self, @readers) = @_;
+  my ($self, $inputs, $citations) = @_;
+
+  my @readers = @{ $inputs };
+  my @cites = @{ $citations };
 
   return 1, undef if defined($$self{entries});
 
@@ -333,8 +336,9 @@ sub readEntries {
   my @warnings  = ();
   my @locations = ();
 
-  my ($name, $reader, $parse, $parseError, $entry, $warning, $location);
+  my ($name, $reader, $parse, $parseError, $entry, $warning, $location, $cite);
   while (defined($name = shift(@readers))) {
+    # TODO: Replace the name mechanism by $reader->getName
     $reader = shift(@readers);
     ($parse, $parseError) = readFile($reader, 1, %{ $$self{macros} });
     $reader->finalize;
@@ -372,7 +376,24 @@ sub readEntries {
     ($warning, $location) = $entry->resolveCrossReferences($eref);
   }
 
-  # TODO: Filter entries to only include a sub-set
+  # Check if we need to filter entries (by checking for a '*')
+  my $requested_all_entries = 0;
+  foreach $cite (@cites) {
+    if ($cite eq '*') {
+      $requested_all_entries = 1;
+      last;
+    }
+  }
+
+  # if we didn't request all entries we need to filter
+  # TOOD: Duplicate checking and ordering
+  if (! $requested_all_entries) {
+    @entries = grep {
+      my $key = $_->getKey;
+      grep( /^$key$/, @cites );
+    } @entries;
+  }
+
 
   # send all the references
   $$self{entries} = [@entries];
