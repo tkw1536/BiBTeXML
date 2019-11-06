@@ -34,16 +34,21 @@ sub concatString {
 
     # if we have a non-empty string
     unless ($string eq '') {
-      # if the previous source is also undef, then we can join them directly
+      # we can join element iff the following conditions are met
+      # - we have at least one source already
+      # - the previous element has no source
+      # - the current element has no source
       if ($hasElement && !defined($prevSource) && !defined($source)) {
         $theString[-1] .= $string;
+
+      # in any other case, we need to setup a new element in the result
       } else {
         push(@theString,  $string);
         push(@theSources, $source);
-      }
 
-      $prevSource = $source;
-      $hasElement = 1;
+        $prevSource = $source;
+        $hasElement = 1;
+      }
     }
   }
 

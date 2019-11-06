@@ -156,7 +156,7 @@ sub bstFunctionCall {
 sub runtimeFunctionCall {
   my ($class, $name, $sourceString, @arguments) = @_;
   my $call = join(", ", @arguments, $sourceString->stringify);
-  return "$name(\$context, \$config, " . $call . '); ';    #DEBUG DEBUG DEBUG
+  return "$name(\$context, \$config, " . $call . '); ';
 }
 
 # wrapProgram($program, $name) - function used to wrap a compiled program

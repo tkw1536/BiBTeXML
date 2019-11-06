@@ -175,7 +175,7 @@ sub duplicateStack {
 
   # deep-copy the source if needed
   my $source = $$self{sourceStack}[-1];
-  $source = [@{$source}] if ref $source && $source eq "ARRAY";
+  $source = [@{$source}] if ref $source && ref $source eq "ARRAY";
   push(@{ $$self{sourceStack} }, $source);
 
   return 1;

@@ -102,7 +102,7 @@ sub builtinZa {
   my ($s2tp, $s2, $ss2) = popType($context, $config, 'STRING', undef, $source);
   return unless defined($s2tp);
 
-  my ($ns, $nss) = concatString($s2, $ss2, $s1, $ss2);
+  my ($ns, $nss) = concatString($s2, $ss2, $s1, $ss1);
   $context->pushStack('STRING', $ns, $nss);
 }
 
@@ -259,7 +259,7 @@ sub builtinFormatName {
       my ($fname, $error) = formatName("$name", $fstrings);
       $config->log('WARN', "Unable to format name: $error", $config->location($source)) if defined($error);
       return defined($fname) ? $fname : '';
-  });
+  }, 0);
   $context->pushStack('STRING', $newStrings, $newSources);
 }
 
