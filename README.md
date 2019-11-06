@@ -109,6 +109,17 @@ For example, to run the compiled `plain.bst.pl` file from above using a bib file
 bibtexmlr plain.bst.pl data.bib
 ```
 
+### Convenience Scripts
+
+#### makebbl
+
+The [makebbl](./tools/makebbl) script provides a quick and dirty way to intercept the plain
+BibTeX output. It's usage is as follows:
+
+```
+makebbl [--help] [--destination $DEST] [--cites $CITES] STYLE [$BIBFILE [$BIBFILE ...]]
+```
+
 ### See also
 
 For documentation on BiBTeX Style Files, the following resources are helpful:
