@@ -29,6 +29,27 @@ sub new {
   }, $class;
 }
 
+# runs compiled code using this configuration
+sub run {
+  my ($self, $code) = @_;
+
+  # initialize context and get it
+  $self->initContext;
+  my $context = $self->getContext;
+
+  # run the code
+  my $ok = 0;
+  eval {
+    &{$code}($context, $self);
+    $ok = 1;
+  };
+
+  # capture the error (if any)
+  my $error = $@;
+  return $ok, $error;
+}
+
+
 sub setName {
   my ($self, $name) = @_;
   $$self{name} = $name;

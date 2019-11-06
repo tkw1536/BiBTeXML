@@ -64,16 +64,16 @@ sub createRun {
     }
   }
 
-  # create readers for all of them
+  # create stream readers
   my $reader;
   my @readers = ();
   foreach $bf (@$bibfiles) {
     $reader = BiBTeXML::Common::StreamReader->new();
     $reader->openFile($bf);
-    push(@readers, $bf, $reader);
+    push(@readers, $reader);
   }
 
-  # create an output file
+  # create an output file (or STDOUT)
   my $ofh;
   if (defined($ofh)) {
     open($ofh, ">", $output);
@@ -85,36 +85,18 @@ sub createRun {
     return 5, undef;
   }
 
-  # create a configuration
-  # TODO: Allow interception of sources
+  # Create a configuration that optionally wraps things inside a macro
   my $config = BiBTeXML::Runtime::Config->new(undef, sub {
-      my ($string, $source) = @_;
-      print $ofh wrapWithSourceMacro($string, $source, $macro);
-    }, sub {
-      my ($level, $message, $source) = @_;
-      if (defined($source) && ref $source eq 'ARRAY') {
-        $source = join(' ', @$source);
-      } else {
-        $source = 'unknown location';
-      }
-
-      print STDERR "[$level] $message ($source)\n";
-    }, [@readers], [@$cites]); # TODO: Read cite keys from somewhere
-
-  # and get the context
-  $config->initContext;
-  my $context = $config->getContext;
-
-  # return the magic code to be run
+    print $ofh fmtOutputWithSourceMacro(@_, $macro);
+  }, sub {
+    print STDERR fmtLogMessage(@_) . "\n";
+  }, [@readers], [@$cites]);
+  
   return 0, sub {
-    my $exitcode = 6;
-    eval {
-      &{$code}($context, $config);
-      $exitcode = 0;
-    };
-    print STDERR $@ if defined($@);
+    my ($ok, $error) = $config->run($code);
+    print STDERR $error if defined $error;
     close($ofh);
-    return $exitcode;
-  };
-
+    return 6 unless $ok;
+    return 0;
+  }
 }

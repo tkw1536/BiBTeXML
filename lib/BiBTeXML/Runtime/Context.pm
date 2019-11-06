@@ -337,9 +337,8 @@ sub readEntries {
   my @locations = ();
 
   my ($name, $reader, $parse, $parseError, $entry, $warning, $location, $cite);
-  while (defined($name = shift(@readers))) {
-    # TODO: Replace the name mechanism by $reader->getName
-    $reader = shift(@readers);
+  while (defined($reader = shift(@readers))) {
+    $name = $reader->getFilename;
     ($parse, $parseError) = readFile($reader, 1, %{ $$self{macros} });
     $reader->finalize;
 

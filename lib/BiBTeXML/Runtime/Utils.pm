@@ -13,7 +13,8 @@ use warnings;
 use base qw(Exporter);
 our @EXPORT = qw(
   &concatString &simplifyString &applyPatch
-  &popType &formatType &popFunction &wrapWithSourceMacro
+  &popType &fmtType &popFunction
+  &fmtOutputWithSourceMacro &fmtLogMessage
 );
 
 # given two runtime strings, join them and their sources together
@@ -164,7 +165,7 @@ sub popFunction {
   return undef, undef, undef;
 }
 
-sub formatType {
+sub fmtType {
   my ($type, $value) = @_;
   if ($type eq 'UNSET' or $type eq 'MISSING') {
     return "($type)";
@@ -185,12 +186,23 @@ sub formatType {
 # wraps string with the source inside a macro
 # when source is undef, or the source is not a field,
 # returns string unchanged
-sub wrapWithSourceMacro {
+sub fmtOutputWithSourceMacro {
   my ($string, $source, $macro) = @_;
   return $string unless defined($source) && $macro;
   my ($fn, $entry, $field) = @{ $source }; # TODO: Escape fn for tex
   return $string unless $field;
   return '\\' . $macro . '{' . $fn . '}{' . $entry . '}{' . $field . '}{' . $string . '}';
+}
+
+# formats a log message consisting of a level, a message and a source
+sub fmtLogMessage {
+  my ($level, $message, $source) = @_;
+  if (defined($source) && ref $source eq 'ARRAY') {
+    $source = join(' ', @$source);
+  } else {
+    $source = 'unknown location';
+  }
+  return "[$level] $message ($source)";
 }
 
 1;

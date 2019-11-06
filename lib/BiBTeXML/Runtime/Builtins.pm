@@ -372,7 +372,7 @@ sub builtinStack {
   my ($context, $config, $source) = @_;
   my ($tp,      $value,  $src)    = $context->popStack;
   while (defined($tp)) {
-    $config->log('DEBUG', formatType($tp, $value, $src));
+    $config->log('DEBUG', fmtType($tp, $value, $src));
     ($tp, $value, $src) = $context->popStack;
   }
 }
@@ -450,7 +450,7 @@ sub builtinTop {
   my ($context, $config, $source) = @_;
   my ($tp,      $value,  $src)    = $context->popStack;
   unless (defined($tp)) {
-    $config->log('DEBUG', formatType($tp, $value, $src));
+    $config->log('DEBUG', fmtType($tp, $value, $src));
   } else {
     $config->log('WARN', "Unable to pop empty stack", $config->location($source));
   }
