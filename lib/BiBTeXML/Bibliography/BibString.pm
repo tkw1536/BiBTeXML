@@ -15,21 +15,21 @@ use base qw(BiBTeXML::Common::Object);
 use BiBTeXML::Common::Utils;
 
 sub new {
-  my ($class, $kind, $value, $source) = @_;
-  return bless {
-    kind   => $kind || '',    # the kind of string we have (see getKind)
-    value  => $value,         # the value in this string (see getValue)
-    source => $source,        # the source position (see getSource)
-  }, $class;
+    my ( $class, $kind, $value, $source ) = @_;
+    return bless {
+        kind => $kind || '',    # the kind of string we have (see getKind)
+        value  => $value,       # the value in this string (see getValue)
+        source => $source,      # the source position (see getSource)
+    }, $class;
 }
 
 # return a copy of this entry
 sub copy {
-  my ($self) = @_;
+    my ($self) = @_;
 
-  # we need to deep-copy the source
-  my ($fn, $sr, $sc, $er, $ec) = @{ $$self{source} };
-  return new($$self{kind}, $$self{value}, [($fn, $sr, $sc, $er, $ec)]);
+    # we need to deep-copy the source
+    my ( $fn, $sr, $sc, $er, $ec ) = @{ $$self{source} };
+    return new( $$self{kind}, $$self{value}, [ ( $fn, $sr, $sc, $er, $ec ) ] );
 }
 
 # get the kind this BibString represents. One of:
@@ -39,63 +39,67 @@ sub copy {
 #   'QUOTE'     (a quoted string from the source file)
 #   'EVALUATED' (anything that has been evaluated or concatinated)
 sub getKind {
-  my ($self) = @_;
-  return $$self{kind};
+    my ($self) = @_;
+    return $$self{kind};
 }
 
 # get the value of this BiBString, a normal string
 sub getValue {
-  my ($self) = @_;
-  return $$self{value};
+    my ($self) = @_;
+    return $$self{value};
 }
 
 # normalizes the value of this BiBString
 # i.e. turns it into lower-case
 sub normalizeValue {
-  my ($self) = @_;
-  $$self{value} = lc($$self{value});
+    my ($self) = @_;
+    $$self{value} = lc( $$self{value} );
 }
 
 # evaluate this BibString inside of a context
 # i.e. if it is a literal read the value from the context
 # returns 0 iff evaluation failed, and 1 otherwise.
 sub evaluate {
-  my ($self, %context) = @_;
+    my ( $self, %context ) = @_;
 
-  if ($$self{kind} eq 'LITERAL') {
-    $$self{kind} = 'EVALUATED';
-    my $value = $context{ lc($$self{value}) };
-    return 0 unless defined($value);
-    $$self{value} = ref $value ? $value->getValue : $value;
-  }
+    if ( $$self{kind} eq 'LITERAL' ) {
+        $$self{kind} = 'EVALUATED';
+        my $value = $context{ lc( $$self{value} ) };
+        return 0 unless defined($value);
+        $$self{value} = ref $value ? $value->getValue : $value;
+    }
 
-  return 1;
+    return 1;
 }
 
 # appends the value of another BiBString to this one
 # and updates the source ref accordingly
 # DOES NOT do any type checking what-so-ever
 sub append {
-  my ($self, $other) = @_;
+    my ( $self, $other ) = @_;
 
-  # append the value to our own class
-  $$self{kind} = 'EVALUATED';
-  $$self{value} .= $other->getValue;
+    # append the value to our own class
+    $$self{kind} = 'EVALUATED';
+    $$self{value} .= $other->getValue;
 
-  # update the source reference
-  my ($fn, $sr, $sc) = @{ $$self{source} };
-  my ($a, $b, $c, $er, $ec) = @{ $other->getSource };
-  $$self{source} = [($fn, $sr, $sc, $er, $ec)];
+    # update the source reference
+    my ( $fn, $sr, $sc ) = @{ $$self{source} };
+    my ( $a, $b, $c, $er, $ec ) = @{ $other->getSource };
+    $$self{source} = [ ( $fn, $sr, $sc, $er, $ec ) ];
 }
 
 # turns this BibString into a string representing code to create this object
 sub stringify {
-  my ($self)  = @_;
-  my ($kind)  = $$self{kind};
-  my ($value) = $$self{value};
+    my ($self)  = @_;
+    my ($kind)  = $$self{kind};
+    my ($value) = $$self{value};
 
-  my $ss = $self->getSourceString;
-  return 'BibString(' . escapeString($kind) . ', ' . escapeString($value) . ", $ss)";
+    my $ss = $self->getSourceString;
+    return
+        'BibString('
+      . escapeString($kind) . ', '
+      . escapeString($value)
+      . ", $ss)";
 }
 
 1;

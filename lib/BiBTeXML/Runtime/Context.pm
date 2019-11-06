@@ -23,28 +23,30 @@ use BiBTeXML::Runtime::Entry;
 ### It consists of the following items:
 
 sub new {
-  my ($class) = @_;
-  return bless {
-    ### - the stack (split into three parts, see below)
-    typeStack => [], valueStack => [], sourceStack => [],
+    my ($class) = @_;
+    return bless {
+        ### - the stack (split into three parts, see below)
+        typeStack => [], valueStack => [], sourceStack => [],
 
-    ### - a set of macros
-    macros => {},
+        ### - a set of macros
+        macros => {},
 
-    ### - a set of global string variables (with three values each, as in the stack)
-    ### along with the types ('GLOBAL_STRING', 'ENTRY_STRING', 'GLOBAL_INTEGER', 'ENTRY_INTEGER', 'ENTRY_FIELD');
-    variables     => {},
-    variableTypes => {},
+        ### - a set of global string variables (with three values each, as in the stack)
+        ### along with the types ('GLOBAL_STRING', 'ENTRY_STRING', 'GLOBAL_INTEGER', 'ENTRY_INTEGER', 'ENTRY_FIELD');
+        variables     => {},
+        variableTypes => {},
 
-    ### - a list of read entries, and the current entry (if any)
-    entries => undef,
-    entry   => undef,
+        ### - a list of read entries, and the current entry (if any)
+        entries => undef,
+        entry   => undef,
 
-    ### - an output buffer (split into an array of string, and an array of references)
-    outputString   => [], outputSource   => [],
-    preambleString => [], preambleSource => [],
+        ### - an output buffer (split into an array of string, and an array of references)
+        outputString   => [],
+        outputSource   => [],
+        preambleString => [],
+        preambleSource => [],
 
-  }, $class;
+    }, $class;
 }
 
 ###
@@ -85,100 +87,101 @@ sub new {
 
 # return the length of the stack
 sub stackLength {
-  my ($self) = @_;
-  return scalar(@{ $$self{typeStack} });
+    my ($self) = @_;
+    return scalar( @{ $$self{typeStack} } );
 }
 
 # pop the stack
 # returns the value or undef, undef, undef
 sub popStack {
-  my ($self) = @_;
-  return undef, undef, undef unless scalar(@{ $$self{typeStack} }) > 0;
-  return (
-    pop(@{ $$self{typeStack} }),
-    pop(@{ $$self{valueStack} }),
-    pop(@{ $$self{sourceStack} })
-  );
+    my ($self) = @_;
+    return undef, undef, undef unless scalar( @{ $$self{typeStack} } ) > 0;
+    return (
+        pop( @{ $$self{typeStack} } ),
+        pop( @{ $$self{valueStack} } ),
+        pop( @{ $$self{sourceStack} } )
+    );
 }
 
 # peek at the position index from the back. index is 1 based.
 # returns the value looked up or 0
 sub peekStack {
-  my ($self, $index) = @_;
-  return undef, undef, undef unless scalar(@{ $$self{typeStack} }) >= $index;
-  return (
-    $$self{typeStack}[-$index],
-    $$self{valueStack}[-$index],
-    $$self{sourceStack}[-$index]
-  );
+    my ( $self, $index ) = @_;
+    return undef, undef, undef
+      unless scalar( @{ $$self{typeStack} } ) >= $index;
+    return (
+        $$self{typeStack}[ -$index ],
+        $$self{valueStack}[ -$index ],
+        $$self{sourceStack}[ -$index ]
+    );
 }
 
 # pops an item from the stack
 # returns 1
 sub pushStack {
-  my ($self, $type, $value, $source) = @_;
-  push(@{ $$self{typeStack} },   $type);
-  push(@{ $$self{valueStack} },  $value);
-  push(@{ $$self{sourceStack} }, $source);
-  return 1;
+    my ( $self, $type, $value, $source ) = @_;
+    push( @{ $$self{typeStack} },   $type );
+    push( @{ $$self{valueStack} },  $value );
+    push( @{ $$self{sourceStack} }, $source );
+    return 1;
 }
 
 # sets a specific value on the stack
 # return 1 iff successfull
 sub putStack {
-  my ($self, $index, $type, $value, $source) = @_;
-  return 0 unless scalar(@{ $$self{typeStack} }) >= $index;
-  $$self{typeStack}[-$index]   = $type if defined($type);
-  $$self{valueStack}[-$index]  = $value;
-  $$self{sourceStack}[-$index] = $source;
-  return 1;
+    my ( $self, $index, $type, $value, $source ) = @_;
+    return 0 unless scalar( @{ $$self{typeStack} } ) >= $index;
+    $$self{typeStack}[ -$index ]   = $type if defined($type);
+    $$self{valueStack}[ -$index ]  = $value;
+    $$self{sourceStack}[ -$index ] = $source;
+    return 1;
 }
 
 # pushes a string constant onto the stack
 sub pushString {
-  my ($self, $string) = @_;
-  push(@{ $$self{typeStack} }, 'STRING');
-  push(@{ $$self{valueStack} },  [$string]);
-  push(@{ $$self{sourceStack} }, [undef]);
-  return 1;
+    my ( $self, $string ) = @_;
+    push( @{ $$self{typeStack} }, 'STRING' );
+    push( @{ $$self{valueStack} },  [$string] );
+    push( @{ $$self{sourceStack} }, [undef] );
+    return 1;
 }
 
 # pushes an integer constant onto the stack
 sub pushInteger {
-  my ($self, $integer) = @_;
-  push(@{ $$self{typeStack} },   'INTEGER');
-  push(@{ $$self{valueStack} },  $integer);
-  push(@{ $$self{sourceStack} }, undef);
-  return 1;
+    my ( $self, $integer ) = @_;
+    push( @{ $$self{typeStack} },   'INTEGER' );
+    push( @{ $$self{valueStack} },  $integer );
+    push( @{ $$self{sourceStack} }, undef );
+    return 1;
 }
 
 # empties the stack
 sub emptyStack {
-  my ($self) = @_;
-  $$self{typeStack}   = [];
-  $$self{valueStack}  = [];
-  $$self{sourceStack} = [];
+    my ($self) = @_;
+    $$self{typeStack}   = [];
+    $$self{valueStack}  = [];
+    $$self{sourceStack} = [];
 }
 
 # duplicate the head of the stack
 sub duplicateStack {
-  my ($self) = @_;
-  return 0 unless scalar(@{ $$self{typeStack} }) > 0;
+    my ($self) = @_;
+    return 0 unless scalar( @{ $$self{typeStack} } ) > 0;
 
-  # duplicate the type
-  push(@{ $$self{typeStack} }, $$self{typeStack}[-1]);
+    # duplicate the type
+    push( @{ $$self{typeStack} }, $$self{typeStack}[-1] );
 
-  # deep-copy the value if needed
-  my $value = $$self{valueStack}[-1];
-  $value = [@{$value}] if ref $value && ref $value eq "ARRAY";
-  push(@{ $$self{valueStack} }, $value);
+    # deep-copy the value if needed
+    my $value = $$self{valueStack}[-1];
+    $value = [ @{$value} ] if ref $value && ref $value eq "ARRAY";
+    push( @{ $$self{valueStack} }, $value );
 
-  # deep-copy the source if needed
-  my $source = $$self{sourceStack}[-1];
-  $source = [@{$source}] if ref $source && ref $source eq "ARRAY";
-  push(@{ $$self{sourceStack} }, $source);
+    # deep-copy the source if needed
+    my $source = $$self{sourceStack}[-1];
+    $source = [ @{$source} ] if ref $source && ref $source eq "ARRAY";
+    push( @{ $$self{sourceStack} }, $source );
 
-  return 1;
+    return 1;
 }
 
 ###
@@ -188,21 +191,21 @@ sub duplicateStack {
 # sets a macro of the given name
 # returns 1
 sub setMacro {
-  my ($self, $name, $value) = @_;
-  $$self{macros}{ lc $name } = $value;
-  return 1;
+    my ( $self, $name, $value ) = @_;
+    $$self{macros}{ lc $name } = $value;
+    return 1;
 }
 
 # gets a macro
 sub getMacro {
-  my ($self, $name) = @_;
-  return $$self{macros}{ lc $name };
+    my ( $self, $name ) = @_;
+    return $$self{macros}{ lc $name };
 }
 
 # checks if a macro of the given name exists
 sub hasMacro {
-  my ($self, $name, $value) = @_;
-  return defined($$self{macros}{ lc $name });
+    my ( $self, $name, $value ) = @_;
+    return defined( $$self{macros}{ lc $name } );
 }
 
 ###
@@ -210,105 +213,106 @@ sub hasMacro {
 ###
 
 sub hasVariable {
-  my ($self, $name, $type) = @_;
-  if (defined($$self{variableTypes}{$name})) {
-    if (defined($type)) {
-      return ($$self{variableTypes} eq $type) ? 1 : 0;
+    my ( $self, $name, $type ) = @_;
+    if ( defined( $$self{variableTypes}{$name} ) ) {
+        if ( defined($type) ) {
+            return ( $$self{variableTypes} eq $type ) ? 1 : 0;
+        }
+        return 1;
     }
-    return 1;
-  }
-  return 0;
+    return 0;
 }
 
 # defines a new variable for use in the stack
 # return 1 if ok, 0 if already defined
 sub defineVariable {
-  my ($self, $name, $type) = @_;
-  return 0 if defined($$self{variableTypes}{$name});
+    my ( $self, $name, $type ) = @_;
+    return 0 if defined( $$self{variableTypes}{$name} );
 
-  # store the type and set initial value if global
-  $$self{variableTypes}{$name} = $type;
-  unless (startsWith($type, 'ENTRY_')) {
-    $$self{variables}{$name} = [('UNSET', undef, undef)];
-  }
+    # store the type and set initial value if global
+    $$self{variableTypes}{$name} = $type;
+    unless ( startsWith( $type, 'ENTRY_' ) ) {
+        $$self{variables}{$name} = [ ( 'UNSET', undef, undef ) ];
+    }
 
-  return 1;
+    return 1;
 }
 
 # get a variable (type, value, source) or undef if it doesn't exist
 sub getVariable {
-  my ($self, $name) = @_;
+    my ( $self, $name ) = @_;
 
-  # if the variable does not exist, return nothing
-  my $type = $$self{variableTypes}{$name};
-  return (undef, undef, undef) unless defined($type);
+    # if the variable does not exist, return nothing
+    my $type = $$self{variableTypes}{$name};
+    return ( undef, undef, undef ) unless defined($type);
 
-  # we need to look up inside the current entry
-  if (
-    $type eq 'ENTRY_FIELD'  or
-    $type eq 'ENTRY_STRING' or
-    $type eq 'ENTRY_INTEGER'
-  ) {
-    my $entry = $$self{entry};
-    return ('UNSET', undef, undef) unless defined($entry);
-    return $entry->getVariable($name);
+    # we need to look up inside the current entry
+    if (   $type eq 'ENTRY_FIELD'
+        or $type eq 'ENTRY_STRING'
+        or $type eq 'ENTRY_INTEGER' )
+    {
+        my $entry = $$self{entry};
+        return ( 'UNSET', undef, undef ) unless defined($entry);
+        return $entry->getVariable($name);
 
-    # we have a global variable, so take it from out own state
-    # note: we need to duplicate the value and source, because they may be modified by future calls
-  } else {
-    my ($t, $v, $s) = @{ $$self{variables}{$name} };
-    $v = [@{$v}] if ref($v) && ref($v) eq 'ARRAY';
-    $s = [@{$s}] if ref($s) && ref($s) eq 'ARRAY';
-    return ($t, $v, $s);
-  }
+# we have a global variable, so take it from out own state
+# note: we need to duplicate the value and source, because they may be modified by future calls
+    }
+    else {
+        my ( $t, $v, $s ) = @{ $$self{variables}{$name} };
+        $v = [ @{$v} ] if ref($v) && ref($v) eq 'ARRAY';
+        $s = [ @{$s} ] if ref($s) && ref($s) eq 'ARRAY';
+        return ( $t, $v, $s );
+    }
 }
 
 # set a variable (type, value, source)
 # returns 0 if ok, 1 if it doesn't exist,  2 if an invalid context, 3 if read-only, 4 if unknown type
 sub setVariable {
-  my ($self, $name, $value) = @_;
+    my ( $self, $name, $value ) = @_;
 
-  # if the variable does not exist, return nothing
-  my $type = $$self{variableTypes}{$name};
-  return 1 unless defined($type);
+    # if the variable does not exist, return nothing
+    my $type = $$self{variableTypes}{$name};
+    return 1 unless defined($type);
 
-  # we need to look up inside the current entry
-  if (
-    $type eq 'ENTRY_FIELD'  or
-    $type eq 'ENTRY_STRING' or
-    $type eq 'ENTRY_INTEGER'
-  ) {
-    my $entry = $$self{entry};
-    return 2 unless defined($entry);
-    return $entry->setVariable($name, $value);
-    # we have a global variable, so take it from our stack
-  } elsif (
-    $type eq 'GLOBAL_STRING'  or
-    $type eq 'GLOBAL_INTEGER' or
-    $type eq 'FUNCTION'
-  ) {
-    # else assign the value
-    $$self{variables}{$name} = $value;
+    # we need to look up inside the current entry
+    if (   $type eq 'ENTRY_FIELD'
+        or $type eq 'ENTRY_STRING'
+        or $type eq 'ENTRY_INTEGER' )
+    {
+        my $entry = $$self{entry};
+        return 2 unless defined($entry);
+        return $entry->setVariable( $name, $value );
 
-    # and return
-    return 0;
+        # we have a global variable, so take it from our stack
+    }
+    elsif ($type eq 'GLOBAL_STRING'
+        or $type eq 'GLOBAL_INTEGER'
+        or $type eq 'FUNCTION' )
+    {
+        # else assign the value
+        $$self{variables}{$name} = $value;
 
-    # I don't know the type
-  } else {
-    return 4;
-  }
+        # and return
+        return 0;
+
+        # I don't know the type
+    }
+    else {
+        return 4;
+    }
 }
 
 # defines and assigns a variable
 # returns 0 if ok, 1 if it already exists, 2 if an invalid context, 3 if read-only, 4 if unknown type
 sub assignVariable {
-  my ($self, $name, $type, $value) = @_;
+    my ( $self, $name, $type, $value ) = @_;
 
-  # define the variable
-  my $def = $self->defineVariable($name, $type);
-  return 1 unless $def eq 1;
+    # define the variable
+    my $def = $self->defineVariable( $name, $type );
+    return 1 unless $def eq 1;
 
-  return $self->setVariable($name, $value);
+    return $self->setVariable( $name, $value );
 }
 
 ###
@@ -317,119 +321,123 @@ sub assignVariable {
 
 # returns the entries loaded by this context, or undef if none
 sub getEntries {
-  my ($self) = @_;
-  return $$self{entries};
+    my ($self) = @_;
+    return $$self{entries};
 }
 
 # reads entries from a given reader
 # returns (0, warnings) if ok, (1, undef) if entries were already read and (2, error) if something went wrong while reading
 # always closes all readers, if status != 1.
 sub readEntries {
-  my ($self, $inputs, $citations) = @_;
+    my ( $self, $inputs, $citations ) = @_;
 
-  my @readers = @{ $inputs };
-  my @cites = @{ $citations };
+    my @readers = @{$inputs};
+    my @cites   = @{$citations};
 
-  return 1, undef if defined($$self{entries});
+    return 1, undef if defined( $$self{entries} );
 
-  my @entries   = ();
-  my @warnings  = ();
-  my @locations = ();
+    my @entries   = ();
+    my @warnings  = ();
+    my @locations = ();
 
-  my ($name, $reader, $parse, $parseError, $entry, $warning, $location, $cite);
-  while (defined($reader = shift(@readers))) {
-    $name = $reader->getFilename;
-    ($parse, $parseError) = readFile($reader, 1, %{ $$self{macros} });
-    $reader->finalize;
-
-    # if we have a parse error, close all the other readers
-    if (scalar(@{$parseError}) > 0) {
-      foreach $reader (@readers) {
+    my ( $name, $reader, $parse, $parseError, $entry, $warning, $location,
+        $cite );
+    while ( defined( $reader = shift(@readers) ) ) {
+        $name = $reader->getFilename;
+        ( $parse, $parseError ) = readFile( $reader, 1, %{ $$self{macros} } );
         $reader->finalize;
-      }
-      return 2, $parseError;
-    }
 
-    # iterate over all the entries
-    foreach $entry (@{$parse}) {
-      ($entry, $warning, $location) = BiBTeXML::Runtime::Entry->new($name, $self, $entry);
-      if (defined($entry)) {
-        # if we got back a ref, it's a proper entry
-        if (ref $entry) {
-          push(@entries, $entry) if defined($entry) && ref $entry;
-          # else it is a preamble, and it's source
-        } else {
-          push(@{ $$self{preambleString} }, $entry);
-          push(@{ $$self{preambleSource} }, $warning);
-          next;
+        # if we have a parse error, close all the other readers
+        if ( scalar( @{$parseError} ) > 0 ) {
+            foreach $reader (@readers) {
+                $reader->finalize;
+            }
+            return 2, $parseError;
         }
-      }
-      push(@warnings,  @$warning)  if defined($warning);
-      push(@locations, @$location) if defined($location);
+
+        # iterate over all the entries
+        foreach $entry ( @{$parse} ) {
+            ( $entry, $warning, $location ) =
+              BiBTeXML::Runtime::Entry->new( $name, $self, $entry );
+            if ( defined($entry) ) {
+
+                # if we got back a ref, it's a proper entry
+                if ( ref $entry ) {
+                    push( @entries, $entry ) if defined($entry) && ref $entry;
+
+                    # else it is a preamble, and it's source
+                }
+                else {
+                    push( @{ $$self{preambleString} }, $entry );
+                    push( @{ $$self{preambleSource} }, $warning );
+                    next;
+                }
+            }
+            push( @warnings,  @$warning )  if defined($warning);
+            push( @locations, @$location ) if defined($location);
+        }
     }
-  }
 
-  # resolve all the cross references
-  my $eref = [@entries];
-  foreach $entry (@entries) {
-    ($warning, $location) = $entry->resolveCrossReferences($eref);
-  }
-
-  # Check if we need to filter entries (by checking for a '*')
-  my $requested_all_entries = 0;
-  foreach $cite (@cites) {
-    if ($cite eq '*') {
-      $requested_all_entries = 1;
-      last;
+    # resolve all the cross references
+    my $eref = [@entries];
+    foreach $entry (@entries) {
+        ( $warning, $location ) = $entry->resolveCrossReferences($eref);
     }
-  }
 
-  # if we didn't request all entries we need to filter
-  # TOOD: Duplicate checking and ordering
-  if (! $requested_all_entries) {
-    @entries = grep {
-      my $key = $_->getKey;
-      grep( /^$key$/, @cites );
-    } @entries;
-  }
+    # Check if we need to filter entries (by checking for a '*')
+    my $requested_all_entries = 0;
+    foreach $cite (@cites) {
+        if ( $cite eq '*' ) {
+            $requested_all_entries = 1;
+            last;
+        }
+    }
 
+    # if we didn't request all entries we need to filter
+    # TOOD: Duplicate checking and ordering
+    if ( !$requested_all_entries ) {
+        @entries = grep {
+            my $key = $_->getKey;
+            grep( /^$key$/, @cites );
+        } @entries;
+    }
 
-  # send all the references
-  $$self{entries} = [@entries];
+    # send all the references
+    $$self{entries} = [@entries];
 
-  return 0, [@warnings], [@locations];
+    return 0, [@warnings], [@locations];
 }
 
 sub getPreamble {
-  my ($self) = @_;
-  return $$self{preambleString}, $$self{preambleSource};
+    my ($self) = @_;
+    return $$self{preambleString}, $$self{preambleSource};
 }
 
 # sort entries in-place using a comparison function
 # return 1 iff entriues have been sorted
 sub sortEntries {
-  my ($self, $comp) = @_;
+    my ( $self, $comp ) = @_;
 
-  $$self{entries} = [sort { &{$comp}($a, $b) } @{ $$self{entries} }];
-  return 1;
+    $$self{entries} = [ sort { &{$comp}( $a, $b ) } @{ $$self{entries} } ];
+    return 1;
 }
 
 # sets the current entry
 sub setEntry {
-  my ($self, $entry) = @_;
-  $$self{entry} = $entry;
+    my ( $self, $entry ) = @_;
+    $$self{entry} = $entry;
 }
 
 # gets the current entry (if any)
 sub getEntry {
-  my ($self) = @_;
-  return $$self{entry};
+    my ($self) = @_;
+    return $$self{entry};
 }
 
 # leave the current entry (if any)
 sub leaveEntry {
-  my ($self) = @_;
-  $$self{entry} = undef;
+    my ($self) = @_;
+    $$self{entry} = undef;
 }
 
 1;

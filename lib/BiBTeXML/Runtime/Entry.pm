@@ -20,180 +20,192 @@ use Scalar::Util qw(blessed);
 ### An entry consists of the following values:
 
 sub new {
-  my ($class, $name, $context, $entry) = @_;
+    my ( $class, $name, $context, $entry ) = @_;
 
-  sub locationOf {
-    my ($n, $source) = @_;
-    $source = $source->getSource if blessed($source);
-    return $n, $source;
-  }
-
-  # read our type, skip 'string's and 'comment's
-  my $type = lc $entry->getType->getValue;
-  return undef, undef if $type eq 'string' or $type eq 'comment';
-
-  # read the tags
-  my @tags = @{ $entry->getTags };
-
-  # if we have a preamble, return the conent of the preamble
-  if ($type eq 'preamble') {
-    return undef, ['Missing content for preamble'], [locationOf($name, $entry)] unless scalar(@tags) eq 1;
-    my $preamble = shift(@tags);
-    return $preamble->getContent->getValue, [($name, '', 'preamble')];
-  }
-
-  # Make sure that we have something
-  return undef, ['Missing key for entry', [locationOf($name, $entry)]] unless scalar(@tags) > 0;
-
-  # make sure that we have a key
-  my $key = shift(@tags)->getContent->getValue;
-  return undef, ['Expected non-empty key', [locationOf($name, $entry)]] unless $key;
-
-  my ($tag, $value, $valueKey);
-  my %values      = ();
-  my (@warnings)  = ();
-  my (@locations) = ();
-
-  foreach $tag (@tags) {
-    $valueKey = $tag->getName;
-    $value    = $tag->getContent->getValue;
-
-    # we need a key=value in this tag
-    unless (defined($valueKey)) {
-      push(@warnings, 'Missing key for value');
-      push(@locations, locationOf($name, $tag->getContent));
-      next;
+    sub locationOf {
+        my ( $n, $source ) = @_;
+        $source = $source->getSource if blessed($source);
+        return $n, $source;
     }
 
-    $valueKey = lc $valueKey->getValue;
+    # read our type, skip 'string's and 'comment's
+    my $type = lc $entry->getType->getValue;
+    return undef, undef if $type eq 'string' or $type eq 'comment';
 
-    # if we have a duplicate valye
-    if (defined($values{$valueKey})) {
-      push(@warnings, 'Duplicate value in entry ' . $key . ': Tag ' . $valueKey . ' already defined. ');
-      push(@locations, locationOf($name, $tag->getContent->getSource));
-      next;
+    # read the tags
+    my @tags = @{ $entry->getTags };
+
+    # if we have a preamble, return the conent of the preamble
+    if ( $type eq 'preamble' ) {
+        return undef, ['Missing content for preamble'],
+          [ locationOf( $name, $entry ) ]
+          unless scalar(@tags) eq 1;
+        my $preamble = shift(@tags);
+        return $preamble->getContent->getValue, [ ( $name, '', 'preamble' ) ];
     }
-    $values{$valueKey} = $value;
-  }
 
-  my $self = bless {
-    name => $name,
+    # Make sure that we have something
+    return undef, [ 'Missing key for entry', [ locationOf( $name, $entry ) ] ]
+      unless scalar(@tags) > 0;
 
-    # the context corresponding to this entry
-    context => $context,
+    # make sure that we have a key
+    my $key = shift(@tags)->getContent->getValue;
+    return undef, [ 'Expected non-empty key', [ locationOf( $name, $entry ) ] ]
+      unless $key;
 
-    # - the type, key and values for the entry
-    type   => $type,
-    key    => $key,
-    values => {%values},
+    my ( $tag, $value, $valueKey );
+    my %values      = ();
+    my (@warnings)  = ();
+    my (@locations) = ();
 
-    # the variables stored in this entry
-    variables => {}
+    foreach $tag (@tags) {
+        $valueKey = $tag->getName;
+        $value    = $tag->getContent->getValue;
 
-  }, $class;
+        # we need a key=value in this tag
+        unless ( defined($valueKey) ) {
+            push( @warnings, 'Missing key for value' );
+            push( @locations, locationOf( $name, $tag->getContent ) );
+            next;
+        }
 
-  # if we have warnings, return them
-  return $self, [@warnings], [@locations] if scalar(@warnings) > 0;
+        $valueKey = lc $valueKey->getValue;
 
-  # else just return self
-  return $self, undef, undef;
+        # if we have a duplicate valye
+        if ( defined( $values{$valueKey} ) ) {
+            push( @warnings,
+                    'Duplicate value in entry '
+                  . $key
+                  . ': Tag '
+                  . $valueKey
+                  . ' already defined. ' );
+            push( @locations,
+                locationOf( $name, $tag->getContent->getSource ) );
+            next;
+        }
+        $values{$valueKey} = $value;
+    }
+
+    my $self = bless {
+        name => $name,
+
+        # the context corresponding to this entry
+        context => $context,
+
+        # - the type, key and values for the entry
+        type   => $type,
+        key    => $key,
+        values => {%values},
+
+        # the variables stored in this entry
+        variables => {}
+
+    }, $class;
+
+    # if we have warnings, return them
+    return $self, [@warnings], [@locations] if scalar(@warnings) > 0;
+
+    # else just return self
+    return $self, undef, undef;
 }
 
 sub resolveCrossReferences {
-  my ($self, $entries) = @_;
+    my ( $self, $entries ) = @_;
 
-  # if we have a crossref field, try to look it up.
-  my $crossref = $$self{values}{crossref};
-  if (defined($crossref)) {
-    my $related;
-    my $entry;
-    foreach $entry (@$entries) {
-      if ($entry->getKey eq $crossref) {
-        $related = $entry;
-        last;
-      }
+    # if we have a crossref field, try to look it up.
+    my $crossref = $$self{values}{crossref};
+    if ( defined($crossref) ) {
+        my $related;
+        my $entry;
+        foreach $entry (@$entries) {
+            if ( $entry->getKey eq $crossref ) {
+                $related = $entry;
+                last;
+            }
+        }
+
+        unless ( defined($related) ) {
+            return "Cross-referenced entry $crossref does not exist. ", $entry;
+        }
+        else {
+            my ( $k, $v );
+            while ( ( $k, $v ) = each( %{ $$related{values} } ) ) {
+                $$self{values}{$k} = $v unless defined( $$self{values}{$k} );
+            }
+        }
     }
 
-    unless (defined($related)) {
-      return "Cross-referenced entry $crossref does not exist. ", $entry;
-    } else {
-      my ($k, $v);
-      while (($k, $v) = each(%{ $$related{values} })) {
-        $$self{values}{$k} = $v unless defined($$self{values}{$k});
-      }
-    }
-  }
-
-  return undef, undef;
+    return undef, undef;
 }
 
 sub getName {
-  my ($self) = @_;
-  return $$self{name};
+    my ($self) = @_;
+    return $$self{name};
 }
 
 sub getKey {
-  my ($self) = @_;
-  return $$self{key};
+    my ($self) = @_;
+    return $$self{key};
 }
 
 sub getType {
-  my ($self) = @_;
-  return $$self{type};
+    my ($self) = @_;
+    return $$self{type};
 }
 
 # gets the value of a given variable
 # get a variable (type, value, source) or undef if it doesn't exist
 sub getVariable {
-  my ($self, $name) = @_;
+    my ( $self, $name ) = @_;
 
-  # lookup the type and return their value
-  my $type = $$self{context}{variableTypes}{$name};
-  return undef unless defined($type) && startsWith($type, 'ENTRY_');
+    # lookup the type and return their value
+    my $type = $$self{context}{variableTypes}{$name};
+    return undef unless defined($type) && startsWith( $type, 'ENTRY_' );
 
-  # If we have an entry field
-  # we need to take special care of where it comes from
-  # TODO: Do we need to support integers here?
-  if ($type eq 'ENTRY_FIELD') {
-    my $field = $$self{values}{ lc $name };
+    # If we have an entry field
+    # we need to take special care of where it comes from
+    # TODO: Do we need to support integers here?
+    if ( $type eq 'ENTRY_FIELD' ) {
+        my $field = $$self{values}{ lc $name };
 
-    return 'STRING', [$field], [[($$self{name}, $$self{key}, lc $name)]] if defined($field);
-    return 'MISSING', undef, [($$self{name}, $$self{key}, lc $name)];
-  }
+        return 'STRING', [$field],
+          [ [ ( $$self{name}, $$self{key}, lc $name ) ] ]
+          if defined($field);
+        return 'MISSING', undef, [ ( $$self{name}, $$self{key}, lc $name ) ];
+    }
 
-  my $value = $$self{variables}{$name};
-  return 'UNSET', undef, undef unless defined($value);
+    my $value = $$self{variables}{$name};
+    return 'UNSET', undef, undef unless defined($value);
 
-  # else we can just push from our own internal value stack
-  # we duplicate here, where needed
-  my ($t, $v, $s) = @{$value};
-  $v = [@{$v}] if ref($v) && ref($v) eq 'ARRAY';
-  $s = [@{$s}] if ref($s) && ref($s) eq 'ARRAY';
-  return ($t, $v, $s);
+    # else we can just push from our own internal value stack
+    # we duplicate here, where needed
+    my ( $t, $v, $s ) = @{$value};
+    $v = [ @{$v} ] if ref($v) && ref($v) eq 'ARRAY';
+    $s = [ @{$s} ] if ref($s) && ref($s) eq 'ARRAY';
+    return ( $t, $v, $s );
 }
 
 # set a variable (type, value, source)
 # returns 0 if ok, 1 if it doesn't exist,  2 if an invalid context, 3 if read-only
 sub setVariable {
-  my ($self, $name, $value) = @_;
+    my ( $self, $name, $value ) = @_;
 
-  # if the variable does not exist, return nothing
-  my $type = $$self{context}{variableTypes}{$name};
-  return 1 unless defined($type);
+    # if the variable does not exist, return nothing
+    my $type = $$self{context}{variableTypes}{$name};
+    return 1 unless defined($type);
 
-  # we can't assign anything global here
-  return 2 if (
-    $type eq 'GLOBAL_STRING'  or
-    $type eq 'GLOBAL_INTEGER' or
-    $type eq 'FUNCTION'
-  );
+    # we can't assign anything global here
+    return 2
+      if ( $type eq 'GLOBAL_STRING'
+        or $type eq 'GLOBAL_INTEGER'
+        or $type eq 'FUNCTION' );
 
-  # we can't assign entry fields, they're read only
-  return 3 if $type eq 'ENTRY_FIELD';
+    # we can't assign entry fields, they're read only
+    return 3 if $type eq 'ENTRY_FIELD';
 
-  # and assign the value
-  $$self{variables}{$name} = $value;
-  return 0;
+    # and assign the value
+    $$self{variables}{$name} = $value;
+    return 0;
 }
 
 1;
