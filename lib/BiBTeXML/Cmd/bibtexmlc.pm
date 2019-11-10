@@ -97,7 +97,6 @@ sub main {
 
     # Write the
     if ($dest) {
-        my ( $path, $content ) = @_;
         open my $fh, '>', $dest or do {
             print STDERR "Unable to write to $dest";
             print STDERR $!;
