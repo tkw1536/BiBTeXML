@@ -11,9 +11,12 @@ package BiBTeXML::Common::Utils;
 use strict;
 use warnings;
 
+use Encode;
+
 use base qw(Exporter);
 our @EXPORT = qw(
   &escapeString &startsWith
+  &slurp &puts
 );
 
 # escapes a string so that it can be used as a perl literal
@@ -28,6 +31,24 @@ sub escapeString {
 sub startsWith {
     my ( $haystack, $needle ) = @_;
     return substr( $haystack, 0, length($needle) ) eq $needle;
+}
+
+# read an entire file into a string
+sub slurp {
+    my ($path) = @_;
+    open my $fh, '<', $path or die "Can't open file $path: $!";
+    my $file_content = do { local $/; binmode $fh; <$fh> };
+    close($fh);
+    $file_content =~ s/(?:\015\012|\015|\012)/\n/sg;
+    return decode( 'utf-8', $file_content );
+}
+
+# write an entire file into a string
+sub puts {
+    my ( $path, $content ) = @_;
+    open my $fh, '>', $path or die "Can't open file $path: $!";
+    print $fh encode( 'utf-8', $content );
+    close $fh;
 }
 
 1;

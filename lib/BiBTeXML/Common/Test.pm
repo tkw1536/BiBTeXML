@@ -17,30 +17,14 @@ use Time::HiRes qw(time);
 use File::Basename qw(dirname);
 use File::Spec;
 
+use BiBTeXML::Common::Utils qw(slurp puts);
+
 use base qw(Exporter);
 our @EXPORT = qw(
   &fixture &slurp &puts &isResult
   &makeStringReader &makeFixtureReader
   &measureBegin &measureEnd
 );
-
-# read an entire file into a string
-sub slurp {
-    my ($path) = @_;
-    open my $fh, '<', $path or die "Can't open file $path: $!";
-    my $file_content = do { local $/; binmode $fh; <$fh> };
-    close($fh);
-    $file_content =~ s/(?:\015\012|\015|\012)/\n/sg;
-    return decode( 'utf-8', $file_content );
-}
-
-# write an entire file into a string
-sub puts {
-    my ( $path, $content ) = @_;
-    open my $fh, '>', $path or die "Can't open file $path: $!";
-    print $fh encode( 'utf-8', $content );
-    close $fh;
-}
 
 # gets the path to a mock fixture
 sub fixture {
