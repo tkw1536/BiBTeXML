@@ -30,13 +30,15 @@ usageAndExit(0) if ($help);
 sub usageAndExit {
     my ($code) = @_;
     print STDERR
-'makebbl [--help] [--destination $DEST] [--cites $CITES] STYLE [$BIBFILE [$BIBFILE ...]]'
+'makebbl [--help] [--destination $DEST] [--cites $CITES] $BSTFILE [$BIBFILE [$BIBFILE ...]]'
       . "\n";
     exit $code;
 }
 
 # selected bibliography style
-my $bibliographystyle = "\\bibliographystyle{" . shift(@ARGV) . "}";
+my $style = shift(@ARGV);
+$style =~ s/\.bst$//i if (-e $style);
+my $bibliographystyle = "\\bibliographystyle{$style}";
 
 # macro to load the bib files
 my $bibliography = join( "\n", map { "\\bibliography{" . $_ . "}{}" } @ARGV );
