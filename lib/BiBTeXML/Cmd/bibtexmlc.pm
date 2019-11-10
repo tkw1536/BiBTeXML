@@ -25,7 +25,6 @@ sub main {
     shift(@_);    # remove the first argument
 
     my ( $target, $dest, $help ) = ( 'Perl', '', 0 );
-    my $p = Getopt::Long::Parser->new;
     GetOptionsFromArray(
         \@_,
         "target=s"      => \$target,
