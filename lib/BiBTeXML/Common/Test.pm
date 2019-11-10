@@ -11,6 +11,11 @@ package BiBTeXML::Common::Test;
 use strict;
 use warnings;
 
+use Test::More;
+use File::Temp qw(tempfile);
+use BiBTeXML::Runner;
+use BiBTeXML::Common::Utils qw(slurp);
+
 use Encode;
 use Time::HiRes qw(time);
 
@@ -24,6 +29,7 @@ our @EXPORT = qw(
   &fixture &slurp &puts &isResult
   &makeStringReader &makeFixtureReader
   &measureBegin &measureEnd
+  &integrationTest
 );
 
 # gets the path to a mock fixture
@@ -72,6 +78,48 @@ sub measureEnd {
 sub isResult {
     my ( $results, $path, $message ) = @_;
     Test::More::is( joinStrs( @{$results} ), slurp("$path.txt"), $message );
+}
+
+# represents a full test of the BiBTeXML steps
+sub integrationTest {
+    my ( $name, $bstIn, $bibfiles, $citesIn, $macroIn, $resultOut ) = @_;
+
+    subtest "$name" => sub {
+        plan tests => 4;
+
+        # create a reader for the bst file
+        my $reader = BiBTeXML::Common::StreamReader->new();
+        $reader->openFile($bstIn);
+
+        # compile it into the perl target
+        my ( $code, $compiled ) =
+          createCompile( 'Perl', $reader, \&note, $bstIn );
+
+        # check that the code compiled without problems
+        is( $code, 0, 'compilation went without problems' );
+        return if $code ne 0;
+
+        # split citations (to see what we want to have cited)
+        my @citations = split( /,/, $citesIn );
+
+        # create a run
+        my ($output) = File::Temp->new( UNLINK => 1, SUFFIX => '.tex' );
+        my ( $status, $runcode ) =
+          createRun( $compiled, $bibfiles, [@citations], $macroIn, \&note,
+            $output, );
+
+        # check that preparing the run went ok
+        is( $status, 0, 'run preparation went ok' );
+        return if $code ne 0;
+
+        # run the run
+        $status = &{$runcode}();
+        is( $status, 0, 'running went ok' );
+
+        # check that we compiled the expected output
+        is( slurp($output), slurp($resultOut),
+            'compilation returned expected result' );
+    };
 }
 
 1;

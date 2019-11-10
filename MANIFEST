@@ -91,6 +91,7 @@ t/41_Runtime_entries.t
 t/42_Runtime_strings.t
 t/43_Runtime_names.t
 t/44_Runtime_utils.t
+t/45_integration.t
 
 t/fixtures/streamreader/empty.txt
 t/fixtures/streamreader/helloworld.txt
@@ -158,3 +159,5 @@ t/fixtures/compiler/perl/commands/09_iterate_a.txt
 t/fixtures/compiler/perl/commands/09_iterate_b.txt
 t/fixtures/compiler/perl/commands/10_reverse_a.txt
 t/fixtures/compiler/perl/commands/10_reverse_b.txt
+
+t/fixtures/integration/01_everything.tex
