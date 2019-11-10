@@ -2,8 +2,6 @@
 
 [![Build Status](https://travis-ci.com/tkw1536/BibTeXML.svg?branch=master)](https://travis-ci.com/tkw1536/BibTeXML)
 
-__Still a work in progress__
-
 BiBTeXML is a pure-perl efficient parser, compiler and interpreter for [BibTeX](http://www.bibtex.org) `.bib` and `.bst` files. 
 
 As such it can:
@@ -35,17 +33,35 @@ BiBTeXML is split into (roughly) four components:
 * [`BiBTeXML::BibStyle`](lib/BiBTeXML/BibStyle/) - a parser for `.bst` files
 * [`BiBTeXML::Compiler`](lib/BiBTeXML/Compiler/) - a compiler for `.bst` files into perl (and possibly other languages)
 
-* [`BiBTeXML::Runtime`](lib/BiBTeXML/Runtime/) - a (perl only) runtime for the compiler-generated code (__work in progress__)
+* [`BiBTeXML::Runtime`](lib/BiBTeXML/Runtime/) - a (perl only) runtime for the compiler-generated code
 * [`BiBTeXML::Bibliography`](lib/BiBTeXML/Bibliography/) - a parser for `.bib` files
 
 ## How to use
 
-BiBTeXML can run it's two different stages, the compilation and runtime, seperatly
+BiBTeXML consists of two different stages, which can be run either together or seperatly. 
+The stages are:
+- Compilation stage: Compiles a `.bst` file into executable perl code
+- Runtime stage: Runs the compiled `bst` code to emulate what `BiBTeX` does
+
+### Running both stages together
+
+To run everything together use the `bibtexml` program.
+It has the following syntax:
+
+```
+bibtexml [--help] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $BSTFILE $BIBFILE [$BIBFILE ...]
+```
+
+- `$DEST` is the name of the output file to write output to. If omitted, output is sent to `STDOUT`. 
+- `$CITES` is a comma-separated set of keys of entries that are assumed to have been cited. Defaults to the special '*' key, which assumes that all entries have been cited. 
+- `$MACRO` is a macro to wrap all source references in. If omitted, source references are not shown in the output. 
+- `$BSTFILE` is the (absolute or relative to the working directory) path to the `.bst` file to compile. 
+- `$BIBFILE` is the name of a bibfile to include. 
 
 
 ### Running the compilation stage
 
-First, the `.bst` needs to be read, and compiled. 
+This stage reads and compiles the `.bst` file. 
 In general, this can be done achieved using `bibtexmlc` ( *c* as in *compile*). 
 It has the following syntax:
 
@@ -83,7 +99,7 @@ This only works with code generated for the Perl Target.
 It has the following syntax:
 
 ```
-bibtexmlr [--help] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $COMPILED_BST [$BIBFILE [$BIBFILE ...]]
+bibtexmlr [--help] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $COMPILED_BST $BIBFILE [$BIBFILE ...]
 ```
 
 - `$DEST` is the name of the output file to write output (think .bbl) to. If omitted, output is sent to `STDOUT`. 

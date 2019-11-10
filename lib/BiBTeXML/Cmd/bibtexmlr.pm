@@ -30,8 +30,8 @@ sub main {
     ) or return usageAndExit(1);
 
     # if we requested help, or we had a wrong number of arguments, exit
-    return usageAndExit(1) if scalar(@_) eq 0;
     return usageAndExit(0) if ($help);
+    return usageAndExit(1) if scalar(@_) eq 0;
 
     # parse arguments
     my ( $input, @bibfiles ) = @_;
@@ -55,7 +55,7 @@ sub main {
 sub usageAndExit {
     my ($code) = @_;
     print STDERR
-'bibtexmlr [--help] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $COMPILED_BST [$BIBFILE [$BIBFILE ...]]'
+'bibtexmlr [--help] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $COMPILED_BST $BIBFILE [$BIBFILE ...]'
       . "\n";
     return $code;
 }

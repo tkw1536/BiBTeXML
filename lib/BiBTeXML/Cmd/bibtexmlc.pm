@@ -30,8 +30,8 @@ sub main {
     ) or return usageAndExit(1);
 
     # if we requested help, or we had a wrong number of arguments, exit
-    return usageAndExit(1) if scalar(@_) ne 1;
     return usageAndExit(0) if ($help);
+    return usageAndExit(1) if scalar(@_) ne 1;
 
     # check that the bst file exists
     my ($bstfile) = @_;

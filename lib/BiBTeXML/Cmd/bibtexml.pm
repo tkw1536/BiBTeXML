@@ -29,8 +29,8 @@ sub main {
     ) or return usageAndExit(1);
 
     # if we requested help, or we had a wrong number of arguments, exit
-    return usageAndExit(1) if scalar(@_) le 1;
     return usageAndExit(0) if ($help);
+    return usageAndExit(1) if scalar(@_) le 1;
 
     # check that the bst file exists
     my ( $bstfile, @bibfiles ) = @_;
@@ -63,7 +63,7 @@ sub main {
 sub usageAndExit {
     my ($code) = @_;
     print STDERR
-'makebbl [--help] [--destination $DEST] [--cites $CITES] $BSTFILE [$BIBFILE [$BIBFILE ...]]'
+'bibtexml [--help] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $BSTFILE $BIBFILE [$BIBFILE ...]'
       . "\n";
     return $code;
 }
