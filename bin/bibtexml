@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 # /=====================================================================\ #
 # |  bibtexmlc                                                          | #
-# | BiBTeXML .bst compiler entry point                                  | #
+# | BiBTeXML main entry point                                           | #
 # |=====================================================================| #
 # | Part of BibTeXML                                                    | #
 # |---------------------------------------------------------------------| #
@@ -14,8 +14,8 @@ use warnings;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 
-use BiBTeXML::Cmd::bibtexmlc;
-my $exitcode = BiBTeXML::Cmd::bibtexmlc->main(@ARGV);
+use BiBTeXML::Cmd::bibtexml;
+my $exitcode = BiBTeXML::Cmd::bibtexml->main(@ARGV);
 exit $exitcode;
 
 1;

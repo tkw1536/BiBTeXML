@@ -11,42 +11,27 @@ package BiBTeXML::Cmd::bibtexmlc;
 use strict;
 use warnings;
 
-use Encode;
 use Getopt::Long qw(GetOptionsFromArray);
-use Module::Load;
 
-use Time::HiRes qw(time);
+use BiBTeXML::Runner;
+use BiBTeXML::Common::Utils qw(slurp puts);
 
 use BiBTeXML::Common::StreamReader;
-use BiBTeXML::BibStyle;
-use BiBTeXML::Compiler;
 
 sub main {
     shift(@_);    # remove the first argument
 
-    my ( $target, $dest, $help ) = ( 'Perl', '', 0 );
+    my ( $target, $output, $help ) = ( 'Perl', '', 0 );
     GetOptionsFromArray(
         \@_,
         "target=s"      => \$target,
-        "destination=s" => \$dest,
+        "destination=s" => \$output,
         "help"          => \$help,
     ) or return usageAndExit(1);
 
     # if we requested help, or we had a wrong number of arguments, exit
     return usageAndExit(1) if scalar(@_) ne 1;
     return usageAndExit(0) if ($help);
-
-    $target =
-      ( index( $target, ':' ) != -1 )
-      ? $target
-      : "BiBTeXML::Compiler::Target::$target";
-    $target = eval {
-        load $target;
-        "$target";
-    } or do {
-        print STDERR $@;
-        return 2;
-    };
 
     # check that the bst file exists
     my ($bstfile) = @_;
@@ -55,56 +40,18 @@ sub main {
         return 3;
     }
 
-    # create a reader for the file
+    # create a reader for it
     my $reader = BiBTeXML::Common::StreamReader->new();
     $reader->openFile($bstfile);
 
-    # parse the file and print how long it took
-    my $startParse = time;
-    my ( $parsed, $parseError ) = eval { readFile($reader) } or do {
-        print STDERR "Unable to parse $bstfile. \n";
-        print STDERR $@;
-        return 4;
-    };
-    my $durationParse = time - $startParse;
-    $reader->finalize;
+    # compile the bst file
+    my ( $code, $compile ) = createCompile( $target, $reader, $bstfile );
+    return $code, undef if $code ne 0;
 
-    # throw an error, or a message how long it took
-    if ( defined($parseError) ) {
-        print STDERR "Unable to parse $bstfile. \n";
-        print STDERR $parseError;
-        return 4;
-    }
-    print STDERR "Parsed   $bstfile in $durationParse seconds. \n";
-
-    # compile the file and print how long it took
-    my $startCompile = time;
-    my ( $compile, $compileError ) =
-      eval { compileProgram( $target, $parsed, $bstfile ) } or do {
-        print STDERR "Unable to compile $bstfile. \n";
-        print STDERR $@;
-        return 5;
-      };
-    my $durationCompile = time - $startCompile;
-
-    # throw an error, or a message how long it took
-    if ( defined($compileError) ) {
-        print STDERR "Unable to compile $bstfile. \n";
-        print STDERR $compileError;
-        return 5;
-    }
-    print STDERR "Compiled $bstfile in $durationCompile seconds. \n";
-
-    # Write the
-    if ($dest) {
-        open my $fh, '>', $dest or do {
-            print STDERR "Unable to write to $dest";
-            print STDERR $!;
-            return 6;
-        };
-        print $fh encode( 'utf-8', $compile );
-        close $fh;
-        print STDERR "Wrote    $dest. \n";
+    # Write the output file
+    if ($output) {
+        puts( $output, $compile );
+        print STDERR "Wrote    $output. \n";
         return 0;
     }
 

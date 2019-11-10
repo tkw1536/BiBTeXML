@@ -12,12 +12,14 @@ LICENSE
 #==================================================
 # Bin
 #==================================================
+bin/bibtexml
 bin/bibtexmlc
 bin/bibtexmlr
 
 #==================================================
 # Entry Points
 #==================================================
+lib/BiBTeXML/Cmd/bibtexml.pm
 lib/BiBTeXML/Cmd/bibtexmlc.pm
 lib/BiBTeXML/Cmd/bibtexmlr.pm
 
