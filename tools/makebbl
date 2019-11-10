@@ -70,7 +70,7 @@ print $fh $texcode;
 close($fh);
 
 # run bibtex
-system("bibtex $jobname");
+system("bibtex $jobname 1>&2");
 
 # be loud again
 open STDOUT, ">&", $out;

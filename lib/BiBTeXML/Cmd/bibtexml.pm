@@ -44,13 +44,23 @@ sub main {
     $reader->openFile($bstfile);
 
     # compile the bst file
-    my ( $code, $compiled ) = createCompile( 'Perl', $reader, $bstfile );
+    my ( $code, $compiled ) = createCompile( 'Perl', $reader, sub {
+        print STDERR @_;
+    }, $bstfile );
     return $code, undef if $code ne 0;
 
     # create a run
     my @citations = split( /,/, $cites );
-    my ( $status, $runcode ) =
-      createRun( $compiled, [@bibfiles], [@citations], $macro, $output );
+    my ( $status, $runcode ) = createRun(
+        $compiled,
+        [@bibfiles],
+        [@citations],
+        $macro,
+        sub {
+            print STDERR @_;
+        },
+        $output
+    );
     if ( $status ne 0 ) {
         return $status;
     }

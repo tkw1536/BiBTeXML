@@ -45,7 +45,9 @@ sub main {
     $reader->openFile($bstfile);
 
     # compile the bst file
-    my ( $code, $compile ) = createCompile( $target, $reader, $bstfile );
+    my ( $code, $compile ) = createCompile( $target, $reader, sub {
+        print STDERR @_;
+    }, $bstfile );
     return $code, undef if $code ne 0;
 
     # Write the output file

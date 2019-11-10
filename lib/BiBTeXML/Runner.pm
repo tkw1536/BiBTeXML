@@ -31,14 +31,14 @@ our @EXPORT = qw(
 # compiles a given bst file
 # returns 0, <compiled_code> if successfull or error code, undef
 # if not
-# - error messages are printed directly to STDERR
+# - error + log messages are sent to the $logger sub
 # Error codes are:
 # - 2: Unable to load compilation target
 # - 3: (Unuused)
 # - 4: Unable to parse bst-file
 # - 5: Unable to compile bst-file
 sub createCompile {
-    my ( $target, $reader, $name ) = @_;
+    my ( $target, $reader, $logger, $name ) = @_;
 
     # load the target
     $target =
@@ -49,15 +49,15 @@ sub createCompile {
         load $target;
         "$target";
     } or do {
-        print STDERR $@;
+        $logger->($@);
         return 2, undef;
     };
 
     # parse the file and print how long it took
     my $startParse = time;
     my ( $parsed, $parseError ) = eval { readFile($reader) } or do {
-        print STDERR "Unable to parse $name. \n";
-        print STDERR $@;
+        $logger->("Unable to parse $name. \n");
+        $logger->($@);
         return 4;
     };
     my $durationParse = time - $startParse;
@@ -65,29 +65,29 @@ sub createCompile {
 
     # throw an error, or a message how long it took
     if ( defined($parseError) ) {
-        print STDERR "Unable to parse $name. \n";
-        print STDERR $parseError;
+        $logger->("Unable to parse $name. \n");
+        $logger->($parseError);
         return 4, undef;
     }
-    print STDERR "Parsed   $name in $durationParse seconds. \n";
+    $logger->("Parsed   $name in $durationParse seconds. \n");
 
     # compile the file and print how long it took
     my $startCompile = time;
     my ( $compile, $compileError ) =
       eval { compileProgram( $target, $parsed, $name ) } or do {
-        print STDERR "Unable to compile $name. \n";
-        print STDERR $@;
+        $logger->("Unable to compile $name. \n");
+        $logger->($@);
         return 5, undef;
       };
     my $durationCompile = time - $startCompile;
 
     # throw an error, or a message how long it took
     if ( defined($compileError) ) {
-        print STDERR "Unable to compile $name. \n";
-        print STDERR $compileError;
+        $logger->("Unable to compile $name. \n");
+        $logger->($compileError);
         return 5, undef;
     }
-    print STDERR "Compiled $name in $durationCompile seconds. \n";
+    $logger->("Compiled $name in $durationCompile seconds. \n");
 
     # return the parsed code
     return 0, $compile;
@@ -96,7 +96,7 @@ sub createCompile {
 # creates a sub that can be called to execute a given input file
 # and directs output to a given output file or stdout
 # returns 0, <code> if successfull or error code, undef if not
-# - error messages are printed to STDERR
+# - error + log messages are sent to the $logger sub
 # - output is printed into the file OUTPUT, or STDOUT if undef.
 # Error codes are:
 # - 2: Unable to find compiled bstfile
@@ -105,12 +105,12 @@ sub createCompile {
 # - 5: Error opening outfile
 # - 6: something went wrong at runtime
 sub createRun {
-    my ( $code, $bibfiles, $cites, $macro, $output ) = @_;
+    my ( $code, $bibfiles, $cites, $macro, $logger, $output ) = @_;
 
     # run the code in the input
     $code = eval $code;
     unless ( defined($code) ) {
-        print STDERR $@;
+        $logger->($@);
         return 3, undef;
     }
 
@@ -118,7 +118,7 @@ sub createRun {
     my $bf;
     foreach $bf (@$bibfiles) {
         unless ( -e $bf ) {
-            print STDERR "Unable to find bibfile $bf";
+            $logger->("Unable to find bibfile $bf");
             return 4, undef;
         }
     }
@@ -141,7 +141,7 @@ sub createRun {
         $ofh = *STDOUT;
     }
     unless ( defined($ofh) ) {
-        print STDERR "Unable to fine $output";
+        $logger->("Unable to fine $output");
         return 5, undef;
     }
 
@@ -152,15 +152,15 @@ sub createRun {
             print $ofh fmtOutputWithSourceMacro( @_, $macro );
         },
         sub {
-            print STDERR fmtLogMessage(@_) . "\n";
+            $logger->(fmtLogMessage(@_) . "\n");
         },
         [@readers],
         [@$cites]
     );
 
     return 0, sub {
-        my ( $ok, $error ) = $config->run($code);
-        print STDERR $error if defined $error;
+        my ( $ok, $msg ) = $config->run($code);
+        $logger->($msg) if defined($msg);
         close($ofh);
         return 6 unless $ok;
         return 0;
