@@ -222,11 +222,11 @@ sub builtinCallType {
 sub builtinChangeCase {
     my ( $context, $config, $source ) = @_;
 
-    # get the case string
-    my ( $ctp, $cstrings ) =
+    # get the case string and simplify it to be a single character
+    my ( $ctp, $cstrings, $csources ) =
       popType( $context, $config, 'STRING', undef, $source );
     return unless $ctp;
-    $cstrings = join( '', $cstrings );
+    ($cstrings, $csources) = simplifyString($cstrings, $csources);
 
     # pop the final string
     my ( $stype, $strings, $sources ) =
