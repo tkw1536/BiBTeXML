@@ -82,7 +82,13 @@ sub isResult {
 
 # represents a full test of the BiBTeXML steps
 sub integrationTest {
-    my ( $name, $bstIn, $bibfiles, $citesIn, $macroIn, $resultOut ) = @_;
+    my ( $name, $path, $citesIn, $macroIn ) = @_;
+
+    # resolve paths to input and output
+    $path = File::Spec->catfile('t', 'fixtures', 'integration', $path);
+    my $bstIn = File::Spec->catfile($path, 'input.bst');
+    my $bibfiles = [File::Spec->catfile($path, 'input.bib')];
+    my $resultOut = File::Spec->catfile($path, 'output.bbl');
 
     subtest "$name" => sub {
         plan tests => 4;
