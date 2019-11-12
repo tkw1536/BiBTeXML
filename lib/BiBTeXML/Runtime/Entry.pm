@@ -109,33 +109,32 @@ sub new {
     return $self, undef, undef;
 }
 
-sub resolveCrossReferences {
-    my ( $self, $entries ) = @_;
+# inlines a cross-refed entry '$xref' into this entry
+# TODO: Copy over full physical source references
+sub inlineCrossReference {
+    my ($self, $xref) = @_;
 
-    # if we have a crossref field, try to look it up.
-    my $crossref = $$self{values}{crossref};
-    if ( defined($crossref) ) {
-        my $related;
-        my $entry;
-        foreach $entry (@$entries) {
-            if ( $entry->getKey eq $crossref ) {
-                $related = $entry;
-                last;
-            }
-        }
-
-        unless ( defined($related) ) {
-            return "Cross-referenced entry $crossref does not exist. ", $entry;
-        }
-        else {
-            my ( $k, $v );
-            while ( ( $k, $v ) = each( %{ $$related{values} } ) ) {
-                $$self{values}{$k} = $v unless defined( $$self{values}{$k} );
-            }
-        }
+    # copy over all the related keys
+    my ( $k, $v );
+    keys %{ $$xref{values} }; # reset the interal iterator for each
+    while ( ( $k, $v ) = each( %{ $$xref{values} } ) ) {
+        $$self{values}{$k} = $v unless defined( $$self{values}{$k} );
     }
+    
+    # delete the 'crossref' key manually
+    delete $$self{values}{crossref};
+}
 
-    return undef, undef;
+# gets the cross-referenced entry
+# and returns a pair ($key, $crossref)
+sub resolveCrossReference {
+    my ($self, $entryHash) = @_;
+    
+    # get the crossref key
+    my $crossref = $$self{values}{crossref};
+    return undef, undef unless defined($crossref);
+
+    return $crossref, $entryHash->{$crossref};
 }
 
 sub getName {

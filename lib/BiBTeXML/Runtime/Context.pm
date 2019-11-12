@@ -85,6 +85,10 @@ sub new {
 ### 4. 'FUNCTION' -- undef
 ### 5. 'REFERENCE' -- undef
 
+
+# TODO: Allow re-running a context without having to re-parse the bib files
+# (There should probably be a reset function that clear entries, but keeps the read .bib files)
+
 # return the length of the stack
 sub stackLength {
     my ($self) = @_;
@@ -332,7 +336,6 @@ sub readEntries {
     my ( $self, $inputs, $citations ) = @_;
 
     my @readers = @{$inputs};
-    my @cites   = @{$citations};
 
     return 1, undef if defined( $$self{entries} );
 
@@ -378,34 +381,122 @@ sub readEntries {
         }
     }
 
-    # resolve all the cross references
-    my $eref = [@entries];
+    # build a map of entries
+    my (%entryHash) = ();
+    my ($key);
     foreach $entry (@entries) {
-        ( $warning, $location ) = $entry->resolveCrossReferences($eref);
-    }
-
-    # Check if we need to filter entries (by checking for a '*')
-    my $requested_all_entries = 0;
-    foreach $cite (@cites) {
-        if ( $cite eq '*' ) {
-            $requested_all_entries = 1;
-            last;
+        $key = $entry->getKey;
+        if (defined($entryHash{$key})) {
+            # TODO: Do newer keys overwrite older ones?
+            push(@warnings, "Skippking duplicate entry for key $key");
+            push(@locations, [$entry->getName, $entry->getSource]);
+            next;
         }
+        $entryHash{$key} = $entry;
     }
 
-    # if we didn't request all entries we need to filter
-    # TOOD: Duplicate checking and ordering
-    if ( !$requested_all_entries ) {
-        @entries = grep {
-            my $key = $_->getKey;
-            grep( /^$key$/, @cites );
-        } @entries;
-    }
-
-    # send all the references
-    $$self{entries} = [@entries];
+    # build the entry list and keep track of warnings and locations of warnings
+    ($$self{entries}, $warning, $location) = $self->buildEntryList([@entries], \%entryHash, $citations, 2); # TODO: Allow numcrossref customization
+    push( @warnings,  @$warning )  if defined($warning);
+    push( @locations, @$location ) if defined($location);
 
     return 0, [@warnings], [@locations];
+}
+
+# build a list of entries that should be cited. 
+sub buildEntryList {
+    my ($self, $entryList, $entryHash, $citeList, $numCrossRefs) = @_;
+
+    sub locationOf {
+        my ( $entry ) = @_;
+        return $entry->getName, $entry->getSource;
+    }
+
+    my (@warnings, @locations) = ();
+
+    # TODO: Check for cross-refs inside cross-refs and spit out a warning
+    # TODO: Use a large hashmap for everything that resolves entries
+    # this might be a lot faster
+
+    my ($citeKey); # current cite key the user requested
+    my %citedKeys = (); # same as citeList, but key => 1 mapping
+
+    my %related = (); # resolved reference entries
+    my @cited = ();
+    my @entries = ();
+    my %refmap = (); # [xrefed] => referencing entries
+
+    # hash for resolving entries
+    my %entryMap =  %{$entryHash};
+
+    # TODO: Do this in a destructive fashion to better emulate
+    # BibTeXs behaviour wrt multiple keys
+    my ($entry, $error);
+    foreach $citeKey (@$citeList) {
+        # if we already cited something it does not need to be cited again
+        # this is *not* an error, it might regularly occur if things are cited
+        # multiple times. 
+        # TODO: Check if later positions override earlier ones
+        next if exists($citedKeys{$citeKey});
+
+        # TODO: Handle multiple entries in the same list
+        return $entryList, undef, undef if $citeKey eq '*';
+
+        # find the current entry
+        $entry = $entryMap{$citeKey};
+        unless (defined($entry)) {
+            # TODO: Better error message string
+            push(@warnings, ["I can't find an entry for $citeKey"]);
+            push(@locations, undef);
+            next;
+        }
+
+        # push this entry into the list of cited 'stuff'
+        push(@entries, $entry);
+        $citedKeys{$citeKey} = 1;
+        
+        # grab the cross-referenced entry and resolve it
+        my ($xref, $xrefentry) = $entry->resolveCrossReference($entryHash);
+        next unless defined($xref);
+
+        # if the cross-referenced entry doesn't exist
+        # TODO: Better warning location
+        unless(defined($xrefentry)) {
+            push(@warnings, ["I can't find the cross-referenced entry $xref of $citeKey"]);
+            push(@locations, [locationOf($entry)]);
+            next;
+        }
+
+        # create this entry in the refmap
+        push(@cited, $xref) unless defined($refmap{$xref});
+        $refmap{$xref} = [()] unless defined($refmap{$xref});
+
+        # and add the current entry to the xrefed entry
+        push(@{$refmap{$xref}}, $entry);
+    }
+    
+    # iterate over everything that was cross-referenced
+    # and either inline or add it to the citation list
+    # TODO: When we have already 
+    my ($value, $reference);
+    foreach $value (@cited) {
+        my @references = @{$refmap{$value}};
+        my ($related) = $entryMap{$value};
+        
+        # if we have more than the number of cross-references
+        # inside all the entries, inline everything
+        if (scalar @references < $numCrossRefs) {
+            foreach $reference (@references) {
+                $reference->inlineCrossReference($related);
+            }
+            next;
+        }
+
+        # if there are more, it is included in the list of entries
+        push(@entries, $related);
+    }
+
+    return [@entries], @warnings, @locations;
 }
 
 sub getPreamble {

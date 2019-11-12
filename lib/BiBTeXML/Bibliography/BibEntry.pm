@@ -19,7 +19,7 @@ sub new {
     return bless {
         type   => $type,     # the type of entry we have (see getType)
         tags   => $tags,     # a list of tags in this BiBFile
-        source => $source    # a source referenb
+        source => $source    # a source reference
     }, $class;
 }
 
