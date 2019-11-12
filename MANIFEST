@@ -22,6 +22,7 @@ bin/bibtexmlr
 lib/BiBTeXML/Cmd/bibtexml.pm
 lib/BiBTeXML/Cmd/bibtexmlc.pm
 lib/BiBTeXML/Cmd/bibtexmlr.pm
+lib/BiBTeXML/Cmd/makebbl.pm
 
 #==================================================
 # Common Modules
@@ -160,6 +161,8 @@ t/fixtures/compiler/perl/commands/09_iterate_b.txt
 t/fixtures/compiler/perl/commands/10_reverse_a.txt
 t/fixtures/compiler/perl/commands/10_reverse_b.txt
 
+t/fixtures/integration/01_complicated/input_citations.spec
+t/fixtures/integration/01_complicated/input_macro.spec
 t/fixtures/integration/01_complicated/input.bst
 t/fixtures/integration/01_complicated/input.bib
 t/fixtures/integration/01_complicated/output.bbl

@@ -80,15 +80,35 @@ sub isResult {
     Test::More::is( joinStrs( @{$results} ), slurp("$path.txt"), $message );
 }
 
-# represents a full test of the BiBTeXML steps
-sub integrationTest {
-    my ( $name, $path, $citesIn, $macroIn ) = @_;
+sub integrationTestPaths {
+    my ($path) = @_;
 
-    # resolve paths to input and output
+    # resolve the path to the test case
     $path = File::Spec->catfile('t', 'fixtures', 'integration', $path);
+
+    # read the citation specification file
+    my $citesIn = [grep { /\S/ } split(/\n/,slurp(File::Spec->catfile($path, 'input_citations.spec')))];
+
+    # read the macro specification file
+    my $macroIn = slurp(File::Spec->catfile($path, 'input_macro.spec'));
+    $macroIn =~ s/^\s+|\s+$//g;
+    $macroIn = undef if $macroIn eq '';
+
+    # hard-code input and output files
+    # TODO: Alow multiple input files by having 'input_1.bib' etc using sorting
     my $bstIn = File::Spec->catfile($path, 'input.bst');
     my $bibfiles = [File::Spec->catfile($path, 'input.bib')];
     my $resultOut = File::Spec->catfile($path, 'output.bbl');
+
+    return $bstIn, $bibfiles, $citesIn, $macroIn, $resultOut;
+}
+
+# represents a full test of the BiBTeXML steps
+sub integrationTest {
+    my ( $name, $path, $unused, $unusedB ) = @_;
+
+    # resolve paths to input and output
+    my ($bstIn, $bibfiles, $citesIn, $macroIn, $resultOut) = integrationTestPaths($path);
 
     subtest "$name" => sub {
         plan tests => 4;
@@ -105,13 +125,10 @@ sub integrationTest {
         is( $code, 0, 'compilation went without problems' );
         return if $code ne 0;
 
-        # split citations (to see what we want to have cited)
-        my @citations = split( /,/, $citesIn );
-
         # create a run
         my ($output) = File::Temp->new( UNLINK => 1, SUFFIX => '.tex' );
         my ( $status, $runcode ) =
-          createRun( $compiled, $bibfiles, [@citations], $macroIn, \&note,
+          createRun( $compiled, $bibfiles, $citesIn, $macroIn, \&note,
             $output, );
 
         # check that preparing the run went ok
