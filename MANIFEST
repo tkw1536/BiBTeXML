@@ -17,12 +17,19 @@ bin/bibtexmlc
 bin/bibtexmlr
 
 #==================================================
+# Tools
+#==================================================
+tools/makebbl
+tools/runtest
+
+#==================================================
 # Entry Points
 #==================================================
 lib/BiBTeXML/Cmd/bibtexml.pm
 lib/BiBTeXML/Cmd/bibtexmlc.pm
 lib/BiBTeXML/Cmd/bibtexmlr.pm
 lib/BiBTeXML/Cmd/makebbl.pm
+lib/BiBTeXML/Cmd/runtest.pm
 
 #==================================================
 # Common Modules
