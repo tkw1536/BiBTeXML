@@ -13,7 +13,7 @@ use warnings;
 # creates a new output buffer used by BiBTeX
 # only enables
 sub new {
-    my ( $class, $handle, $wrapEnabled ) = @_;
+    my ( $class, $handle, $wrapEnabled, $sourceMacro ) = @_;
 
     return bless {
 
@@ -21,6 +21,7 @@ sub new {
         handle => $handle,
 
         wrapEnabled => $wrapEnabled,
+        sourceMacro => $sourceMacro,
         breakAfter  => 79,
 
         # state for
@@ -35,6 +36,7 @@ sub new {
 # and emulates BibTeX's hard-wrapping
 sub write {
     my ( $self, $string, $source ) = @_;
+    $string = $self->wrapSource($string, $source);
     my @chars = split( "", $string );
     my ($char);
     foreach $char (@chars) {
@@ -70,6 +72,23 @@ sub write {
             $$self{buffer} .= $char;
         }
     }
+}
+
+# wrapSource wraps a source-referenced string into the appropriate
+# source macro for this buffer. If source or macro are undef, returns
+# the original string
+sub wrapSource {
+    my ($self, $string, $source) = @_;
+    return $string unless defined($source) && $$self{sourceMacro};
+    my ( $fn, $entry, $field ) = @{$source};
+    return $string unless $field;
+    return
+        '\\'
+      . $$self{sourceMacro} . '{'
+      . $fn . '}{'
+      . $entry . '}{'
+      . $field . '}{'
+      . $string . '}';
 }
 
 # finalize closes this buffer and flushes whatever is left in the buffer to STDOUT

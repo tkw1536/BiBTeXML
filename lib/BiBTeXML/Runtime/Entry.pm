@@ -98,7 +98,10 @@ sub new {
         values => {%values},
 
         # the variables stored in this entry
-        variables => {}
+        variables => {},
+
+        # the original entry
+        entry => $entry,
 
     }, $class;
 

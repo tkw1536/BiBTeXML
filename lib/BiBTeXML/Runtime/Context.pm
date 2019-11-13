@@ -389,7 +389,7 @@ sub readEntries {
         if (defined($entryHash{$key})) {
             # TODO: Do newer keys overwrite older ones?
             push(@warnings, "Skippking duplicate entry for key $key");
-            push(@locations, [$entry->getName, $entry->getSource]);
+            push(@locations, [$entry->getName, $$entry{entry}->getSource]);
             next;
         }
         $entryHash{$key} = $entry;

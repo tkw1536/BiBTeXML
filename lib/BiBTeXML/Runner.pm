@@ -134,7 +134,7 @@ sub createRun {
         push( @readers, $reader );
     }
 
-    # create an output file (or STDOUT)
+    # create an output buffer
     my $ofh;
     if ( defined($output) ) {
         open( $ofh, ">", $output );
@@ -143,19 +143,15 @@ sub createRun {
         $ofh = *STDOUT;
     }
     unless ( defined($ofh) ) {
-        $logger->("Unable to fine $output");
+        $logger->("Unable to find $output");
         return 5, undef;
     }
+    my $buffer = BiBTeXML::Runtime::Buffer->new( $ofh, $wrapEnabled, $macro );
 
     # Create a configuration that optionally wraps things inside a macro
     # TODO: Move fmtOutputWithSourceMacro into the buffer class
-    my $buffer = BiBTeXML::Runtime::Buffer->new( $ofh, $wrapEnabled );
     my $config = BiBTeXML::Runtime::Config->new(
-        undef,
-        sub {
-            my $text = fmtOutputWithSourceMacro( @_, $macro );
-            $buffer->write($text);
-        },
+        undef, $buffer,
         sub {
             $logger->( fmtLogMessage(@_) . "\n" );
         },
@@ -169,5 +165,5 @@ sub createRun {
         $buffer->finalize;
         return 6 unless $ok;
         return 0;
-    }
+      }
 }

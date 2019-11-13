@@ -415,7 +415,7 @@ sub builtinMissing {
 # builtin function newline$
 sub builtinNewline {
     my ( $context, $config, $source ) = @_;
-    $config->write("\n");
+    $config->getBuffer->write("\n");
 }
 
 # builtin function num.names$
@@ -665,7 +665,7 @@ sub builtinWrite {
         my ( $str, $src );
         foreach $str (@$strings) {
             $src = shift(@$sources);
-            $config->write( $str, $src );
+            $config->getBuffer->write( $str, $src );
         }
     }
 

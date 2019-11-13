@@ -14,7 +14,7 @@ use BiBTeXML::Runtime::Context;
 use BiBTeXML::Runtime::Builtins;
 
 sub new {
-    my ( $class, $name, $resultHandle, $outputHandle, $readers, $cites ) = @_;
+    my ( $class, $name, $buffer, $outputHandle, $readers, $cites ) = @_;
 
     # a new configuration for us to use
     my $context = BiBTeXML::Runtime::Context->new();
@@ -22,7 +22,7 @@ sub new {
     return bless {
         name         => $name,
         context      => $context,
-        resultHandle => $resultHandle,
+        buffer       => $buffer,
         outputHandle => $outputHandle,
         readers      => [ @{$readers} ],
         cites        => [ @${cites} ]
@@ -68,14 +68,10 @@ sub log {
     &{ $$self{outputHandle} }( $level, $message, $location );
 }
 
-# writes a message to the output
-# gets passed a source which is either undef or a tuple ($filename, $key, $name) if it is known where this value comes from.
-# this will get called frequently, so should be fast
-sub write {
-    my ( $self, $string, $source ) = @_;
-
-    # call the handle we passed during construction
-    &{ $$self{resultHandle} }( $string, $source );
+# gets the buffer of this config
+sub getBuffer {
+    my ( $self, @data ) = @_;
+    return $$self{buffer};
 }
 
 # returns the location of a given StyString within this file

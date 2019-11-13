@@ -14,7 +14,7 @@ use base qw(Exporter);
 our @EXPORT = qw(
   &concatString &simplifyString &applyPatch
   &popType &fmtType &popFunction
-  &fmtOutputWithSourceMacro &fmtLogMessage
+  &fmtLogMessage
 );
 
 # given two runtime strings, join them and their sources together
@@ -214,23 +214,6 @@ sub fmtType {
     else {
         return '(unknown)';
     }
-}
-
-# wraps string with the source inside a macro
-# when source is undef, or the source is not a field,
-# returns string unchanged
-sub fmtOutputWithSourceMacro {
-    my ( $string, $source, $macro ) = @_;
-    return $string unless defined($source) && $macro;
-    my ( $fn, $entry, $field ) = @{$source};    # TODO: Escape fn for tex
-    return $string unless $field;
-    return
-        '\\'
-      . $macro . '{'
-      . $fn . '}{'
-      . $entry . '}{'
-      . $field . '}{'
-      . $string . '}';
 }
 
 # formats a log message consisting of a level, a message and a source
