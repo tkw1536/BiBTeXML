@@ -72,6 +72,7 @@ lib/BiBTeXML/Compiler/Target/Perl.pm
 # Runtime
 #==================================================
 lib/BiBTeXML/Runtime.pm
+lib/BiBTeXML/Runtime/Buffer.pm
 lib/BiBTeXML/Runtime/Builtins.pm
 lib/BiBTeXML/Runtime/Config.pm
 lib/BiBTeXML/Runtime/Context.pm
@@ -101,7 +102,8 @@ t/41_Runtime_entries.t
 t/42_Runtime_strings.t
 t/43_Runtime_names.t
 t/44_Runtime_utils.t
-t/45_integration.t
+t/45_Runtime_buffer.t
+t/50_integration.t
 
 t/fixtures/streamreader/empty.txt
 t/fixtures/streamreader/helloworld.txt
@@ -122,6 +124,10 @@ t/fixtures/bibfiles/README.md
 t/fixtures/bstfiles/plain.bst
 t/fixtures/bstfiles/plain.bst.txt
 t/fixtures/bstfiles/README.md
+
+t/fixtures/buffer/input.txt
+t/fixtures/buffer/output_wrap.txt
+t/fixtures/buffer/output_nowrap.txt
 
 t/fixtures/compiler/perl/plain.bst.txt
 

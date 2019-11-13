@@ -17,7 +17,6 @@ use base qw(Exporter);
 our @EXPORT = qw(
   &escapeString &startsWith
   &slurp &puts
-  &printBiBTeXBuffer &finalizeBiBTeXBuffer
 );
 
 # escapes a string so that it can be used as a perl literal
@@ -50,60 +49,6 @@ sub puts {
     open my $fh, '>', $path or die "Can't open file $path: $!";
     print $fh encode( 'utf-8', $content );
     close $fh;
-}
-
-# TODO: Refactor the BiBTeX Buffer into a stream or custom class
-
-# printBiBTeXBuffer prints $string to $stream using hard-wrapping
-# as implemented by BibTeX. In order to maintain state across different
-# calls of printBiBTeXBuffer, use $state = printBiBTeXBuffer(..., $state);
-sub printBiBTeXBuffer {
-    my ($stream, $string, $state) = @_;
-    my $bibtex_hardwrap = 79;
-
-    $state = [0, 0, ''] unless defined($state);
-    my ($counter, $skipSpaces, $rest) = @{$state};
-
-    my @chars = split("", $string);
-    my ($char);
-    foreach $char (@chars) {
-        # if we need to skip spaces, don't output anything
-        next if $skipSpaces && ($char =~ /\s/);
-
-        # increase the counter and reset skipSpaces
-        $skipSpaces = 0;
-        $counter++;
-
-        # character is a newline => reset the counter
-        if ($char eq "\n") {
-            $rest=~s/\s+$//; # trim right-most spaces
-            print $stream "$rest\n";
-            $rest = '';
-            $counter = 0;
-
-        # we had too many characters and there is a space
-        } elsif (($counter >= $bibtex_hardwrap) && ($char =~ /\s/)) {
-            $rest=~s/\s+$//; # trim right-most spaces
-            print $stream "$rest\n  ";
-            $rest = '';
-            $counter = 2;
-            $skipSpaces = 1;
-        } else {
-            $rest .= $char;
-        }
-    }
-
-    return [$counter, $skipSpaces, $rest];
-}
-
-sub finalizeBiBTeXBuffer {
-    my ($stream, $state) = @_;
-    return unless defined($stream);
-
-    # print whatever is left in the buffer
-    my ($counter, $skipSpaces, $rest) = @{$state};
-    return unless $rest;
-    print $stream $rest;
 }
 
 1;
