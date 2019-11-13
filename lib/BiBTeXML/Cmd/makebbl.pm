@@ -28,7 +28,7 @@ sub main {
 
     # if we requested help, or we had a wrong number of arguments, exit
     return usageAndExit(0) if ($help);
-    return usageAndExit(1) if scalar(@ARGV) eq 0;
+    return usageAndExit(1) if scalar(@_) eq 0;
 
     # selected bibliography style
     my $style = shift(@ARGV);
