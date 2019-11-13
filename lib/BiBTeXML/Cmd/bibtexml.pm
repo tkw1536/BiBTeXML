@@ -19,12 +19,14 @@ use BiBTeXML::Common::Utils qw(slurp);
 sub main {
     shift(@_);    # remove the first argument
 
-    my ( $output, $macro, $cites, $help ) = ( undef, undef, '*', 0 );
+    my ( $output, $macro, $cites, $wrapped, $help ) =
+      ( undef, undef, '*', 0, 0 );
     GetOptionsFromArray(
         \@_,
         "destination=s" => \$output,
         "macro=s"       => \$macro,
         "cites=s"       => \$cites,
+        "wrap"          => \$wrapped,
         "help"          => \$help,
     ) or return usageAndExit(1);
 
@@ -44,9 +46,13 @@ sub main {
     $reader->openFile($bstfile);
 
     # compile the bst file
-    my ( $code, $compiled ) = createCompile( 'Perl', $reader, sub {
-        print STDERR @_;
-    }, $bstfile );
+    my ( $code, $compiled ) = createCompile(
+        'Perl', $reader,
+        sub {
+            print STDERR @_;
+        },
+        $bstfile
+    );
     return $code, undef if $code ne 0;
 
     # create a run
@@ -59,7 +65,8 @@ sub main {
         sub {
             print STDERR @_;
         },
-        $output
+        $output,
+        $wrapped,
     );
     if ( $status ne 0 ) {
         return $status;
@@ -73,7 +80,7 @@ sub main {
 sub usageAndExit {
     my ($code) = @_;
     print STDERR
-'bibtexml [--help] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $BSTFILE $BIBFILE [$BIBFILE ...]'
+'bibtexml [--help] [--wrap] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $BSTFILE $BIBFILE [$BIBFILE ...]'
       . "\n";
     return $code;
 }

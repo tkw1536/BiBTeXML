@@ -17,6 +17,7 @@ use BiBTeXML::Compiler;
 use BiBTeXML::Runtime::Config;
 use BiBTeXML::Runtime::Utils;
 use BiBTeXML::Common::StreamReader;
+use BiBTeXML::Common::Utils qw(printWrappedBiBTeX);
 
 use Time::HiRes qw(time);
 
@@ -105,7 +106,7 @@ sub createCompile {
 # - 5: Error opening outfile
 # - 6: something went wrong at runtime
 sub createRun {
-    my ( $code, $bibfiles, $cites, $macro, $logger, $output ) = @_;
+    my ( $code, $bibfiles, $cites, $macro, $logger, $output, $wrap ) = @_;
 
     # run the code in the input
     $code = eval $code;
@@ -146,10 +147,16 @@ sub createRun {
     }
 
     # Create a configuration that optionally wraps things inside a macro
+    my ($wrapstate);
     my $config = BiBTeXML::Runtime::Config->new(
         undef,
         sub {
-            print $ofh fmtOutputWithSourceMacro( @_, $macro );
+            my $text = fmtOutputWithSourceMacro( @_, $macro );
+            if ($wrap) {
+                $wrapstate = printWrappedBiBTeX($ofh, $text, $wrapstate) if $wrap;
+            } else {
+                print $ofh $text unless $wrap;
+            }
         },
         sub {
             $logger->(fmtLogMessage(@_) . "\n");

@@ -129,7 +129,7 @@ sub integrationTest {
         my ($output) = File::Temp->new( UNLINK => 1, SUFFIX => '.tex' );
         my ( $status, $runcode ) =
           createRun( $compiled, $bibfiles, $citesIn, $macroIn, \&note,
-            $output, );
+            $output, 1);
 
         # check that preparing the run went ok
         is( $status, 0, 'run preparation went ok' );
