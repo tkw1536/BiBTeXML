@@ -110,7 +110,7 @@ sub integrationTest {
     # resolve paths to input and output
     my ($bstIn, $bibfiles, $citesIn, $macroIn, $resultOut) = integrationTestPaths($path);
 
-    subtest "$name" => sub {
+    return subtest "$name" => sub {
         plan tests => 4;
 
         # create a reader for the bst file
