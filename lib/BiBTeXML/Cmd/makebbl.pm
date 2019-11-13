@@ -31,12 +31,12 @@ sub main {
     return usageAndExit(1) if scalar(@_) eq 0;
 
     # selected bibliography style
-    my $style = shift(@ARGV);
+    my $style = shift(@_);
     $style =~ s/\.bst$//i if (-e $style);
     my $bibliographystyle = "\\bibliographystyle{$style}";
 
     # macro to load the bib files
-    my $bibliography = join( "\n", map { "\\bibliography{" . $_ . "}{}" } @ARGV );
+    my $bibliography = join( "\n", map { "\\bibliography{" . $_ . "}{}" } @_ );
 
     # macro for the cites of the bib files
     my $nocite = join( "", map { "\\nocite{$_}" } split( ",", $cites ) );
@@ -98,6 +98,7 @@ end_of_tex
     # and remove the file
     unlink("$jobname.bbl");
 
+    return 0;
 }
 
 # helper function to print usage information and exit

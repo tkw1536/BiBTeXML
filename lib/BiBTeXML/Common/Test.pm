@@ -29,7 +29,7 @@ our @EXPORT = qw(
   &fixture &slurp &puts &isResult
   &makeStringReader &makeFixtureReader
   &measureBegin &measureEnd
-  &integrationTest
+  &integrationTest &integrationTestPaths
 );
 
 # gets the path to a mock fixture
@@ -105,7 +105,7 @@ sub integrationTestPaths {
 
 # represents a full test of the BiBTeXML steps
 sub integrationTest {
-    my ( $name, $path, $unused, $unusedB ) = @_;
+    my ( $name, $path ) = @_;
 
     # resolve paths to input and output
     my ($bstIn, $bibfiles, $citesIn, $macroIn, $resultOut) = integrationTestPaths($path);
