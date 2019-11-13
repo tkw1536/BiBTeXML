@@ -20,14 +20,14 @@ use BiBTeXML::Common::Utils qw(slurp);
 sub main {
     shift(@_);    # remove the first argument
 
-    my ( $output, $macro, $cites, $wrapped, $help ) =
+    my ( $output, $macro, $cites, $buffer, $help ) =
       ( undef, undef, "*", 0, 0 );
     GetOptionsFromArray(
         \@_,
         "destination=s" => \$output,
         "macro=s"       => \$macro,
         "cites=s"       => \$cites,
-        "wrap"          => \$wrapped,
+        "buffer"          => \$buffer,
         "help"          => \$help,
     ) or return usageAndExit(1);
 
@@ -52,7 +52,7 @@ sub main {
             print STDERR @_;
         },
         $output,
-        $wrapped,
+        $buffer,
     );
     if ( $status ne 0 ) {
         return $status;
@@ -66,7 +66,7 @@ sub main {
 sub usageAndExit {
     my ($code) = @_;
     print STDERR
-'bibtexmlr [--help] [--wrap] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $COMPILED_BST $BIBFILE [$BIBFILE ...]'
+'bibtexmlr [--help] [--buffer] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $COMPILED_BST $BIBFILE [$BIBFILE ...]'
       . "\n";
     return $code;
 }

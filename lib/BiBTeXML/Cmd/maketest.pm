@@ -32,7 +32,7 @@ sub main {
     return $code unless $code eq 0;
     
     # prepare bibtexml args
-    my @bibtexml = ('--wrap', '--cites', join(',', @{$citesIn}), '--destination', $resultOut, $bstIn, @{$bibfiles});
+    my @bibtexml = ('--buffer', '--cites', join(',', @{$citesIn}), '--destination', $resultOut, $bstIn, @{$bibfiles});
     push(@bibtexml, '--macro', $macroIn) if defined($macroIn);
 
     # run bibtexml
