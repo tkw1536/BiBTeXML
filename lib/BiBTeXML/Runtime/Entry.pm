@@ -41,7 +41,9 @@ sub new {
           [ locationOf( $name, $entry ) ]
           unless scalar(@tags) eq 1;
         my $preamble = shift(@tags);
-        return $preamble->getContent->getValue, [ ( $name, '', 'preamble' ) ];
+        my $text     = $preamble->getContent->getValue;
+        $text =~ s/\s+/ /sg;
+        return $text, [ ( $name, '', 'preamble' ) ];
     }
 
     # Make sure that we have something
@@ -83,6 +85,9 @@ sub new {
                 locationOf( $name, $tag->getContent->getSource ) );
             next;
         }
+
+        # BiBTeX concats multiple whitespace in the input file into one
+        $value =~ s/\s+/ /sg;
         $values{$valueKey} = $value;
     }
 
@@ -115,15 +120,15 @@ sub new {
 # inlines a cross-refed entry '$xref' into this entry
 # TODO: Copy over full physical source references
 sub inlineCrossReference {
-    my ($self, $xref) = @_;
+    my ( $self, $xref ) = @_;
 
     # copy over all the related keys
     my ( $k, $v );
-    keys %{ $$xref{values} }; # reset the interal iterator for each
+    keys %{ $$xref{values} };    # reset the interal iterator for each
     while ( ( $k, $v ) = each( %{ $$xref{values} } ) ) {
         $$self{values}{$k} = $v unless defined( $$self{values}{$k} );
     }
-    
+
     # delete the 'crossref' key manually
     delete $$self{values}{crossref};
 }
@@ -131,8 +136,8 @@ sub inlineCrossReference {
 # gets the cross-referenced entry
 # and returns a pair ($key, $crossref)
 sub resolveCrossReference {
-    my ($self, $entryHash) = @_;
-    
+    my ( $self, $entryHash ) = @_;
+
     # get the crossref key
     my $crossref = $$self{values}{crossref};
     return undef, undef unless defined($crossref);

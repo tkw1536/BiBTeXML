@@ -125,9 +125,11 @@ t/fixtures/bstfiles/plain.bst
 t/fixtures/bstfiles/plain.bst.txt
 t/fixtures/bstfiles/README.md
 
-t/fixtures/buffer/input.txt
-t/fixtures/buffer/output_wrap.txt
-t/fixtures/buffer/output_nowrap.txt
+t/fixtures/buffer/01_synthetic/output_nowrap.txt
+t/fixtures/buffer/01_synthetic/output_wrap.txt
+t/fixtures/buffer/01_synthetic/input.txt
+t/fixtures/buffer/02_real/input.txt
+t/fixtures/buffer/02_real/output.txt
 
 t/fixtures/compiler/perl/plain.bst.txt
 

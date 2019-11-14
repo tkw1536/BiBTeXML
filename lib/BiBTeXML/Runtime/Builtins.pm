@@ -68,11 +68,11 @@ sub builtinZe {
         $context->pushInteger( $i1 eq $i2 ? 1 : 0 );
     }
     elsif ( $tp eq 'STRING' ) {
-        my $s1 = join( '', @$value );
+        my ($s1) = simplifyString($value);
         my ( $s2tp, $s2 ) =
           popType( $context, $config, 'STRING', undef, $source );
         return unless defined($s2tp);
-        $s2 = join( '', @$s2 );
+        ($s2) = simplifyString($s2);
         $context->pushInteger( $s1 eq $s2 ? 1 : 0 );
     }
     else {
@@ -226,7 +226,7 @@ sub builtinChangeCase {
     my ( $ctp, $cstrings, $csources ) =
       popType( $context, $config, 'STRING', undef, $source );
     return unless $ctp;
-    ($cstrings, $csources) = simplifyString($cstrings, $csources);
+    my ($spec) = simplifyString( $cstrings, $csources );
 
     # pop the final string
     my ( $stype, $strings, $sources ) =
@@ -237,7 +237,7 @@ sub builtinChangeCase {
     my ( $newStrings, $newSources ) = applyPatch(
         $strings, $sources,
         sub {
-            return changeCase( '' . $_[0], $cstrings );
+            return changeCase( '' . $_[0], $spec );
         },
         'inplace'
     );
@@ -311,7 +311,7 @@ sub builtinEmpty {
         $context->pushInteger(1);
     }
     elsif ( $tp eq 'STRING' ) {
-        $value = join( '', @$value );
+        ($value) = simplifyString($value);
         $context->pushInteger( ( $value =~ /^\s*$/ ) ? 1 : 0 );
     }
     else {
@@ -327,7 +327,7 @@ sub builtinFormatName {
     my ( $ftp, $fstrings ) =
       popType( $context, $config, 'STRING', undef, $source );
     return unless $ftp;
-    $fstrings = join( '', @$fstrings );
+    ($fstrings) = simplifyString($fstrings);
 
     # get the length
     my ( $itp, $integer, $isource ) =
@@ -344,7 +344,7 @@ sub builtinFormatName {
         $strings, $sources,
         sub {
             my @names = splitNames( $_[0] . '' );
-            my $name = $names[ $integer - 1 ] || '';    # TODO: Warn if missing
+            my $name  = $names[ $integer - 1 ] || '';    # TODO: Warn if missing
             my ( $fname, $error ) = formatName( "$name", $fstrings );
             $config->log(
                 'WARN',
@@ -415,7 +415,7 @@ sub builtinMissing {
 # builtin function newline$
 sub builtinNewline {
     my ( $context, $config, $source ) = @_;
-    $config->getBuffer->write("\n");
+    $config->getBuffer->writeLn;
 }
 
 # builtin function num.names$

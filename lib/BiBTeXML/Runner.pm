@@ -149,7 +149,6 @@ sub createRun {
     my $buffer = BiBTeXML::Runtime::Buffer->new( $ofh, $wrapEnabled, $macro );
 
     # Create a configuration that optionally wraps things inside a macro
-    # TODO: Move fmtOutputWithSourceMacro into the buffer class
     my $config = BiBTeXML::Runtime::Config->new(
         undef, $buffer,
         sub {
@@ -165,5 +164,5 @@ sub createRun {
         $buffer->finalize;
         return 6 unless $ok;
         return 0;
-      }
+    }
 }

@@ -10,8 +10,11 @@ package BiBTeXML::Runtime::Buffer;
 use strict;
 use warnings;
 
-# creates a new output buffer used by BiBTeX
-# only enables
+# The Buffer class emulates the output buffering implemented by BiBTeX
+# In addition to the raw BiBTeX behavior this class also implements
+# wrapping source references around specific output strings.
+# Forefficency the wrapping behavior of BiBTeX is only enabled
+# when $wrapEnabled is set.
 sub new {
     my ( $class, $handle, $wrapEnabled, $sourceMacro ) = @_;
 
@@ -22,11 +25,12 @@ sub new {
 
         wrapEnabled => $wrapEnabled,
         sourceMacro => $sourceMacro,
-        breakAfter  => 79,
+
+        minLineLength => 3,
+        maxLineLength => 79,
 
         # state for
-        counter => 0,     # counter for the current line
-        buffer  => "",    # current internal buffer
+        buffer => "",    # current internal buffer
         skipSpaces =>
           0,    # flag to indicate if whitespace is currently being skipped
     }, $class;
@@ -36,49 +40,68 @@ sub new {
 # and emulates BibTeX's hard-wrapping
 sub write {
     my ( $self, $string, $source ) = @_;
-    $string = $self->wrapSource($string, $source);
-    my @chars = split( "", $string );
-    my ($char);
-    foreach $char (@chars) {
 
-        # if we need to skip spaces, don't output anything
-        next if $$self{skipSpaces} && ( $char =~ /\s/ );
+    # add the string to the buffer
+    $$self{buffer} .= $self->wrapSource( $string, $source );
+    return unless $$self{wrapEnabled};
 
-        # increase the counter and reset skipSpaces
-        $$self{skipSpaces} = 0;
-        $$self{counter}++;
+    # while the buffer is long enough
+    my ( $candidate, $buffer, $index );
+    while ( length( $$self{buffer} ) > $$self{maxLineLength} ) {
 
-        # character is a newline => reset the counter
-        if ( $char eq "\n" ) {
-            $$self{buffer} =~ s/\s+$//;    # trim right-most spaces
-            print { $$self{handle} } $$self{buffer} . "\n";
-            $$self{buffer}  = '';
-            $$self{counter} = 0;
+        # find whitespace at the beginning of the string (if applicable)
+        $candidate = reverse(
+            substr(
+                $$self{buffer},
+                $$self{minLineLength},
+                $$self{maxLineLength} - $$self{minLineLength}
+            )
+        );
+        if ( $candidate =~ /\s/ ) {
+            $index = $$self{maxLineLength} - $-[0];
 
-            # we had too many characters and there is a space
-        }
-        elsif ($$self{wrapEnabled}
-            && ( $$self{counter} >= $$self{breakAfter} )
-            && ( $char =~ /\s/ ) )
-        {
-            $$self{buffer} =~ s/\s+$//;    # trim right-most spaces
-            print { $$self{handle} } $$self{buffer} . "\n  ";
-            $$self{buffer}     = '';
-            $$self{counter}    = 2;
-            $$self{skipSpaces} = 1;
-
+            # if there isn't any, find whitespace afterwards or bail out
         }
         else {
-            $$self{buffer} .= $char;
+            return
+              unless substr( $$self{buffer}, $$self{maxLineLength} ) =~ /\s/;
+            $index = $$self{maxLineLength} + $-[0];
         }
+
+        # split the buffer at the index
+        $candidate = substr( $$self{buffer}, 0, $index );
+        $$self{buffer} = substr( $$self{buffer}, $index );
+        $self->writeLineInternal($candidate);
+
+        # remove leading spaces, and add two spaces
+        $$self{buffer} =~ s/^\s+//;
+        $$self{buffer} = '  ' . $$self{buffer};
     }
+}
+
+# WriteLn writes whatever is currently in the buffer
+sub writeLn {
+    my ($self) = @_;
+    $self->writeLineInternal( $$self{buffer} );
+    $$self{buffer} = '';
+}
+
+# writeLineInternal internally writes a line to the output
+sub writeLineInternal {
+    my ( $self, $line ) = @_;
+
+    # trim trailing whitespace and then print it
+    $line =~ s/\s+$//;
+
+    # print it
+    print { $$self{handle} } $line . "\n";
 }
 
 # wrapSource wraps a source-referenced string into the appropriate
 # source macro for this buffer. If source or macro are undef, returns
 # the original string
 sub wrapSource {
-    my ($self, $string, $source) = @_;
+    my ( $self, $string, $source ) = @_;
     return $string unless defined($source) && $$self{sourceMacro};
     my ( $fn, $entry, $field ) = @{$source};
     return $string unless $field;

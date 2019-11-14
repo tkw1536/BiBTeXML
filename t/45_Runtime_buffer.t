@@ -1,5 +1,5 @@
 use BiBTeXML::Common::Test;
-use Test::More tests => 3;
+use Test::More tests => 4;
 use File::Spec;
 
 subtest "requirements" => sub {
@@ -14,42 +14,65 @@ sub makeBuffer {
     return BiBTeXML::Runtime::Buffer->new( $handle, @_ );
 }
 
-subtest "wrapEnabled=0" => sub {
+sub feedBuffer {
+    my ($buffer, $file) = @_;
+    my @lines = split(/^/, slurp($file));
+    my ($line);
+    foreach $line (@lines) {
+        chomp($line);
+        $buffer->write($line);
+        $buffer->writeLn;
+    }
+    $buffer->finalize;
+}
+
+subtest "synthetic wrapEnabled=0" => sub {
     plan tests => 1;
 
     my $text   = '';
     my $buffer = makeBuffer( \$text, 0 );
 
-    $buffer->write(
-        slurp( File::Spec->catfile( 't', 'fixtures', 'buffer', 'input.txt' ) )
-    );
-    $buffer->finalize;
+    feedBuffer($buffer, File::Spec->catfile( 't', 'fixtures', 'buffer', '01_synthetic', 'input.txt' ) );
 
     is(
         $text,
         slurp(
             File::Spec->catfile(
-                't', 'fixtures', 'buffer', 'output_nowrap.txt'
+                't', 'fixtures', 'buffer', '01_synthetic', 'output_nowrap.txt'
             )
         )
     );
 };
 
-subtest "wrapEnabled=1" => sub {
+subtest "synthetic wrapEnabled=1" => sub {
     plan tests => 1;
 
     my $text   = '';
     my $buffer = makeBuffer( \$text, 1 );
 
-    $buffer->write(
-        slurp( File::Spec->catfile( 't', 'fixtures', 'buffer', 'input.txt' ) )
-    );
-    $buffer->finalize;
+    feedBuffer($buffer, File::Spec->catfile( 't', 'fixtures', 'buffer', '01_synthetic', 'input.txt' ) );
 
     is(
         $text,
         slurp(
-            File::Spec->catfile( 't', 'fixtures', 'buffer', 'output_wrap.txt' )
+            File::Spec->catfile( 't', 'fixtures', 'buffer', '01_synthetic', 'output_wrap.txt' )
+        )
+    );
+};
+
+
+subtest "real wrapEnabled=1" => sub {
+    plan tests => 1;
+
+    my $text   = '';
+    my $buffer = makeBuffer( \$text, 1 );
+
+    feedBuffer($buffer, File::Spec->catfile( 't', 'fixtures', 'buffer', '02_real', 'input.txt' ) );
+
+    is(
+        $text,
+        slurp(
+            File::Spec->catfile( 't', 'fixtures', 'buffer', '02_real', 'output.txt' )
         )
     );
 };

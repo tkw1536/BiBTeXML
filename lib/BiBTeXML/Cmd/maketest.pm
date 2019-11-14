@@ -16,27 +16,36 @@ use BiBTeXML::Cmd::makebbl;
 use BiBTeXML::Cmd::bibtexml;
 
 sub main {
+
     # remove the first argument, and display help with a testname is missing
     shift(@_);
     return usageAndExit(1) if scalar(@_) ne 1;
 
     # figure out paths
-    my ($bstIn, $bibfiles, $citesIn, $macroIn, $resultOut) = integrationTestPaths(shift(@_));
+    my ( $bstIn, $bibfiles, $citesIn, $macroIn, $resultOut ) =
+      integrationTestPaths( shift(@_) );
 
     # prepare makebbl args
-    my @makebbl = ('--cites', join(',', @{$citesIn}), '--destination', $resultOut . '.org', $bstIn, @{$bibfiles});
+    my @makebbl = (
+        '--cites', join( ',', @{$citesIn} ),
+        '--destination', $resultOut . '.org',
+        $bstIn, @{$bibfiles}
+    );
 
     # run makebbl
-    print STDERR "./tools/makebbl " . join(' ', @makebbl) . "\n";
+    print STDERR "./tools/makebbl " . join( ' ', @makebbl ) . "\n";
     my $code = BiBTeXML::Cmd::makebbl->main(@makebbl);
     return $code unless $code eq 0;
-    
+
     # prepare bibtexml args
-    my @bibtexml = ('--buffer', '--cites', join(',', @{$citesIn}), '--destination', $resultOut, $bstIn, @{$bibfiles});
-    push(@bibtexml, '--macro', $macroIn) if defined($macroIn);
+    my @bibtexml = (
+        '--wrap', '--cites', join( ',', @{$citesIn} ),
+        '--destination', $resultOut, $bstIn, @{$bibfiles}
+    );
+    push( @bibtexml, '--macro', $macroIn ) if defined($macroIn);
 
     # run bibtexml
-    print STDERR "./bin/bibtexml " . join(' ', @bibtexml) . "\n";
+    print STDERR "./bin/bibtexml " . join( ' ', @bibtexml ) . "\n";
     return BiBTeXML::Cmd::bibtexml->main(@bibtexml);
 }
 

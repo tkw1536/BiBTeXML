@@ -40,7 +40,7 @@ BiBTeXML is split into (roughly) four components:
 
 This code faithfully emulates BibTeX and should produce output that is character-by-character identical to BiBTeX itself -- everything else is considered a bug. There are two notable exceptions:
 - It allows keeping track of source references and insert a wrapping macro. This is disabled by default. 
-- It does not emulate BiBTeX's output buffer by default. In particular, it neither hard-wraps characters after the 80th character, nor does it remove whitespace characters before a newline. If emulation of this behavior is desired, one can optionally pass the `--buffer` option to the appropriate commands to perform the hard wrapping. ((*)
+- It does not emulate BiBTeX's wrapped output by default. If emulation of this behavior is desired (e.g. during the tests), one can optionally pass the `--wrap` option to the appropriate commands to perform the hard wrapping. 
 
 ## How to use
 
@@ -55,7 +55,7 @@ To run everything together use the `bibtexml` program.
 It has the following syntax:
 
 ```
-bibtexml [--help] [--buffer] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $BSTFILE $BIBFILE [$BIBFILE ...]
+bibtexml [--help] [--wrap] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $BSTFILE $BIBFILE [$BIBFILE ...]
 ```
 
 - `$DEST` is the name of the output file to write output to. If omitted, output is sent to `STDOUT`. 
@@ -63,7 +63,7 @@ bibtexml [--help] [--buffer] [--destination $DEST] [--cites $CITES] [--macro $MA
 - `$MACRO` is a macro to wrap all source references in. If omitted, source references are not shown in the output. 
 - `$BSTFILE` is the (absolute or relative to the working directory) path to the `.bst` file to compile. 
 - `$BIBFILE` is the name of a bibfile to include. 
-- `--buffer` enables emulating BiBTeX's output buffer. 
+- `--wrap` enables emulating BiBTeX's output wrapping. 
 
 
 ### Running the compilation stage
@@ -106,7 +106,7 @@ This only works with code generated for the Perl Target.
 It has the following syntax:
 
 ```
-bibtexmlr [--help] [--buffer] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $COMPILED_BST $BIBFILE [$BIBFILE ...]
+bibtexmlr [--help] [--wrap] [--destination $DEST] [--cites $CITES] [--macro $MACRO] $COMPILED_BST $BIBFILE [$BIBFILE ...]
 ```
 
 - `$DEST` is the name of the output file to write output (think .bbl) to. If omitted, output is sent to `STDOUT`. 
@@ -114,7 +114,7 @@ bibtexmlr [--help] [--buffer] [--destination $DEST] [--cites $CITES] [--macro $M
 - `$MACRO` is a macro to wrap all source references in. If omitted, source references are not shown in the output. 
 - `$COMPILED_BST` is the (absolute or relative to the working directory) path to the compiled `.bst` file
 - `$BIBFILE` is the name of a bibfile to include. 
-- `--buffer` enables emulating BiBTeX's output buffer. 
+- `--wrap` enables emulating BiBTeX's output wrapping. 
 
 All messages and errors are written to STDERR. 
 
