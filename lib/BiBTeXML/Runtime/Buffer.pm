@@ -54,7 +54,7 @@ sub write {
             substr(
                 $$self{buffer},
                 $$self{minLineLength},
-                $$self{maxLineLength} - $$self{minLineLength}
+                $$self{maxLineLength} - $$self{minLineLength} + 1
             )
         );
         if ( $candidate =~ /\s/ ) {
