@@ -388,8 +388,8 @@ sub readEntries {
         $key = $entry->getKey;
         if (defined($entryHash{$key})) {
             # TODO: Do newer keys overwrite older ones?
-            push(@warnings, "Skippking duplicate entry for key $key");
-            push(@locations, [$entry->getName, $$entry{entry}->getSource]);
+            push(@warnings, "Skipping duplicate entry for key $key");
+            push(@locations, $$entry{entry}->getSource);
             next;
         }
         $entryHash{$key} = $entry;
@@ -409,7 +409,7 @@ sub buildEntryList {
 
     sub locationOf {
         my ( $entry ) = @_;
-        return $entry->getName, $entry->getSource;
+        return $entry->getName, $$entry{entry}->getSource;
     }
 
     my (@warnings, @locations) = ();
@@ -446,7 +446,7 @@ sub buildEntryList {
         $entry = $entryMap{$citeKey};
         unless (defined($entry)) {
             # TODO: Better error message string
-            push(@warnings, ["I can't find an entry for $citeKey"]);
+            push(@warnings, ["I didn't find a database entry for \"$citeKey\""]);
             push(@locations, undef);
             next;
         }
@@ -462,7 +462,7 @@ sub buildEntryList {
         # if the cross-referenced entry doesn't exist
         # TODO: Better warning location
         unless(defined($xrefentry)) {
-            push(@warnings, ["I can't find the cross-referenced entry $xref of $citeKey"]);
+            push(@warnings, ["A bad cross reference---entry \"$citeKey\" refers to entry \"$xref\", which doesn't exist"]);
             push(@locations, [locationOf($entry)]);
             next;
         }
@@ -483,14 +483,17 @@ sub buildEntryList {
         my @references = @{$refmap{$value}};
         my ($related) = $entryMap{$value};
         
-        # if we have more than the number of cross-references
-        # inside all the entries, inline everything
-        if (scalar @references < $numCrossRefs) {
-            foreach $reference (@references) {
-                $reference->inlineCrossReference($related);
-            }
-            next;
+
+        # when an entry is crossreferenced below a certain
+        # threshold, we do not include it as a seperate entry
+        # on the list of cited entries. Furthermore, we fully
+        # inline the entry and remove the 'crossref' key from
+        # it. 
+        my $hideCrossref = scalar @references < $numCrossRefs;
+        foreach $reference (@references) {
+            $reference->inlineCrossReference($related, $hideCrossref);
         }
+        next if $hideCrossref;
 
         # if there are more, it is included in the list of entries
         push(@entries, $related);

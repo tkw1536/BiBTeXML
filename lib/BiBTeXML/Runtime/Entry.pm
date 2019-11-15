@@ -120,7 +120,7 @@ sub new {
 # inlines a cross-refed entry '$xref' into this entry
 # TODO: Copy over full physical source references
 sub inlineCrossReference {
-    my ( $self, $xref ) = @_;
+    my ( $self, $xref, $clearCrossRefValue ) = @_;
 
     # copy over all the related keys
     my ( $k, $v );
@@ -130,7 +130,7 @@ sub inlineCrossReference {
     }
 
     # delete the 'crossref' key manually
-    delete $$self{values}{crossref};
+    delete $$self{values}{crossref} if $clearCrossRefValue;
 }
 
 # gets the cross-referenced entry
