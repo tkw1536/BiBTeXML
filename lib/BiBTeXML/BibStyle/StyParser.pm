@@ -163,12 +163,13 @@ sub readBlock {
     my @values = ();
     my ( $value, $valueError, $er, $ec );
 
+    eatSpacesOrComments($reader);
+
     # if the next char is '}', finish
     ( $char, $er, $ec ) = $reader->peekChar;
     return undef, 'unexpected end of input while reading block',
       $reader->getPosition
       unless defined($char);
-    eatSpacesOrComments($reader);
 
     # read until we find a closing brace
     while ( $char ne '}' ) {
