@@ -333,8 +333,8 @@ sub formatNamePart {
 
 # first index (if we have at least three tokens, and the first one is 1 or 2 characters)
             if (   $index eq 0
-                && $lastIndex > 2
-                && ( $short or textLength($name) <= 2 ) )
+                && $lastIndex >= 2
+                && textLength($name) <= 2 )
             {
                 $result .=
                   ( $seperator =~ m/^(\s+)$/ )

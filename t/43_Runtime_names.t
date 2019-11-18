@@ -130,7 +130,7 @@ subtest "formatNamePart" => sub {
   # short form
   isFormatNamePart(['Dr ',  'Alex ', 'Bob ', 'Charlotte '], 1, undef, '', 'D.~A. B.~C');
   isFormatNamePart(['Dr-',  'Alex ', 'Bob ', 'Charlotte '], 1, undef, '', 'D.-A. B.~C');
-  isFormatNamePart(['Dr. ', 'Alex ', 'Bob ', 'Charlotte '], 1, undef, '', 'D.~A. B.~C');
+  isFormatNamePart(['Dr. ', 'Alex ', 'Bob ', 'Charlotte '], 1, undef, '', 'D. A. B.~C');
   isFormatNamePart(['Dr ', 'Charlotte '], 1, undef, '', 'D.~C');
 
   # custom seperator
@@ -149,7 +149,7 @@ subtest "formatName" => sub {
   }
 
   # from the official BiBTeX documentation
-  isFormatName('Charles Louis Xavier Joseph de la Vall{\`e}e Poussin', '{vv~}{ll}{, jj}{, f}?', 'de~la Vall{\`e}e~Poussin, C.~L. X.~J?');
+  isFormatName('Charles Louis Xavier Joseph de la Vall{\`e}e Poussin', '{vv~}{ll}{, jj}{, f}?', 'de~la Vall{\`e}e~Poussin, C. L. X.~J?');
 
   # examples from "Names in BibTEX and MlBibTEX", Figure 5 LHS lastname => "Le Clerc De La Herverie"
   isFormatName('von Le Clerc De La Herverie', '{ll}',         'Le~Clerc De La~Herverie');
