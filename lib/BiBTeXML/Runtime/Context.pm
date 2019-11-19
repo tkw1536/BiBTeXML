@@ -218,13 +218,10 @@ sub hasMacro {
 
 sub hasVariable {
     my ( $self, $name, $type ) = @_;
-    if ( defined( $$self{variableTypes}{$name} ) ) {
-        if ( defined($type) ) {
-            return ( $$self{variableTypes} eq $type ) ? 1 : 0;
-        }
-        return 1;
-    }
-    return 0;
+    my $vartp = $$self{variableTypes}{$name};
+    return 0 unless defined($vartp);
+    return 1 unless defined($type);
+    return ( $vartp eq $type ) ? 1 : 0;
 }
 
 # defines a new variable for use in the stack
