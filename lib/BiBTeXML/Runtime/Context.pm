@@ -25,8 +25,8 @@ use BiBTeXML::Runtime::Entry;
 sub new {
     my ($class) = @_;
     return bless {
-        ### - the stack (split into three parts, see below)
-        typeStack => [], valueStack => [], sourceStack => [],
+        ### the stack
+        stack => [],
 
         ### - a set of macros
         macros => {},
@@ -53,11 +53,10 @@ sub new {
 ### Low-level stack access
 ###
 
-### The runtime stack internally consists of three stacks, which are kept in sync.
-### - the 'typeStack' contains the types of objects
-### - the 'valueStack' contains the actual objects
-### - the 'sourceStack' contains the source references of objects
-### This allows for quick type inspection without having to deconstruct anything.
+### Each entry in the runtime stack internally consists of a triple (type, valuye, source):
+### - 'type' contains types of objects
+### - 'value' the actual objects
+### - 'source' contains the source references of objects
 
 ### The following types are defined:
 
@@ -85,26 +84,21 @@ sub new {
 ### 4. 'FUNCTION' -- undef
 ### 5. 'REFERENCE' -- undef
 
-
 # TODO: Allow re-running a context without having to re-parse the bib files
 # (There should probably be a reset function that clear entries, but keeps the read .bib files)
 
 # return the length of the stack
 sub stackLength {
     my ($self) = @_;
-    return scalar( @{ $$self{typeStack} } );
+    return scalar( @{ $$self{stack} } );
 }
 
 # pop the stack
 # returns the value or undef, undef, undef
 sub popStack {
     my ($self) = @_;
-    return undef, undef, undef unless scalar( @{ $$self{typeStack} } ) > 0;
-    return (
-        pop( @{ $$self{typeStack} } ),
-        pop( @{ $$self{valueStack} } ),
-        pop( @{ $$self{sourceStack} } )
-    );
+    return undef, undef, undef unless scalar( @{ $$self{stack} } ) > 0;
+    return ( @{ pop( @{ $$self{stack} } ) } );
 }
 
 # peek at the position index from the back. index is 1 based.
@@ -112,21 +106,15 @@ sub popStack {
 sub peekStack {
     my ( $self, $index ) = @_;
     return undef, undef, undef
-      unless scalar( @{ $$self{typeStack} } ) >= $index;
-    return (
-        $$self{typeStack}[ -$index ],
-        $$self{valueStack}[ -$index ],
-        $$self{sourceStack}[ -$index ]
-    );
+      unless scalar( @{ $$self{stack} } ) >= $index;
+    return ( @{ $$self{stack}[ -$index ] } );
 }
 
 # pops an item from the stack
 # returns 1
 sub pushStack {
     my ( $self, $type, $value, $source ) = @_;
-    push( @{ $$self{typeStack} },   $type );
-    push( @{ $$self{valueStack} },  $value );
-    push( @{ $$self{sourceStack} }, $source );
+    push( @{ $$self{stack} }, [ $type, $value, $source ] );
     return 1;
 }
 
@@ -134,56 +122,45 @@ sub pushStack {
 # return 1 iff successfull
 sub putStack {
     my ( $self, $index, $type, $value, $source ) = @_;
-    return 0 unless scalar( @{ $$self{typeStack} } ) >= $index;
-    $$self{typeStack}[ -$index ]   = $type if defined($type);
-    $$self{valueStack}[ -$index ]  = $value;
-    $$self{sourceStack}[ -$index ] = $source;
+    return 0 unless scalar( @{ $$self{stack} } ) >= $index;
+    $$self{stack}[ -$index ][0] = $type if defined($type);
+    $$self{stack}[ -$index ][1] = $value;
+    $$self{stack}[ -$index ][2] = $source;
     return 1;
 }
 
 # pushes a string constant onto the stack
 sub pushString {
     my ( $self, $string ) = @_;
-    push( @{ $$self{typeStack} }, 'STRING' );
-    push( @{ $$self{valueStack} },  [$string] );
-    push( @{ $$self{sourceStack} }, [undef] );
+    push( @{ $$self{stack} }, [ 'STRING', [$string], [undef] ] );
     return 1;
 }
 
 # pushes an integer constant onto the stack
 sub pushInteger {
     my ( $self, $integer ) = @_;
-    push( @{ $$self{typeStack} },   'INTEGER' );
-    push( @{ $$self{valueStack} },  $integer );
-    push( @{ $$self{sourceStack} }, undef );
+    push( @{ $$self{stack} }, [ 'INTEGER', $integer, undef ] );
     return 1;
 }
 
 # empties the stack
 sub emptyStack {
     my ($self) = @_;
-    $$self{typeStack}   = [];
-    $$self{valueStack}  = [];
-    $$self{sourceStack} = [];
+    $$self{stack} = [];
 }
 
 # duplicate the head of the stack
 sub duplicateStack {
     my ($self) = @_;
-    return 0 unless scalar( @{ $$self{typeStack} } ) > 0;
+    return 0 unless scalar( @{ $$self{stack} } ) > 0;
 
-    # duplicate the type
-    push( @{ $$self{typeStack} }, $$self{typeStack}[-1] );
-
-    # deep-copy the value if needed
-    my $value = $$self{valueStack}[-1];
-    $value = [ @{$value} ] if ref $value && ref $value eq "ARRAY";
-    push( @{ $$self{valueStack} }, $value );
-
-    # deep-copy the source if needed
-    my $source = $$self{sourceStack}[-1];
+    # grab and duplicate value (if needed)
+    my ( $type, $value, $source ) = @{ $$self{stack}[-1] };
+    $value  = [ @{$value} ]  if ref $value  && ref $value eq "ARRAY";
     $source = [ @{$source} ] if ref $source && ref $source eq "ARRAY";
-    push( @{ $$self{sourceStack} }, $source );
+
+    # push it back
+    push( @{ $$self{stack} }, [ $type, $value, $source ] );
 
     return 1;
 }
@@ -386,117 +363,127 @@ sub readEntries {
     my ($key);
     foreach $entry (@entries) {
         $key = $entry->getKey;
-        if (defined($entryHash{$key})) {
+        if ( defined( $entryHash{$key} ) ) {
+
             # TODO: Do newer keys overwrite older ones?
-            push(@warnings, "Skipping duplicate entry for key $key");
-            push(@locations, $$entry{entry}->getSource);
+            push( @warnings,  "Skipping duplicate entry for key $key" );
+            push( @locations, $$entry{entry}->getSource );
             next;
         }
         $entryHash{$key} = $entry;
     }
 
     # build the entry list and keep track of warnings and locations of warnings
-    ($$self{entries}, $warning, $location) = $self->buildEntryList([@entries], \%entryHash, $citations, 2); # TODO: Allow numcrossref customization
+    ( $$self{entries}, $warning, $location ) =
+      $self->buildEntryList( [@entries], \%entryHash, $citations, 2 )
+      ;    # TODO: Allow numcrossref customization
     push( @warnings,  @$warning )  if defined($warning);
     push( @locations, @$location ) if defined($location);
 
     return 0, [@warnings], [@locations];
 }
 
-# build a list of entries that should be cited. 
+# build a list of entries that should be cited.
 sub buildEntryList {
-    my ($self, $entryList, $entryHash, $citeList, $numCrossRefs) = @_;
+    my ( $self, $entryList, $entryHash, $citeList, $numCrossRefs ) = @_;
 
     sub locationOf {
-        my ( $entry ) = @_;
+        my ($entry) = @_;
         return $entry->getName, $$entry{entry}->getSource;
     }
 
-    my (@warnings, @locations) = ();
+    my ( @warnings, @locations ) = ();
 
     # TODO: Check for cross-refs inside cross-refs and spit out a warning
     # TODO: Use a large hashmap for everything that resolves entries
     # this might be a lot faster
 
-    my ($citeKey); # current cite key the user requested
-    my %citedKeys = (); # same as citeList, but key => 1 mapping
+    my ($citeKey);    # current cite key the user requested
+    my %citedKeys = ();    # same as citeList, but key => 1 mapping
 
-    my %related = (); # resolved reference entries
-    my @cited = ();
+    my %related = ();      # resolved reference entries
+    my @cited   = ();
     my @entries = ();
-    my %refmap = (); # [xrefed] => referencing entries
+    my %refmap  = ();      # [xrefed] => referencing entries
 
     # hash for resolving entries
-    my %entryMap =  %{$entryHash};
+    my %entryMap = %{$entryHash};
 
     # TODO: Do this in a destructive fashion to better emulate
     # BibTeXs behaviour wrt multiple keys
-    my ($entry, $error);
+    my ( $entry, $error );
     foreach $citeKey (@$citeList) {
+
         # if we already cited something it does not need to be cited again
         # this is *not* an error, it might regularly occur if things are cited
-        # multiple times. 
+        # multiple times.
         # TODO: Check if later positions override earlier ones
-        next if exists($citedKeys{$citeKey});
+        next if exists( $citedKeys{$citeKey} );
 
         # TODO: Handle multiple entries in the same list
         return $entryList, undef, undef if $citeKey eq '*';
 
         # find the current entry
         $entry = $entryMap{$citeKey};
-        unless (defined($entry)) {
+        unless ( defined($entry) ) {
+
             # TODO: Better error message string
-            push(@warnings, ["I didn't find a database entry for \"$citeKey\""]);
-            push(@locations, undef);
+            push( @warnings,
+                ["I didn't find a database entry for \"$citeKey\""] );
+            push( @locations, undef );
             next;
         }
 
         # push this entry into the list of cited 'stuff'
-        push(@entries, $entry);
+        push( @entries, $entry );
         $citedKeys{$citeKey} = 1;
-        
+
         # grab the cross-referenced entry and resolve it
-        my ($xref, $xrefentry) = $entry->resolveCrossReference($entryHash);
+        my ( $xref, $xrefentry ) = $entry->resolveCrossReference($entryHash);
         next unless defined($xref);
 
         # if the cross-referenced entry doesn't exist
         # TODO: Better warning location
-        unless(defined($xrefentry)) {
-            push(@warnings, ["A bad cross reference---entry \"$citeKey\" refers to entry \"$xref\", which doesn't exist"]);
-            push(@locations, [locationOf($entry)]);
+        unless ( defined($xrefentry) ) {
+            push(
+                @warnings,
+                [
+"A bad cross reference---entry \"$citeKey\" refers to entry \"$xref\", which doesn't exist"
+                ]
+            );
+            push( @locations, [ locationOf($entry) ] );
             next;
         }
 
         # create this entry in the refmap
-        push(@cited, $xref) unless defined($refmap{$xref});
-        $refmap{$xref} = [()] unless defined($refmap{$xref});
+        push( @cited, $xref ) unless defined( $refmap{$xref} );
+        $refmap{$xref} = [ () ] unless defined( $refmap{$xref} );
 
         # and add the current entry to the xrefed entry
-        push(@{$refmap{$xref}}, $entry);
+        push( @{ $refmap{$xref} }, $entry );
     }
-    
+
     # iterate over everything that was cross-referenced
     # and either inline or add it to the citation list
-    # TODO: When we have already 
-    my ($value, $reference);
+    # TODO: When we have already
+    my ( $value, $reference );
     foreach $value (@cited) {
-        my @references = @{$refmap{$value}};
+        my @references = @{ $refmap{$value} };
         my ($related) = $entryMap{$value};
-        
 
         # when an entry is crossreferenced below a certain
         # threshold, we do not include it as a seperate entry
         # on the list of cited entries. Furthermore, we fully
         # inline the entry and remove the 'crossref' key from
-        # it. 
+        # it.
         my $hideCrossref = scalar @references < $numCrossRefs;
         foreach $reference (@references) {
-            $reference->inlineCrossReference($related, $hideCrossref);
+            $reference->inlineCrossReference( $related, $hideCrossref );
         }
         next if $hideCrossref;
 
         # if there are more, it is included in the list of entries
-        push(@entries, $related);
+        push( @entries, $related );
     }
 
     return [@entries], @warnings, @locations;
