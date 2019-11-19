@@ -320,7 +320,7 @@ sub builtinChrToInt {
     # if we have a string, that's ok.
     if ( defined($type) ) {
         my ( $str, $src ) = simplifyString( $strings, $sources );
-        if ( length($str) ne 1 ) {
+        if ( length($str) eq 1 ) {
             $context->pushStack( 'INTEGER', ord($str), $src );
         }
         else {
