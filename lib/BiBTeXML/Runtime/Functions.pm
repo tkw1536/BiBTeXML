@@ -292,7 +292,7 @@ sub pushEntryInteger {
 # lookupGlobalString($name) -- pushes the value of a global string onto the stack
 sub lookupGlobalString {
     my ( $context, $config, $name, $sourceRef ) = @_;
-    my ( $t, $v, $s ) = $context->getVariable($name);
+    my ( $t, $v, $s ) = $context->getVariable(lc $name);
     if ( defined($t) ) {
         $context->pushStack( $t, $v, $s );
     }
@@ -308,7 +308,7 @@ sub lookupGlobalString {
 # lookupGlobalInteger($name) -- pushes the value of a integer onto the stack
 sub lookupGlobalInteger {
     my ( $context, $config, $name, $sourceRef ) = @_;
-    my ( $t, $v, $s ) = $context->getVariable($name);
+    my ( $t, $v, $s ) = $context->getVariable(lc $name);
     if ( defined($t) ) {
         $context->pushStack( $t, $v, $s );
     }
@@ -322,7 +322,7 @@ sub lookupGlobalInteger {
 # lookupEntryField($name) -- pushes the value of an entry field onto the stack
 sub lookupEntryField {
     my ( $context, $config, $name, $sourceRef ) = @_;
-    my ( $t, $v, $s ) = $context->getVariable($name);
+    my ( $t, $v, $s ) = $context->getVariable(lc $name);
     if ( defined($t) ) {
         $context->pushStack( $t, $v, $s );
     }
@@ -338,7 +338,7 @@ sub lookupEntryField {
 # lookupEntryString($name) -- pushes the value of an entry string onto the stack
 sub lookupEntryString {
     my ( $context, $config, $name, $sourceRef ) = @_;
-    my ( $t, $v, $s ) = $context->getVariable($name);
+    my ( $t, $v, $s ) = $context->getVariable(lc $name);
     if ( defined($t) ) {
         $context->pushStack( $t, $v, $s );
     }
@@ -354,7 +354,7 @@ sub lookupEntryString {
 # lookupEntryInteger($name) -- pushes the value of an entry integer onto the stack
 sub lookupEntryInteger {
     my ( $context, $config, $name, $sourceRef ) = @_;
-    my ( $t, $v, $s ) = $context->getVariable($name);
+    my ( $t, $v, $s ) = $context->getVariable(lc $name);
     if ( defined($t) ) {
         $context->pushStack( $t, $v, $s );
     }

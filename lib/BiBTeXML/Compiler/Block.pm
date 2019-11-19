@@ -54,7 +54,7 @@ sub compileLiteral {
       unless $variable->getKind eq 'LITERAL';
 
     # lookup type of variable
-    my $name = $variable->getValue;    # TODO: Normalization?
+    my $name = lc $variable->getValue;
     return undef, "Unknown literal $name in literal", $variable->getSource
       unless exists( $context{$name} );
     my $type = $context{$name};
@@ -97,7 +97,7 @@ sub compileReference {
       unless $reference->getKind eq 'REFERENCE';
 
     # lookup type of variable
-    my $name = $reference->getValue;    # TODO: Normalization?
+    my $name = lc $reference->getValue;
     return undef, "Unknown literal $name in reference", $reference->getSource
       unless exists( $context{$name} );
     my $type = $context{$name};

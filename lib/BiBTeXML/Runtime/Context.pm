@@ -276,6 +276,9 @@ sub setVariable {
     my $type = $$self{variableTypes}{$name};
     return 1 unless defined($type);
 
+    # normalize name of variable
+    $name = lc $name;
+
     # we need to look up inside the current entry
     if (   $type eq 'ENTRY_FIELD'
         or $type eq 'ENTRY_STRING'
