@@ -9,12 +9,13 @@ subtest "requirements" => sub {
 };
 
 subtest 'readLiteral' => sub {
-  plan tests => 4;
+  plan tests => 5;
 
   doesReadLiteral('simple literal', 'hello#world', StyString('LITERAL', 'hello#world', [(undef, 1, 1, 1, 12)]));
   doesReadLiteral('ends after first space', 'hello world', StyString('LITERAL', 'hello', [(undef, 1, 1, 1, 6)]));
   doesReadLiteral('ends after }', 'hello}world', StyString('LITERAL', 'hello', [(undef, 1, 1, 1, 6)]));
   doesReadLiteral('ends after {', 'hello{world', StyString('LITERAL', 'hello', [(undef, 1, 1, 1, 6)]));
+  doesReadLiteral('ends after %', 'hello%world', StyString('LITERAL', 'hello', [(undef, 1, 1, 1, 6)]));
 
   sub doesReadLiteral {
     my ($name, $input, $expected) = @_;
@@ -29,13 +30,14 @@ subtest 'readLiteral' => sub {
 };
 
 subtest 'readNumber' => sub {
-  plan tests => 5;
+  plan tests => 6;
 
   doesReadNumber('simple number',          '#0',        StyString('NUMBER', 0,      [(undef, 1, 1, 1, 3)]));
   doesReadNumber('positive number',        '#+1',       StyString('NUMBER', 1,      [(undef, 1, 1, 1, 4)]));
   doesReadNumber('negative number',        '#-1',       StyString('NUMBER', -1,     [(undef, 1, 1, 1, 4)]));
   doesReadNumber('ends after first space', '#123456 ',  StyString('NUMBER', 123456, [(undef, 1, 1, 1, 8)]));
   doesReadNumber('ends after }',           '#123456}7', StyString('NUMBER', 123456, [(undef, 1, 1, 1, 8)]));
+  doesReadNumber('ends after %',           '#123456%7', StyString('NUMBER', 123456, [(undef, 1, 1, 1, 8)]));
 
   sub doesReadNumber {
     my ($name, $input, $expected) = @_;
@@ -50,11 +52,12 @@ subtest 'readNumber' => sub {
 };
 
 subtest 'readReference' => sub {
-  plan tests => 3;
+  plan tests => 4;
 
   doesReadReference('simple reference', '\'hello@world', StyString('REFERENCE', 'hello@world', [(undef, 1, 1, 1, 13)]));
   doesReadReference('ends after first space', "'hello world", StyString('REFERENCE', 'hello', [(undef, 1, 1, 1, 7)]));
   doesReadReference('ends with }', "'hello}world", StyString('REFERENCE', 'hello', [(undef, 1, 1, 1, 7)]));
+  doesReadReference('ends with %', "'hello\%world", StyString('REFERENCE', 'hello', [(undef, 1, 1, 1, 7)]));
 
   sub doesReadReference {
     my ($name, $input, $expected) = @_;
@@ -89,9 +92,10 @@ subtest 'readQuote' => sub {
 };
 
 subtest 'readBlock' => sub {
-  plan tests => 4;
+  plan tests => 5;
 
   doesReadBlock('empty block', '{}', StyString('BLOCK', [], [(undef, 1, 1, 1, 3)]));
+  doesReadBlock('whitespace block', '{   }', StyString('BLOCK', [], [(undef, 1, 1, 1, 6)]));
   doesReadBlock('block of literal', '{hello}', StyString('BLOCK', [StyString('LITERAL', 'hello', [(undef, 1, 2, 1, 7)])], [(undef, 1, 1, 1, 8)]));
   doesReadBlock('block of multiples', '{hello \'world #3}', StyString('BLOCK', [StyString('LITERAL', 'hello', [(undef, 1, 2, 1, 7)]), StyString('REFERENCE', 'world', [(undef, 1, 8, 1, 14)]), StyString('NUMBER', 3, [(undef, 1, 15, 1, 17)])], [(undef, 1, 1, 1, 18)]));
   doesReadBlock('nested blocks', '{outer {inner #1} outer}', StyString('BLOCK', [StyString('LITERAL', 'outer', [(undef, 1, 2, 1, 7)]), StyString('BLOCK', [StyString('LITERAL', 'inner', [(undef, 1, 9, 1, 14)]), StyString('NUMBER', 1, [(undef, 1, 15, 1, 17)])], [(undef, 1, 8, 1, 18)]), StyString('LITERAL', 'outer', [(undef, 1, 19, 1, 24)])], [(undef, 1, 1, 1, 25)]));

@@ -238,7 +238,7 @@ sub readReference {
 
     # read anything that's not a space and not the end of a block
     my ( $reference, $er, $ec ) =
-      $reader->readCharWhile( sub { $_[0] =~ /[^\s\}]/; } );
+      $reader->readCharWhile( sub { $_[0] =~ /[^%\s\}]/; } );
     return undef, 'expected a non-empty argument', $reader->getPosition
       unless $reference ne "";
 
@@ -254,7 +254,7 @@ sub readLiteral {
     # read anything that's not a space or the boundary of a block
     my ( $sr, $sc ) = $reader->getPosition;
     my ( $literal, $er, $ec ) =
-      $reader->readCharWhile( sub { $_[0] =~ /[^\s\{\}]/; } );
+      $reader->readCharWhile( sub { $_[0] =~ /[^%\s\{\}]/; } );
     return undef, 'expected a non-empty literal', $reader->getPosition
       unless $literal;
 
