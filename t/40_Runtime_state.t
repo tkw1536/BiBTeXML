@@ -8,7 +8,7 @@ subtest "requirements" => sub {
 };
 
 subtest "stack behaviour" => sub {
-  plan tests => 17;
+  plan tests => 16;
 
   my $context = BiBTeXML::Runtime::Context->new();
 
@@ -30,17 +30,6 @@ subtest "stack behaviour" => sub {
   is_deeply([$context->peekStack(3)], ['INTEGER', -3,    undef], 'peek third last value');
   is_deeply([$context->peekStack(4)], [undef,     undef, undef], 'peek non-existent last value');
 
-  # set something on the stack
-  is_deeply($context->putStack(1, 'INTEGER', -4, undef), 1, 'put last value');
-  is_deeply($context->putStack(2, 'INTEGER', -5, undef), 1, 'put second last value');
-  is_deeply($context->putStack(3, 'INTEGER', -6, undef), 1, 'put third last value');
-  is_deeply($context->putStack(4, 'INTEGER', -7, undef), 0, 'put non-existent last value');
-
-  # and check values again
-  is_deeply([$context->peekStack(1)], ['INTEGER', -4, undef], 'peek last value');
-  is_deeply([$context->peekStack(2)], ['INTEGER', -5, undef], 'peek second last value');
-  is_deeply([$context->peekStack(3)], ['INTEGER', -6, undef], 'peek third last value');
-
   # pop + duplicate the empty stack
   $context->emptyStack;
   is_deeply([$context->popStack], [undef, undef, undef], 'pop the empty stack');
@@ -52,6 +41,27 @@ subtest "stack behaviour" => sub {
 
   is_deeply([$context->peekStack(1)], ['INTEGER', 42, undef], 'peek last value of duplication');
   is_deeply([$context->peekStack(2)], ['INTEGER', 42, undef], 'peek second last value of duplication');
+
+  # don't do anything to the empty stack
+  $context->emptyStack;
+  is($context->duplicateStack, 0, 'duplicating empty stack');
+
+  # check that swapping the non-empty stack works
+  $context->emptyStack;
+  $context->pushInteger(43);
+  $context->pushInteger(42);
+  $context->pushString("hello world");
+
+  is($context->swapStack, 1, 'swapping non-empty stack');
+
+  is_deeply([$context->peekStack(1)], ['INTEGER', 42, undef], 'push and swap, peek last');
+  is_deeply([$context->peekStack(2)], ['STRING', ['hello world'], [undef]], 'push and swap, peek second last');
+  is_deeply([$context->peekStack(3)], ['INTEGER', 43, undef], 'push and swap, peek third last');
+
+  # don't do anything to the empty stack
+  $context->emptyStack;
+  is($context->swapStack, 0, 'swapping empty stack');
+
 };
 
 subtest "macro behaviour" => sub {

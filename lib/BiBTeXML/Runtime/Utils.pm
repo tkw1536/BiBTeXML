@@ -23,6 +23,7 @@ sub concatString {
     my ( $stringA, $sourceA, $stringB, $sourceB ) = @_;
 
     # join the strings and sources
+    # Note: Both strings and sources are copies at this point and can be treated as mutable.
     my @strings = ( @$stringA, @$stringB );
     my @sources = ( @$sourceA, @$sourceB );
 

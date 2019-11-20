@@ -54,9 +54,11 @@ sub new {
 ###
 
 ### Each entry in the runtime stack internally consists of a triple (type, valuye, source):
-### - 'type' contains types of objects
-### - 'value' the actual objects
-### - 'source' contains the source references of objects
+###  - 'type' contains types of objects
+###  - 'value' the actual objects
+###  - 'source' contains the source references of objects
+### Entries on the stack are considered immutable (even though Perl provides no guarantees that it is indeed so). 
+### Any changes to the underlying values should be performed on a copy of the data.
 
 ### The following types are defined:
 
@@ -87,22 +89,16 @@ sub new {
 # TODO: Allow re-running a context without having to re-parse the bib files
 # (There should probably be a reset function that clear entries, but keeps the read .bib files)
 
-# checks if the stack is empty
-sub stackEmpty {
-    my ($self) = @_;
-    return @{ $$self{stack} } == 0;
-}
-
-# pop the stack
-# returns the value or undef, undef, undef
+# 'popStack' pops and returns a value from the stack, or returns undef, undef, undef
+# The value returned from the stack is immutable, and should be copied if any changes are made
 sub popStack {
     my ($self) = @_;
     return undef, undef, undef unless scalar( @{ $$self{stack} } ) > 0;
     return ( @{ pop( @{ $$self{stack} } ) } );
 }
 
-# peek at the position index from the back. index is 1 based.
-# returns the value looked up or 0
+# 'peekStack' peeks at position $index from the top of the stac, or undef, undef, undef if it is not defined.
+# Note that index is 1-based, i.e. peekStack(1) returns the top-most element on the stack
 sub peekStack {
     my ( $self, $index ) = @_;
     return undef, undef, undef
@@ -110,58 +106,57 @@ sub peekStack {
     return ( @{ $$self{stack}[ -$index ] } );
 }
 
-# pops an item from the stack
-# returns 1
+# 'pushStack' pushes a single value onto the stack
 sub pushStack {
     my ( $self, $type, $value, $source ) = @_;
     push( @{ $$self{stack} }, [ $type, $value, $source ] );
     return 1;
 }
 
-# sets a specific value on the stack
-# return 1 iff successfull
-sub putStack {
-    my ( $self, $index, $type, $value, $source ) = @_;
-    return 0 unless scalar( @{ $$self{stack} } ) >= $index;
-    $$self{stack}[ -$index ][0] = $type if defined($type);
-    $$self{stack}[ -$index ][1] = $value;
-    $$self{stack}[ -$index ][2] = $source;
-    return 1;
-}
-
-# pushes a string constant onto the stack
+# 'pushString' pushes an string without a source refence onto the stack.
 sub pushString {
     my ( $self, $string ) = @_;
     push( @{ $$self{stack} }, [ 'STRING', [$string], [undef] ] );
     return 1;
 }
 
-# pushes an integer constant onto the stack
+# 'pushInteger' pushes an integer without a source refence onto the stack.
 sub pushInteger {
     my ( $self, $integer ) = @_;
     push( @{ $$self{stack} }, [ 'INTEGER', $integer, undef ] );
     return 1;
 }
 
-# empties the stack
+# 'stackEmpty' returns a boolean indicating if the stack is empty.
+sub stackEmpty {
+    my ($self) = @_;
+    return @{ $$self{stack} } == 0;
+}
+
+# 'emptyStack' empties the stack.
 sub emptyStack {
     my ($self) = @_;
     $$self{stack} = [];
 }
 
-# duplicate the head of the stack
+# 'duplicateStack' duplicates the top-most entry of the stack.
+# returns a boolean indicating if duplication succeeded (i.e. if the stack was empty or not). 
 sub duplicateStack {
     my ($self) = @_;
     return 0 unless scalar( @{ $$self{stack} } ) > 0;
 
     # grab and duplicate value (if needed)
-    my ( $type, $value, $source ) = @{ $$self{stack}[-1] };
-    $value  = [ @{$value} ]  if ref $value  && ref $value eq "ARRAY";
-    $source = [ @{$source} ] if ref $source && ref $source eq "ARRAY";
+    push( @{ $$self{stack} }, $$self{stack}[ -1 ]);
+    return 1;
+}
 
-    # push it back
-    push( @{ $$self{stack} }, [ $type, $value, $source ] );
-
+# 'swapStack' swaps the two top-most entries of the stack.
+# returns a boolean indicating if swapping succeeded (i.e. if the stack had at least two element or not). 
+sub swapStack {
+    my ($self) = @_;
+    return 0 unless scalar( @{ $$self{stack} } ) > 1;
+    
+    @{$$self{stack}}[ -1, -2 ] = @{$$self{stack}}[ -2, -1 ];
     return 1;
 }
 

@@ -657,18 +657,11 @@ sub builtinSubstring {
 # pops two literals from the stack, and pushes them back swapped.
 sub builtinSwap {
     my ( $context, $config, $source ) = @_;
-    my ( $at,      $as,     $ass )    = $context->popStack;
-    my ( $bt,      $bs,     $bss )    = $context->popStack;
-    if ( !defined($bt) ) {
-        $config->log(
-            'WARN',
-            'Need at least two elements on the stack to swap. ',
-            $config->location($source)
-        );
-        return;
-    }
-    $context->pushStack( $at, $as, $ass );
-    $context->pushStack( $bt, $bs, $bss );
+    $config->log(
+        'WARN',
+        'Need at least two elements on the stack to swap. ',
+        $config->location($source)
+    ) unless $context->swapStack;
 }
 
 # builtin function text.length$
@@ -818,11 +811,15 @@ sub builtinWrite {
 
     return unless defined($type);
 
-    # if we have a string, that's ok.
-    my ( $str, $src );
-    foreach $str (@$strings) {
-        $src = shift(@$sources);
-        $config->getBuffer->write( $str, $src );
+    # get the ouput buffer and array references to sources and strings
+    my $buffer = $config->getBuffer;
+    my @theStrings = @{$strings};
+    my @theSources = @{$sources};
+
+    # we iterate by index to not mutate strings and sources
+    my ( $i );
+    for $i (0 .. $#theStrings) {
+        $buffer->write( $theStrings[$i], $theSources[$i] );
     }
 }
 
