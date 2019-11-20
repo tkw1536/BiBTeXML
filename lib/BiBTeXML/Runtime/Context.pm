@@ -87,10 +87,10 @@ sub new {
 # TODO: Allow re-running a context without having to re-parse the bib files
 # (There should probably be a reset function that clear entries, but keeps the read .bib files)
 
-# return the length of the stack
-sub stackLength {
+# checks if the stack is empty
+sub stackEmpty {
     my ($self) = @_;
-    return scalar( @{ $$self{stack} } );
+    return @{ $$self{stack} } == 0;
 }
 
 # pop the stack

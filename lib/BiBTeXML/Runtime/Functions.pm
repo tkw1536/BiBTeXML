@@ -191,11 +191,10 @@ sub iterateFunction {
                 "WARN",
                 "Stack is not empty for entry " . $entry->getKey,
                 $config->location($styString)
-            ) if $context->stackLength ne 0;
+            ) unless $context->stackEmpty;
         }
         $context->leaveEntry;
     }
-
 }
 
 # reverseFunction($function) -- iterates a function (or builtin) over all (read) entries in reverse
@@ -206,24 +205,20 @@ sub reverseFunction {
     unless ( defined($entries) ) {
         $config->log(
             'WARN',
-            'Can not iterate entries: No entries have been read. ',
+            'Can not iterate entries: No entries have been read',
             $config->location($styString)
         );
     }
     else {
         my $entry;
-        foreach $entry ( reverse(@$entries) ) {
+        foreach $entry (reverse(@$entries)) {
             $context->setEntry($entry);
             &{$function}( $context, $config );
-            if ( $context->stackLength > 0 ) {
-                $config->log(
-                    "WARN",
-                    "Stack is not empty for entry " . $entry->getKey,
-                    $config->location($styString)
-                ) if $context->stackLength ne 0;
-            }
-
-            # TODO: Warn if we do not have anything left.
+            $config->log(
+                "WARN",
+                "Stack is not empty for entry " . $entry->getKey,
+                $config->location($styString)
+            ) unless $context->stackEmpty;
         }
         $context->leaveEntry;
     }
