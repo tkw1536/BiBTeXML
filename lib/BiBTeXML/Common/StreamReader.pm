@@ -18,7 +18,7 @@ sub new {
     return bless {
 
         # input and stuff
-        IN => undef, encoding => undef, string => undef, buffer => undef,
+        IN => undef, encoding => undef, buffer => undef,
 
         # filename of this reader
         filename => undef,
@@ -39,20 +39,17 @@ sub new {
 # Open / Close
 # ===================================================================== #
 
-# opens a file
+# 'openFile' opens a filename using either either a provided encoding, or an auto-detected one.
 sub openFile {
     my ( $self, $pathname, $encoding ) = @_;
-    my $IN;
-    if ( !-r $pathname ) {
-        return 0;
-    }
-    elsif ( ( !-z $pathname ) && ( -B $pathname ) ) {
-        return 0;
-    }
-    open( $IN, '<', $pathname )
-      || return 0;
-    $$self{IN}       = $IN;
-    $$self{buffer}   = [];
+
+    # make sure that the filename exists
+    return 0 if ( !-r $pathname );
+    return 0 if ( !-z $pathname ) && ( -B $pathname );
+
+    # open filehandle and set encoding
+    open( $$self{IN}, '<', $pathname ) || return 0;
+    $$self{buffer} = [];
     $$self{encoding} = find_encoding( $encoding || 'utf-8' );
 
     # reset the state
@@ -65,34 +62,33 @@ sub openFile {
     return 1;
 }
 
-# opens a raw string
+# 'openString' opens a raw string to be opened
 sub openString {
     my ( $self, $string ) = @_;
 
-    # reset the state
+    # in case of a string, we can buffer everythint at once
+    $$self{buffer} = [ splitLines($string) ];
+    $$self{IN}     = undef;
+
+    # reset all the counters
     $$self{filename} = undef;
     $$self{lineno}   = 0;
     $$self{colno}    = 0;
     $$self{line}     = '';
     $$self{nchars}   = 0;
 
-    $$self{string} = $string;
-    $$self{buffer} = [ ( defined $string ? splitLines($string) : () ) ];
-    $$self{IN}     = undef;
     return;
 }
 
-# close whatever was open
+# 'finalize' closes whatever is still left open by this reader and resets the state.
 sub finalize {
     my ($self) = @_;
 
     # close the input if it exists
-    if ( defined( $$self{IN} ) ) {
-        my $fh = \*{ $$self{IN} };
-        close($fh);
-    }
+    close( \*{ $$self{IN} } ) if defined( $$self{IN} );
     $$self{IN} = undef;
 
+    # reset the state so we can reuse this instance
     $$self{filename} = undef;
     $$self{buffer}   = [];
     $$self{lineno}   = 0;
@@ -102,8 +98,7 @@ sub finalize {
     return;
 }
 
-# returns the filename corresponding to this reader
-# (or undef if none is set)
+# 'getFilename' returns the filename used by this reader or undef.
 sub getFilename {
     my ($self) = @_;
     return $$self{filename};
@@ -113,8 +108,11 @@ sub getFilename {
 # Reading Primitives
 # ===================================================================== #
 
-# read the next character from the input
-# and return it (or undef if we ran out)
+# 'readChar' reads the next character from this reader and returns a 4-tuple ($char, $lineNo, $colNo, $eof).
+# - $char contains the current character or undef
+# - $lineNo contains the line number the character came from
+# - $colNo contains the column number the character came from
+# - $eof contains a boolean indicating if the end of file was reached
 sub readChar {
     my ($self) = @_;
 
@@ -140,43 +138,39 @@ sub readChar {
     return undef, $lineNo, $colNo, $eof if $$self{eof};
 
     # if we still have characters left in the line, return those.
-    if ( $colNo < $$self{nchars} ) {
-        return substr( $$self{line}, $$self{colno}++, 1 ), $lineNo, $colNo,
-          $eof;
+    return substr( $$self{line}, $$self{colno}++, 1 ), $lineNo, $colNo, $eof
+      if $colNo < $$self{nchars};
 
-        # else read the next line
-    }
-    else {
-        my $line = $self->readNextLine;
+    my $line = $self->readNextLine;
 
-        # no more lines ...
-        if ( !defined($line) ) {
-            $$self{eof}   = 1;
-            $$self{colno} = 0;
-            $$self{lineno}++;
-            return undef, $lineNo, $colNo, $eof;
-        }
-
-        $$self{line}   = $line;
-        $$self{nchars} = length $line;
-
+    # no more lines ...
+    unless ( defined($line) ) {
+        $$self{eof}   = 1;
+        $$self{colno} = 0;
         $$self{lineno}++;
-        $$self{colno} = 1;
-
-        # TODO: this substr does not deal with unicode well
-        # but we can expect those charact er
-        return substr( $line, 0, 1 ), $lineNo, $colNo, $eof;
+        return undef, $lineNo, $colNo, $eof;
     }
+
+    $$self{line}   = $line;
+    $$self{nchars} = length $line;
+
+    $$self{lineno}++;
+    $$self{colno} = 1;
+
+    # TODO: this substr does not deal with unicode well
+    # but we can expect those charact er
+    return substr( $line, 0, 1 ), $lineNo, $colNo, $eof;
 }
 
-# like readChar, but doesn't return anything
+# 'eatChar' eats the next character from this reader.
+# It does the exact same thing as 'readChar', except that it does not return anything.
 sub eatChar {
     my ($self) = @_;
 
     # if we had some pushback
     # we just need to clear it.
     my $pushback = $$self{pushback};
-    if ( defined( $$self{pushback} ) ) {
+    if ( defined($pushback) ) {
         my ( $char, $lineno, $colno, $eof ) = @$pushback;
         $$self{pushback} = undef;
 
@@ -194,32 +188,30 @@ sub eatChar {
         $$self{colno}++;
         return;
     }
-    else {
-        my $line = $self->readNextLine;
 
-        # no more lines ...
-        if ( !defined($line) ) {
-            $$self{eof}   = 1;
-            $$self{colno} = 0;
-            $$self{lineno}++;
-            return;
-        }
+    my $line = $self->readNextLine;
 
-        $$self{line}   = $line;
-        $$self{nchars} = length $line;
-
+    # no more lines ...
+    unless ( defined($line) ) {
+        $$self{eof}   = 1;
+        $$self{colno} = 0;
         $$self{lineno}++;
-        $$self{colno} = 1;
+        return;
     }
+
+    $$self{line}   = $line;
+    $$self{nchars} = length $line;
+
+    $$self{lineno}++;
+    $$self{colno} = 1;
 }
 
-# Unreads a char, i.e. puts a read char (along with appropriate state)
-# bsack onto the pushback
+# 'unreadChar' unreads a single read character from this reader so that the next call to readChar (and friends) returns it.
+# At most a single unread character at the same time is supported.
 sub unreadChar {
     my ( $self, $char, $lineNo, $colNo, $eof ) = @_;
 
-    # if we did not change any lines
-    # it is sufficient to revert the counter
+    # if we did not change any lines, it is sufficient to revert the counter
     # and we do not need to use (potentially expensive) pushback
     my $nextLineNo = $$self{lineno};
     if ( $nextLineNo eq $lineNo ) {
@@ -237,8 +229,9 @@ sub unreadChar {
     }
 }
 
-# looks at the next character that would be read with ->readChar
-# and returns it without actually reading it
+# 'peekChar' returns the next character that would be read using 'readChar', but does not actually read it.
+# It returns a 4-tuple like 'readChar' would.
+# This function is essentially equivalent to calling readChar, immediatly followed by an unreadChar.
 sub peekChar {
     my ($self) = @_;
 
@@ -267,23 +260,22 @@ sub peekChar {
     return @read;
 }
 
-# read characters from the input as long as they match the callback 'pred'
-# and return the chars that were read
+# 'readCharWhile' reads characters from the input as long as they match a given function and returns a 4-tuple ($chars, $lineNo, $colNo, $eof).
+# - $chars contains the read characters
+# - $lineNo contains the line number the last character came from
+# - $colNo contains the column number the last character came from
+# - $eof contains a boolean indicating if the end of file was reached
 sub readCharWhile {
     my ( $self, $pred ) = @_;
 
     my ( $char, $colno, $lineno, $eof ) = $self->readChar;
     my $chars = '';
 
-    if ( defined($char) ) {
-
-        # read while we are not at the end of the input
-        # and are stil ok w.r.t the filter
-        while ( &{$pred}($char) ) {
-            $chars .= $char if defined($char);
-            ( $char, $colno, $lineno, $eof ) = $self->readChar;
-            last unless defined($char);
-        }
+    # read while we are not at the end of the input
+    # and are stil ok w.r.t the filter
+    while ( defined($char) && &{$pred}($char) ) {
+        $chars .= $char;
+        ( $char, $colno, $lineno, $eof ) = $self->readChar;
     }
 
     # unread whatever is next and put it back on the stack
@@ -293,19 +285,17 @@ sub readCharWhile {
     return ( $chars, $colno, $lineno, $eof );
 }
 
-# like readCharWhile, but doesn't return anything
+# 'eatCharWhile' eats characters from the input as long as they match a given function.
+# It behaves exactly like 'readCharWhile', but does not return anything
 sub eatCharWhile {
     my ( $self, $pred ) = @_;
 
+    # read the first character
     my ( $char, $colno, $lineno, $eof ) = $self->readChar;
-    return unless defined($char);
 
-    # read while we are not at the end of the input
-    # and are stil ok w.r.t the filter
-    while ( &{$pred}($char) ) {
-        ( $char, $colno, $lineno, $eof ) = $self->readChar;
-        last unless defined($char);
-    }
+    # keep reading while the filter matches
+    ( $char, $colno, $lineno, $eof ) = $self->readChar
+      while ( defined($char) && &{$pred}($char) );
 
     # unread whatever is next and put it back on the stack
     $self->unreadChar( $char, $colno, $lineno, $eof );
@@ -313,24 +303,56 @@ sub eatCharWhile {
     return;
 }
 
-# read all spaces from the input
+# 'readSpaces' reads all spaces from the input.
+# It is the same as readCharWhile( sub { $_[0] =~ /\s/; } );
 sub readSpaces {
     my ($self) = @_;
-    return $self->readCharWhile( sub { $_[0] =~ /\s/; } );
+
+    # this code is an inline version of:
+    # return $self->readCharWhile( sub { $_[0] =~ /\s/; } );
+
+    my ( $char, $colno, $lineno, $eof ) = $self->readChar;
+    my $chars = '';
+
+    # read while we are not at the end of the input
+    # and are stil ok w.r.t the filter
+    while ( defined($char) && $char =~ /\s/ ) {
+        $chars .= $char;
+        ( $char, $colno, $lineno, $eof ) = $self->readChar;
+    }
+
+    # unread whatever is next and put it back on the stack
+    $self->unreadChar( $char, $colno, $lineno, $eof );
+
+    # and return how many characters we skipped.
+    return ( $chars, $colno, $lineno, $eof );
 }
 
-# discard all spaces from the input
+# 'eatSpaces' discards all spaces from the input.
+# It is the same as eatCharWhile( sub { $_[0] =~ /\s/; } );
 sub eatSpaces {
     my ($self) = @_;
-    return $self->eatCharWhile( sub { $_[0] =~ /\s/; } );
+
+    # this code is an inline version of:
+    # $self->eatCharWhile( sub { $_[0] =~ /\s/; } );
+
+    # read the first character
+    my ( $char, $colno, $lineno, $eof ) = $self->readChar;
+
+    # keep reading while the filter matches
+    ( $char, $colno, $lineno, $eof ) = $self->readChar
+      while ( defined($char) && $char =~ /\s/ );
+
+    # unread whatever is next and put it back on the stack
+    $self->unreadChar( $char, $colno, $lineno, $eof );
 }
 
 # ===================================================================== #
 # Reading state
 # ===================================================================== #
 
-# returns a triple (line, column, eof)
-# line is one-based, column is zero-based
+# 'getPosition' gets the position of the next character that will be read.
+# returns a triple ($line, $column, $eof)
 sub getPosition {
     my ($self) = @_;
     return ( $$self{lineno}, $$self{colno}, $$self{eof} );
@@ -340,8 +362,8 @@ sub getPosition {
 # Reading lines
 # ===================================================================== #
 
-# read the next line from the input
-
+# 'readNextLine' returns a line representing the next line read from the input.
+# Returns either a string terminating with '\n' or undef (if no more lines exist).
 sub readNextLine {
     my ($self) = @_;
 
@@ -350,16 +372,12 @@ sub readNextLine {
           unless $$self{IN};    # if we did not have an open file, return undef
         my $fh   = \*{ $$self{IN} };
         my $line = <$fh>;
-        if ( !defined $line ) {
-            close($fh);
-            $$self{IN} = undef;
-            return;
-        }
-        else {
-            $$self{buffer} = [ splitLines( $$self{encoding}->decode($line) ) ];
-        }
+        return unless defined $line;
+
+        $$self{buffer} = [ splitLines( $$self{encoding}->decode($line) ) ];
     }
 
+    # add the '\n' to the end of the line
     return ( shift( @{ $$self{buffer} } ) || '' ) . "\n";
 }
 
