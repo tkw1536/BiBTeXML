@@ -49,7 +49,6 @@ sub copy {
 }
 
 # 'getValue' gets the value of this BiBString, a normal string
-# TODO: Unuused?
 sub getValue {
     my ($self) = @_;
     return $$self{value};
