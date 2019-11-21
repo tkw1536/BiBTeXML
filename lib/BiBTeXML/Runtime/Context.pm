@@ -110,21 +110,18 @@ sub peekStack {
 sub pushStack {
     my ( $self, $type, $value, $source ) = @_;
     push( @{ $$self{stack} }, [ $type, $value, $source ] );
-    return 1;
 }
 
 # 'pushString' pushes an string without a source refence onto the stack.
 sub pushString {
     my ( $self, $string ) = @_;
     push( @{ $$self{stack} }, [ 'STRING', [$string], [undef] ] );
-    return 1;
 }
 
 # 'pushInteger' pushes an integer without a source refence onto the stack.
 sub pushInteger {
     my ( $self, $integer ) = @_;
     push( @{ $$self{stack} }, [ 'INTEGER', $integer, undef ] );
-    return 1;
 }
 
 # 'stackEmpty' returns a boolean indicating if the stack is empty.
@@ -164,23 +161,21 @@ sub swapStack {
 ### MACROS
 ###
 
-# sets a macro of the given name
-# returns 1
+# 'setMarco' sets a macro of the provided name to the provided value.
 sub setMacro {
     my ( $self, $name, $value ) = @_;
     $$self{macros}{ lc $name } = $value;
-    return 1;
 }
 
-# gets a macro
+# 'getMacro' gets a macro of the provided name
 sub getMacro {
     my ( $self, $name ) = @_;
     return $$self{macros}{ lc $name };
 }
 
-# checks if a macro of the given name exists
+# 'hasMacro' returns a boolean indicating if the given macro exists
 sub hasMacro {
-    my ( $self, $name, $value ) = @_;
+    my ( $self, $name ) = @_;
     return defined( $$self{macros}{ lc $name } );
 }
 
@@ -188,30 +183,31 @@ sub hasMacro {
 ### VARIABLES
 ###
 
+# 'hasVariable' checks if a variable of the given name and type exists.
+# When type is omitted, checks if any variable of the given type exists
 sub hasVariable {
     my ( $self, $name, $type ) = @_;
     my $vartp = $$self{variableTypes}{$name};
     return 0 unless defined($vartp);
     return 1 unless defined($type);
-    return ( $vartp eq $type ) ? 1 : 0;
+    return $vartp eq $type;
 }
 
-# defines a new variable for use in the stack
-# return 1 if ok, 0 if already defined
+# 'defineVariable' defines a new variable of the given type.
+# returns 1 if the variable was defined, 0 if it already existed.
 sub defineVariable {
     my ( $self, $name, $type ) = @_;
     return 0 if defined( $$self{variableTypes}{$name} );
 
     # store the type and set initial value if global
     $$self{variableTypes}{$name} = $type;
-    unless ( startsWith( $type, 'ENTRY_' ) ) {
-        $$self{variables}{$name} = [ ( 'UNSET', undef, undef ) ];
-    }
+    $$self{variables}{$name} = [ ( 'UNSET', undef, undef ) ] unless startsWith( $type, 'ENTRY_' );
 
     return 1;
 }
 
-# get a variable (type, value, source) or undef if it doesn't exist
+# 'getVariable' gets a variable of the given name
+# Returns a triple (type, value, source).
 sub getVariable {
     my ( $self, $name ) = @_;
 
@@ -239,7 +235,8 @@ sub getVariable {
     }
 }
 
-# set a variable (type, value, source)
+# 'setVariable' sets a variable of the given name.
+# A variable is represented by a reference to a triple (type, value, source).
 # returns 0 if ok, 1 if it doesn't exist,  2 if an invalid context, 3 if read-only, 4 if unknown type
 sub setVariable {
     my ( $self, $name, $value ) = @_;
@@ -279,14 +276,15 @@ sub setVariable {
     }
 }
 
-# defines and assigns a variable
-# returns 0 if ok, 1 if it already exists, 2 if an invalid context, 3 if read-only, 4 if unknown type
+# 'assignVariable' defines and sets a variable to the given value.
+# A variable is represented by a reference to a triple (type, value, source).
+# Returns 0 if ok, 1 if it already exists, 2 if an invalid context, 3 if read-only, 4 if unknown type
 sub assignVariable {
     my ( $self, $name, $type, $value ) = @_;
 
     # define the variable
     my $def = $self->defineVariable( $name, $type );
-    return 1 unless $def eq 1;
+    return 1 unless $def == 1;
 
     return $self->setVariable( $name, $value );
 }
@@ -295,13 +293,13 @@ sub assignVariable {
 ### ENTRIES
 ###
 
-# returns the entries loaded by this context, or undef if none
+# 'getEntries' gets a list of all entries
 sub getEntries {
     my ($self) = @_;
     return $$self{entries};
 }
 
-# reads entries from a given reader
+# 'readEntries' reads in all entries and builds an entry list. 
 # returns (0, warnings) if ok, (1, undef) if entries were already read and (2, error) if something went wrong while reading
 # always closes all readers, if status != 1.
 sub readEntries {

@@ -65,13 +65,13 @@ subtest "stack behaviour" => sub {
 };
 
 subtest "macro behaviour" => sub {
-  plan tests => 4;
+  plan tests => 3;
 
   # create a new context
   my $context = BiBTeXML::Runtime::Context->new();
 
   is_deeply($context->hasMacro("hello"), '', 'check if macro does not exist');
-  is_deeply($context->setMacro("hello", "world"), 1, 'set a macro');
+  $context->setMacro("hello", "world");
   is_deeply($context->hasMacro("hello"), 1,       'check if macro exists');
   is_deeply($context->getMacro("hello"), "world", 'get a macro');
 };
