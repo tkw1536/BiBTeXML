@@ -285,8 +285,7 @@ sub abbrevName {
     while ( defined( $letter = shift(@$letters) ) ) {
 
         # if it is an accent, return the letter as a whole
-        ($isAccent) = parseAccent($letter);
-        return $letter if $isAccent;
+        return $letter if isAccent($letter);
 
         # else, return the first letter of it
         if ( $letter =~ /[a-z]/i ) {

@@ -13,7 +13,7 @@ use warnings;
 use base qw(Exporter);
 our @EXPORT = qw(
   &addPeriod
-  &splitLetters &parseAccent
+  &splitLetters &parseAccent &isAccent
   &changeCase &getCase
   &textSubstring
   &textLength
@@ -92,10 +92,9 @@ sub splitLetters {
                     $hadLetter = 1;
                     next;
                 }
-                else {
-                    unshift( @characters, $char ) if defined($char);
-                    $char = '{';
-                }
+                
+                unshift( @characters, $char ) if defined($char);
+                $char = '{';
             }
 
             # for nested opening braces
@@ -189,119 +188,119 @@ sub splitLetters {
 sub parseAccent {
     my ($string) = @_;
 
-    # an accent has to start with {\\
-    if ( $string =~ /^[\{\}]*\{\\/ ) {
+    # an accent has to start with {\\, else it is not actual accent
+    return 0, '', '', $string, '', '', undef, undef unless $string =~ /^[\{\}]*\{\\/;
 
-        # strip off leading {}s
-        my ( $outerPrefix, $accent ) = ( $string =~ /^([\{\}]*)\{\\(.*)/ );
-        my ( $innerPrefix, $innerSuffix ) = ( '{\\', '' );
+    # strip off leading {}s
+    my ( $outerPrefix, $accent ) = ( $string =~ /^([\{\}]*)\{\\(.*)/ );
+    my ( $innerPrefix, $innerSuffix ) = ( '{\\', '' );
 
-        # read content as the balanced substring
-        my ( $char, $content, $outerSuffix ) = ( '', '', '' );
-        my ( $level, $passedContent ) = ( 1, 0 );
-        my @characters = split( //, $accent );
-        foreach $char (@characters) {
-            unless ($passedContent) {
-                $content .= $char;
-                $level++ if $char eq '{';
-                $level-- if $char eq '}';
-                $passedContent = 1 if $level eq 0;
-            }
-            else {
-                $outerSuffix .= $char;
-            }
-        }
-
-        # if we are at level 0, we had a closing brace
-        # remove that from CONTENT
-        if ( $level eq 0 ) {
-            $content = substr( $content, 0, -1 );
-            $innerSuffix = '}';
-        }
-
-        # accent = trim both ends of $conent
-        $accent = $content;
-        $accent =~ s/^\s+|\s+$//g;
-
-        my ( $prefix, $suffix, $command, $commandArgs );
-
-        # if we have one of the special accents
-        if (   $accent eq 'OE'
-            or $accent eq 'ae'
-            or $accent eq 'AE'
-            or $accent eq 'aa'
-            or $accent eq 'AA'
-            or $accent eq 'o'
-            or $accent eq 'O'
-            or $accent eq 'l'
-            or $accent eq 'L'
-            or $accent eq 'ss' )
-        {
-            # hey, we know this command
-            $command     = $accent;
-            $commandArgs = '';
-
-            # we need to keep track fo the prefix and suffix of it
-            ($prefix) = ( $accent =~ m/^(\s+)/ );
-            $innerPrefix .= $prefix if defined($prefix);
-            ($suffix) = ( $accent =~ m/(\s+)$/ );
-            $innerSuffix = $suffix . $innerSuffix if defined($suffix);
-
-            # else take either
+    # read content as the balanced substring
+    my ( $char, $content, $outerSuffix ) = ( '', '', '' );
+    my ( $level, $passedContent ) = ( 1, 0 );
+    my @characters = split( //, $accent );
+    foreach $char (@characters) {
+        unless ($passedContent) {
+            $content .= $char;
+            $level++ if $char eq '{';
+            $level-- if $char eq '}';
+            $passedContent = 1 if $level eq 0;
         }
         else {
-
-            # the first character after a space or opening bracket
-            ( $prefix, $accent ) = ( $content =~ m/^([^\s\{]*)([\s\{].*)$/ );
-            if ( defined($accent) ) {
-                $innerPrefix .= $prefix if defined($prefix);
-                $command = $prefix if defined($prefix);
-
-                $commandArgs = $accent;
-                $commandArgs =~ s/^\s+|\s+$//g;
-                $commandArgs =~ s/\{(.*)\}/$1/g;
-
-                # everything if we do not have any spaces or brackets
-            }
-            else {
-                $accent = $content;
-
-        # if we have some non-alphabetical characters then those are the command
-                ( $command, $commandArgs ) =
-                  ( $accent =~ m/^([^a-z]+)([a-z]+)$/i );
-                unless ( defined($command) ) {
-                    $command     = $accent;
-                    $commandArgs = '';
-                }
-            }
-
-            # remove prefixed spaces (if any)
-            ($prefix) = ( $accent =~ m/^(\s+)/ );
-            $accent =~ s/^(\s+)//;
-            $innerPrefix .= $prefix if defined($prefix);
-
-            # remove suffixed spaces (if any)
-            ($suffix) = ( $accent =~ m/(\s+)$/ );
-            $accent =~ s/(\s+)$//;
-            $innerSuffix = $suffix . $innerSuffix if defined($suffix);
-
-            # remove the surrounding braces
-            if (   substr( $accent, 0, 1 ) eq '{'
-                && substr( $accent, -1, 1 ) eq '}' )
-            {
-                $innerPrefix .= '{';
-                $innerSuffix .= '}';
-                $accent = substr( $accent, 1, -1 );
-            }
+            $outerSuffix .= $char;
         }
-        return 1, $outerPrefix, $innerPrefix, $accent, $innerSuffix,
-          $outerSuffix, $command, $commandArgs;
+    }
 
-        # this isn't an accent -- what did you pass?
+    # if we are at level 0, we had a closing brace
+    # remove that from CONTENT
+    if ( $level eq 0 ) {
+        $content = substr( $content, 0, -1 );
+        $innerSuffix = '}';
+    }
+
+    # accent = trim both ends of $conent
+    $accent = $content;
+    $accent =~ s/^\s+|\s+$//g;
+
+    my ( $prefix, $suffix, $command, $commandArgs );
+
+    # if we have one of the special accents
+    if (   $accent eq 'OE'
+        or $accent eq 'ae'
+        or $accent eq 'AE'
+        or $accent eq 'aa'
+        or $accent eq 'AA'
+        or $accent eq 'o'
+        or $accent eq 'O'
+        or $accent eq 'l'
+        or $accent eq 'L'
+        or $accent eq 'ss' )
+    {
+        # hey, we know this command
+        $command     = $accent;
+        $commandArgs = '';
+
+        # we need to keep track fo the prefix and suffix of it
+        if (length($accent) > 0) {
+            $accent =~ m/^(\s*)([^\s](?:.*[^\s])?)(\s*)$/;
+            ($prefix, $accent, $suffix) = ($1, $2, $3);
+            $innerPrefix .= $prefix if defined($prefix);
+            $innerSuffix = $suffix . $innerSuffix if defined($suffix);
+        }
+
+        # else take either
     }
     else {
-        return 0, '', '', $string, '', '', undef, undef;
+
+        # the first character after a space or opening bracket
+        ( $prefix, $accent ) = ( $content =~ m/^([^\s\{]*)([\s\{].*)$/ );
+        if ( defined($accent) ) {
+            $innerPrefix .= $prefix if defined($prefix);
+            $command = $prefix if defined($prefix);
+
+            $commandArgs = $accent;
+            $commandArgs =~ s/^\s+|\s+$//g;
+            $commandArgs =~ s/\{(.*)\}/$1/g;
+
+            # everything if we do not have any spaces or brackets
+        }
+        else {
+            $accent = $content;
+
+    # if we have some non-alphabetical characters then those are the command
+            ( $command, $commandArgs ) =
+                ( $accent =~ m/^([^a-z]+)([a-z]+)$/i );
+            unless ( defined($command) ) {
+                $command     = $accent;
+                $commandArgs = '';
+            }
+        }
+        
+        # remove surrounding spaces 
+        if (length($accent) > 0) {
+            $accent =~ m/^(\s*)([^\s](?:.*[^\s])?)(\s*)$/;
+            ($prefix, $accent, $suffix) = ($1, $2, $3);
+            $innerPrefix .= $prefix if defined($prefix);
+            $innerSuffix = $suffix . $innerSuffix if defined($suffix);
+        }
+
+        # remove the surrounding braces
+        if (   substr( $accent, 0, 1 ) eq '{'
+            && substr( $accent, -1, 1 ) eq '}' )
+        {
+            $innerPrefix .= '{';
+            $innerSuffix .= '}';
+            $accent = substr( $accent, 1, -1 );
+        }
     }
+    return 1, $outerPrefix, $innerPrefix, $accent, $innerSuffix,
+        $outerSuffix, $command, $commandArgs;
+}
+
+# isAccent is like parseAccent, but only returns the first value
+sub isAccent {
+    my ($string) = @_;
+    return $string =~ /^[\{\}]*\{\\/;
 }
 
 ###
@@ -414,7 +413,7 @@ sub textPrefix {
     my $index  = 0;
     my $result = '';
     my $letter;
-    while ( defined( $letter = shift(@$letters) ) ) {
+    foreach $letter (@$letters) {
         $result .= $letter;
         $index++;
         last if $index eq $length;
@@ -423,9 +422,7 @@ sub textPrefix {
     # balance brackets magically
     my $level = () = ( $result =~ /{/g );
     $level -= () = ( $result =~ /}/g );
-    if ( $level >= 0 ) {
-        $result .= ( '}' x $level );
-    }
+    $result .= ( '}' x $level ) if ( $level >= 0 );
 
     return $result;
 }
@@ -620,9 +617,7 @@ our %WIDTHS = (
 sub characterWidth {
     my ($char) = @_;
 
-    my $width = $WIDTHS{ ord $char };
-    return $width if defined($width);
-    return 500;
+    return $WIDTHS{ ord $char } || 500;
 }
 
 # computes the width of a command call
