@@ -640,7 +640,17 @@ sub commandWidth {
 # implements substring$
 sub textSubstring {
     my ( $string, $start, $length ) = @_;
-    return substr( $string, $start > 0 ? $start - 1 : $start - 2, $length );
+    
+    # if we have a non-negative start, the indexes are straightforward
+    return substr($string, $start - 1, $length) if $start > 0;
+    
+    # else we have a substring of length  ending at index $start
+    $start = length($string) + $start - $length + 1;
+    if ($start < 0) {
+        $length += $start;
+        $start = 0;
+    }
+    return substr($string, $start, $length);
 }
 
 ###

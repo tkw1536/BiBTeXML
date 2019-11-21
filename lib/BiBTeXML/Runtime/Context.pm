@@ -93,17 +93,14 @@ sub new {
 # The value returned from the stack is immutable, and should be copied if any changes are made
 sub popStack {
     my ($self) = @_;
-    return undef, undef, undef unless scalar( @{ $$self{stack} } ) > 0;
-    return ( @{ pop( @{ $$self{stack} } ) } );
+    return ( @{ pop( @{ $$self{stack} }) || return undef, undef, undef  } );
 }
 
 # 'peekStack' peeks at position $index from the top of the stac, or undef, undef, undef if it is not defined.
 # Note that index is 1-based, i.e. peekStack(1) returns the top-most element on the stack
 sub peekStack {
     my ( $self, $index ) = @_;
-    return undef, undef, undef
-      unless scalar( @{ $$self{stack} } ) >= $index;
-    return ( @{ $$self{stack}[ -$index ] } );
+    return ( @{ $$self{stack}[ -$index ] || return undef, undef, undef } );
 }
 
 # 'pushStack' pushes a single value onto the stack
@@ -140,10 +137,9 @@ sub emptyStack {
 # returns a boolean indicating if duplication succeeded (i.e. if the stack was empty or not). 
 sub duplicateStack {
     my ($self) = @_;
-    return 0 unless scalar( @{ $$self{stack} } ) > 0;
 
     # grab and duplicate value (if needed)
-    push( @{ $$self{stack} }, $$self{stack}[ -1 ]);
+    push( @{ $$self{stack} }, $$self{stack}[ -1 ] || return 0);
     return 1;
 }
 
@@ -187,10 +183,7 @@ sub hasMacro {
 # When type is omitted, checks if any variable of the given type exists
 sub hasVariable {
     my ( $self, $name, $type ) = @_;
-    my $vartp = $$self{variableTypes}{$name};
-    return 0 unless defined($vartp);
-    return 1 unless defined($type);
-    return $vartp eq $type;
+    return ($$self{variableTypes}{$name} || return 0) eq ($type || return 1);
 }
 
 # 'defineVariable' defines a new variable of the given type.
@@ -212,27 +205,19 @@ sub getVariable {
     my ( $self, $name ) = @_;
 
     # if the variable does not exist, return nothing
-    my $type = $$self{variableTypes}{$name};
-    return ( undef, undef, undef ) unless defined($type);
+    my $type = $$self{variableTypes}{$name} || return undef, undef, undef;
 
     # we need to look up inside the current entry
     if (   $type eq 'ENTRY_FIELD'
         or $type eq 'ENTRY_STRING'
         or $type eq 'ENTRY_INTEGER' )
     {
-        my $entry = $$self{entry};
-        return ( 'UNSET', undef, undef ) unless defined($entry);
+        my $entry = $$self{entry} || return ('UNSET', undef, undef);
         return $entry->getVariable($name);
+    }
 
-# we have a global variable, so take it from out own state
-# note: we need to duplicate the value and source, because they may be modified by future calls
-    }
-    else {
-        my ( $t, $v, $s ) = @{ $$self{variables}{$name} };
-        $v = [ @{$v} ] if ref($v) && ref($v) eq 'ARRAY';
-        $s = [ @{$s} ] if ref($s) && ref($s) eq 'ARRAY';
-        return ( $t, $v, $s );
-    }
+    # 'global' variable => return from our own state 
+    return ( @{ $$self{variables}{$name} } );
 }
 
 # 'setVariable' sets a variable of the given name.
@@ -253,8 +238,7 @@ sub setVariable {
         or $type eq 'ENTRY_STRING'
         or $type eq 'ENTRY_INTEGER' )
     {
-        my $entry = $$self{entry};
-        return 2 unless defined($entry);
+        my $entry = $$self{entry} || return 2;
         return $entry->setVariable( $name, $value );
 
         # we have a global variable, so take it from our stack

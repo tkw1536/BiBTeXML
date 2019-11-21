@@ -163,7 +163,7 @@ subtest "textWidth" => sub {
 };
 
 subtest "textSubstring" => sub {
-  plan tests => 4;
+  plan tests => 7;
 
   sub isTextSubstring {
     my ($input, $start, $length, $expected) = @_;
@@ -173,6 +173,9 @@ subtest "textSubstring" => sub {
   isTextSubstring("Charles",           1,  1, "C");
   isTextSubstring("{Ch}arles",         1,  1, "{");
   isTextSubstring("{\\relax Ch}arles", 1,  2, "{\\");
+  isTextSubstring("Hello World",  -1, 1, "d");
+  isTextSubstring("Hello World",  -1, 2, "ld");
+  isTextSubstring("Hello World",  -1, 3, "rld");
   isTextSubstring("B{\\`a}rt{\\`o}k",  -2, 3, "`o}");
 };
 
