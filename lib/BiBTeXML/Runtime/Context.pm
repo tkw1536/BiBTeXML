@@ -57,7 +57,7 @@ sub new {
 ###  - 'type' contains types of objects
 ###  - 'value' the actual objects
 ###  - 'source' contains the source references of objects
-### Entries on the stack are considered immutable (even though Perl provides no guarantees that it is indeed so). 
+### Entries on the stack are considered immutable (even though Perl provides no guarantees that it is indeed so).
 ### Any changes to the underlying values should be performed on a copy of the data.
 
 ### The following types are defined:
@@ -93,7 +93,7 @@ sub new {
 # The value returned from the stack is immutable, and should be copied if any changes are made
 sub popStack {
     my ($self) = @_;
-    return ( @{ pop( @{ $$self{stack} }) || return undef, undef, undef  } );
+    return ( @{ pop( @{ $$self{stack} } ) || return undef, undef, undef } );
 }
 
 # 'peekStack' peeks at position $index from the top of the stac, or undef, undef, undef if it is not defined.
@@ -134,22 +134,22 @@ sub emptyStack {
 }
 
 # 'duplicateStack' duplicates the top-most entry of the stack.
-# returns a boolean indicating if duplication succeeded (i.e. if the stack was empty or not). 
+# returns a boolean indicating if duplication succeeded (i.e. if the stack was empty or not).
 sub duplicateStack {
     my ($self) = @_;
 
     # grab and duplicate value (if needed)
-    push( @{ $$self{stack} }, $$self{stack}[ -1 ] || return 0);
+    push( @{ $$self{stack} }, $$self{stack}[-1] || return 0 );
     return 1;
 }
 
 # 'swapStack' swaps the two top-most entries of the stack.
-# returns a boolean indicating if swapping succeeded (i.e. if the stack had at least two element or not). 
+# returns a boolean indicating if swapping succeeded (i.e. if the stack had at least two element or not).
 sub swapStack {
     my ($self) = @_;
     return 0 unless scalar( @{ $$self{stack} } ) > 1;
-    
-    @{$$self{stack}}[ -1, -2 ] = @{$$self{stack}}[ -2, -1 ];
+
+    @{ $$self{stack} }[ -1, -2 ] = @{ $$self{stack} }[ -2, -1 ];
     return 1;
 }
 
@@ -183,7 +183,8 @@ sub hasMacro {
 # When type is omitted, checks if any variable of the given type exists
 sub hasVariable {
     my ( $self, $name, $type ) = @_;
-    return ($$self{variableTypes}{$name} || return 0) eq ($type || return 1);
+    return ( $$self{variableTypes}{$name} || return 0 ) eq
+      ( $type || return 1 );
 }
 
 # 'defineVariable' defines a new variable of the given type.
@@ -194,7 +195,8 @@ sub defineVariable {
 
     # store the type and set initial value if global
     $$self{variableTypes}{$name} = $type;
-    $$self{variables}{$name} = [ ( 'UNSET', undef, undef ) ] unless startsWith( $type, 'ENTRY_' );
+    $$self{variables}{$name}     = [ ( 'UNSET', undef, undef ) ]
+      unless startsWith( $type, 'ENTRY_' );
 
     return 1;
 }
@@ -212,11 +214,11 @@ sub getVariable {
         or $type eq 'ENTRY_STRING'
         or $type eq 'ENTRY_INTEGER' )
     {
-        my $entry = $$self{entry} || return ('UNSET', undef, undef);
+        my $entry = $$self{entry} || return ( 'UNSET', undef, undef );
         return $entry->getVariable($name);
     }
 
-    # 'global' variable => return from our own state 
+    # 'global' variable => return from our own state
     return ( @{ $$self{variables}{$name} } );
 }
 
@@ -283,9 +285,9 @@ sub getEntries {
     return $$self{entries};
 }
 
-# 'readEntries' reads in all entries and builds an entry list. 
-# returns (0, warnings) if ok, (1, undef) if entries were already read and (2, error) if something went wrong while reading
-# always closes all readers, if status != 1.
+# 'readEntries' reads in all entries and builds an entry list.
+# Returns (0, warnings) if ok, (1, undef) if entries were already read and (2, error) if something went wrong while reading
+# Always closes all readers, if status != 1.
 sub readEntries {
     my ( $self, $inputs, $citations ) = @_;
 
@@ -318,17 +320,14 @@ sub readEntries {
               BiBTeXML::Runtime::Entry->new( $name, $self, $entry );
             if ( defined($entry) ) {
 
-                # if we got back a ref, it's a proper entry
-                if ( ref $entry ) {
-                    push( @entries, $entry ) if defined($entry) && ref $entry;
-
-                    # else it is a preamble, and it's source
-                }
-                else {
+                # if we didn't get a ref, it's a preamble + source
+                unless ( ref $entry ) {
                     push( @{ $$self{preambleString} }, $entry );
                     push( @{ $$self{preambleSource} }, $warning );
                     next;
                 }
+
+                push( @entries, $entry );
             }
             push( @warnings,  @$warning )  if defined($warning);
             push( @locations, @$location ) if defined($location);
@@ -379,26 +378,27 @@ sub buildEntryList {
     my %citedKeys = ();    # same as citeList, but key => 1 mapping
 
     my %related = ();      # resolved reference entries
-    my @cited   = ();
+    my @xrefed  = ();
     my @entries = ();
     my %refmap  = ();      # [xrefed] => referencing entries
 
     # hash for resolving entries
     my %entryMap = %{$entryHash};
 
-    # TODO: Do this in a destructive fashion to better emulate
-    # BibTeXs behaviour wrt multiple keys
     my ( $entry, $error );
-    foreach $citeKey (@$citeList) {
+    while ( defined( $citeKey = shift(@$citeList) ) ) {
 
-        # if we already cited something it does not need to be cited again
-        # this is *not* an error, it might regularly occur if things are cited
-        # multiple times.
-        # TODO: Check if later positions override earlier ones
+# If we already cited something it does not need to be cited again.
+# This is *not* an error, it might regularly occur if things are cited multiple times.
         next if exists( $citedKeys{$citeKey} );
 
-        # TODO: Handle multiple entries in the same list
-        return $entryList, undef, undef if $citeKey eq '*';
+     # When we receive a '*' key, we need to add all the entries that we know of
+        if ( $citeKey eq '*' ) {
+            foreach $entry (@$entryList) {
+                push( @$citeList, $entry->getKey );
+            }
+            next;
+        }
 
         # find the current entry
         $entry = $entryMap{$citeKey};
@@ -432,9 +432,11 @@ sub buildEntryList {
             next;
         }
 
-        # create this entry in the refmap
-        push( @cited, $xref ) unless defined( $refmap{$xref} );
-        $refmap{$xref} = [ () ] unless defined( $refmap{$xref} );
+        # Add this item to the 'cited'
+        unless ( defined( $refmap{$xref} ) ) {
+            push( @xrefed, $xref );
+            $refmap{$xref} = [ () ];
+        }
 
         # and add the current entry to the xrefed entry
         push( @{ $refmap{$xref} }, $entry );
@@ -443,24 +445,22 @@ sub buildEntryList {
     # iterate over everything that was cross-referenced
     # and either inline or add it to the citation list
     # TODO: When we have already
-    my ( $value, $reference );
-    foreach $value (@cited) {
-        my @references = @{ $refmap{$value} };
-        my ($related) = $entryMap{$value};
+    my ( $value, $reference, $related, $exists, $hideCrossref, @references );
+    foreach $value (@xrefed) {
+        @references = @{ $refmap{$value} };
+        $related    = $entryMap{$value};
+        $exists     = exists( $citedKeys{$value} );
 
-        # when an entry is crossreferenced below a certain
-        # threshold, we do not include it as a seperate entry
-        # on the list of cited entries. Furthermore, we fully
-        # inline the entry and remove the 'crossref' key from
-        # it.
-        my $hideCrossref = scalar @references < $numCrossRefs;
+# We always inline cross-referenced entries.
+# When the number of references to a specific entry is small enough we remove the 'crossref' key.
+        $hideCrossref = !$exists && scalar @references < $numCrossRefs;
+
         foreach $reference (@references) {
             $reference->inlineCrossReference( $related, $hideCrossref );
         }
-        next if $hideCrossref;
 
         # if there are more, it is included in the list of entries
-        push( @entries, $related );
+        push( @entries, $related ) unless ( $hideCrossref || $exists );
     }
 
     return [@entries], @warnings, @locations;
