@@ -1,8 +1,8 @@
 ===============
 Summary: PASS
 ===============
-PASS: 34/34
-FAIL: 00/34
+PASS: 40/40
+FAIL: 00/40
 
 testcase 001: PASS
 
@@ -71,4 +71,16 @@ testcase 032: PASS
 testcase 033: PASS
 
 testcase 034: PASS
+
+testcase 035: PASS
+
+testcase 036: PASS
+
+testcase 037: PASS
+
+testcase 038: PASS
+
+testcase 039: PASS
+
+testcase 040: PASS
 

@@ -112,30 +112,30 @@ subtest "splitNameParts" => sub {
   isSplitNameParts('Freely, I.P.', [['I.P.'], [], [], ['Freely']]);
 };
 
-subtest "formatNamePart" => sub {
+subtest "formatNameSubpattern" => sub {
   plan tests => 10;
 
-  sub isFormatNamePart {
-    my ($parts, $short, $seperator, $post, $expected) = @_;
+  sub isFormatNameSubpattern {
+    my ($parts, $short, $seperator, $pre, $post, $expected) = @_;
     my $name = join('', @$parts);
-    is_deeply(formatNamePart($parts, $short, $seperator, $post), $expected, $name);
+    is_deeply(formatNameSubpattern($parts, $short, $seperator, $pre, $post), $expected, $name);
   }
 
   # long form
-  isFormatNamePart(['Dr ',  'Alex ', 'Bob ', 'Charlotte '], 0, undef, '', 'Dr~Alex Bob~Charlotte');
-  isFormatNamePart(['Dr-',  'Alex ', 'Bob ', 'Charlotte '], 0, undef, '', 'Dr-Alex Bob~Charlotte');
-  isFormatNamePart(['Dr. ', 'Alex ', 'Bob ', 'Charlotte '], 0, undef, '', 'Dr. Alex Bob~Charlotte');
-  isFormatNamePart(['Dr ', 'Charlotte '], 0, undef, '', 'Dr~Charlotte');
+  isFormatNameSubpattern(['Dr ',  'Alex ', 'Bob ', 'Charlotte '], 0, undef, '', '', 'Dr~Alex Bob~Charlotte');
+  isFormatNameSubpattern(['Dr-',  'Alex ', 'Bob ', 'Charlotte '], 0, undef, '', '', 'Dr-Alex Bob~Charlotte');
+  isFormatNameSubpattern(['Dr. ', 'Alex ', 'Bob ', 'Charlotte '], 0, undef, '', '', 'Dr. Alex Bob~Charlotte');
+  isFormatNameSubpattern(['Dr ', 'Charlotte '], 0, undef, '', '', 'Dr~Charlotte');
 
   # short form
-  isFormatNamePart(['Dr ',  'Alex ', 'Bob ', 'Charlotte '], 1, undef, '', 'D.~A. B.~C');
-  isFormatNamePart(['Dr-',  'Alex ', 'Bob ', 'Charlotte '], 1, undef, '', 'D.-A. B.~C');
-  isFormatNamePart(['Dr. ', 'Alex ', 'Bob ', 'Charlotte '], 1, undef, '', 'D. A. B.~C');
-  isFormatNamePart(['Dr ', 'Charlotte '], 1, undef, '', 'D.~C');
+  isFormatNameSubpattern(['Dr ',  'Alex ', 'Bob ', 'Charlotte '], 1, undef, '', '', 'D.~A. B.~C');
+  isFormatNameSubpattern(['Dr-',  'Alex ', 'Bob ', 'Charlotte '], 1, undef, '', '', 'D.-A. B.~C');
+  isFormatNameSubpattern(['Dr. ', 'Alex ', 'Bob ', 'Charlotte '], 1, undef, '', '', 'D.~A. B.~C');
+  isFormatNameSubpattern(['Dr ', 'Charlotte '], 1, undef, '', '', 'D.~C');
 
   # custom seperator
-  isFormatNamePart(['Dr ', 'Alex ', 'Bob ', 'Charlotte '], 1, '/', '', 'D/A/B/C');
-  isFormatNamePart(['Dr ', 'Alex ', 'Bob ', 'Charlotte '], 0, '/', '', 'Dr/Alex/Bob/Charlotte');
+  isFormatNameSubpattern(['Dr ', 'Alex ', 'Bob ', 'Charlotte '], 1, '/', '', '', 'D/A/B/C');
+  isFormatNameSubpattern(['Dr ', 'Alex ', 'Bob ', 'Charlotte '], 0, '/', '', '', 'Dr/Alex/Bob/Charlotte');
 };
 
 subtest "formatName" => sub {

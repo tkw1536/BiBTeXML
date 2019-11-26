@@ -16,15 +16,15 @@ use base qw(Exporter);
 our @EXPORT = qw(
   &splitNames &numNames
   &splitNameParts &splitNameWords
-  &abbrevName &formatNamePart &formatName
+  &abbrevName &formatNameSubpattern &formatName
 );
 
 ###
 ### Splitting a list of names
 ###
 
-# splits a string into a list of names
-# used for numNames and a couple of other utility functions
+# 'splitNames' splits a string into a list of names. 
+# Multiple names are seperated by 'and's at brace level 0. 
 sub splitNames {
     my ($string) = @_;
 
@@ -71,10 +71,8 @@ sub splitNames {
     return @result;
 }
 
-# count the number of names inside of $string
-# i.e. the number of times the word 'and' appears surrounded by spaces
-# at brace level 0
-# implements num.names$
+# 'numNames' counts the number of names in a given string and implements num.names$
+# This corresponds to the number of times the word 'and' surrounded by spaces occors at brace level 0
 sub numNames {
     return scalar( splitNames(@_) );
 }
@@ -83,8 +81,7 @@ sub numNames {
 ### Splitting a single name
 ###
 
-# splits a single name into parts (first, von, jr, last)
-# uses the BiBTeX name location
+# 'splitNameParts' splits a name into the first, von, jr and last parts.
 sub splitNameParts {
     my ($string) = @_;
 
@@ -179,7 +176,7 @@ sub splitNameParts {
     return [@first], [@von], [@jr], [@last];
 }
 
-# splits a single name into three lists
+# 'splitNameWords' splits a single name into three lists:
 # one before all commas, one after the first one, one after the second one
 sub splitNameWords {
     my ($string) = @_;
@@ -276,15 +273,16 @@ sub splitNameWords {
 ### Formatting a name
 ###
 
-# abbreviates a name
+# 'abbrevName' abbreviates a name and return's only it's first letter
 sub abbrevName {
     my ($string) = @_;
     my ( $letters, $levels ) = splitLetters($string);
 
+    # we return the first character which either
+    # - is an accent
+    # - contains an alphabetical character
     my ( $letter, $isAccent );
-    while ( defined( $letter = shift(@$letters) ) ) {
-
-        # if it is an accent, return the letter as a whole
+    foreach $letter (@$letters) {
         return $letter if isAccent($letter);
 
         # else, return the first letter of it
@@ -299,91 +297,87 @@ sub abbrevName {
     return undef;
 }
 
-# formats a single name part according to a specification by BibTeX
-sub formatNamePart {
-    my ( $parts, $short, $seperator, $post ) = @_;
-    my $result = '';
+# 'formatNameSubpattern' formats a single name subpattern
+sub formatNameSubpattern {
+    my ( $tokens, $abbrevName, $seperator, $pre, $post ) = @_;
+    my $result = $pre;
 
-    # if we have an explicit seperator, use it
-    # and trim off all the existing ones
-    if ( defined($seperator) ) {
-        my @names =
-          map { my $name = $_; $name =~ s/([\s~-]+)$//; $name; } @$parts;
-        @names = map { abbrevName($_) } @names if $short;
-        $result = join( $seperator, @names );
-    }
-    else {
-        my ( $name, $seperator, $index ) = ( '', '', 0 );
-        my $lastIndex = scalar(@$parts) - 1;
+    # If no explicit seperator was provided, we need to insert the default one.
+    unless (defined($seperator)) {
+        my ( $part, $seperator, $isDefaultSeperator, $index ) = ( '', '', 0, 0 );
+        my $lastIndex = scalar(@$tokens) - 1;
 
-        # iterate through all the names
-        foreach $name (@$parts) {
+        # iterate through all the names and fetch the seperators from the tokens themselves
+        foreach $part (@$tokens) {
+            # cleanup this part of the name and seperator
+            ($seperator) = ( $part =~ m/([\s~-])$/ );
+            $part =~ s/([\s~-]+)$//;
 
-            # extract name and seperator
-            ($seperator) = ( $name =~ m/([\s~-]+)$/ );
-            $seperator = ' '
-              unless defined($seperator)
-              ;    # if a seperator is missing, assume it is ' ' just to be safe
-            $name =~ s/([\s~-]+)$//;
-
-            # add the current token to the result
-            $result .= $short ? abbrevName($name) : $name;
-            $result .= '.' if ( $short && $index ne $lastIndex );
-
-# first index (if we have at least three tokens, and the first one is 1 or 2 characters)
-            if (   $index eq 0
-                && $lastIndex >= 2
-                && textLength($name) <= 2 )
-            {
-                $result .=
-                  ( $seperator =~ m/^(\s+)$/ )
-                  ? '~'
-                  : substr( $seperator, 0, 1 );
-
-                # insert a '~' for the next to last token
-            }
-            elsif ( $index eq $lastIndex - 1 ) {
-                $result .=
-                  ( $seperator =~ m/^(\s+)$/ )
-                  ? '~'
-                  : substr( $seperator, 0, 1 );
-
-                # all non-final tokens: insert the (first) seperator token
-            }
-            elsif ( $index ne $lastIndex ) {
-                $result .= substr( $seperator, 0, 1 );
+            # abbreviate the current name if needed
+            $part = abbrevName($part) if $abbrevName;
+            
+            # if we are at the last index, bail out
+            if ($index == $lastIndex) {
+                $result .= $part;
+                last;
             }
 
+            $part .= '.' if $abbrevName;
+
+            # if we have a seperator character (which is '~' or '-') we want to use that
+            if (defined($seperator) && ($seperator eq '~' || $seperator eq '-')) {
+                $part .= $seperator;
+            } elsif (($index == $lastIndex - 1) || ($index == 0 && textLength($pre . $part) <= 2)) {
+                $part .= '~';
+            } else {
+                $part .= ' ';
+            }
+
+            $result .= $part;
             $index++;
+        }
+    
+    # a token 
+    } else {
+        my @names = map { $_ =~ s/([\s~-]+)$//r; } @$tokens;
+        @names = map { abbrevName($_) } @names if $abbrevName;
+        $result .= join( $seperator, @names );
+    }
+
+    # append all the letters that are to be inserted after the actual tokens
+    $result .= $post;
+
+    # handle a discretionary tilde:
+    # - if we have a single trailing ~, we remove it. 
+    # - if we have two trailing ~s, we either replace it with a space (if the result is long enough), or we leave it untouched
+
+    # In some cases we get spaces even though we should have ~s and it is unclear as to why
+    if ($result =~ /~$/) {
+        $result =~ s/~$//;
+        unless ($result =~ /~$/) {
+            if (textLength($result) < 3) {
+                $result .= '~';
+            } else {
+                $result .= ' ';
+            }
         }
     }
 
-    # if we end with '~~', end with a single '~'
-    if ( $post =~ /~~$/ ) {
-        $post =~ s/~~$/~/;
-
-        # if we end with non-double ~, end with a space
-    }
-    elsif ( $post =~ /~$/ ) {
-        $post =~ s/~$/ /;
-    }
-    return $result . $post;
+    return $result;
 }
 
-# formats a BiBTeX name according to a specification
-# implements format.name$
+# 'formatName' formats a single name according to a BiBTeX specification.
+# Together with the functions above, it implements the format.name$ builtin.
 sub formatName {
     my ( $name, $spec ) = @_;
 
-    # split the name into pieces, we will need this during formatting
-    my ( $first, $von, $jr, $last ) = splitNameParts($name);
-    my @currp;
-
-    # the specification, split into characters
+    # split the specification and the name into parts
     my @characters = split( //, $spec );
-    my ( $result, $partresult, $character );
-    my ( $letter, $short, $seperator, $post );
-    my ($level);
+    my ( $first, $von, $jr, $last ) = splitNameParts($name);
+
+    # declare a lot of variables
+    my ($character, $letter, $level, $partresult, $post, $result, $seperator, $short);
+    my (@tokens);
 
     while ( defined( $character = shift(@characters) ) ) {
 
@@ -395,26 +389,16 @@ sub formatName {
 
                 # we finally hit the alphabetic character
                 if ( $character =~ /[a-z]/i ) {
+
+                    # use the tokens for the current characters
+                    if ( $character eq 'f' ) { @tokens = @$first; }
+                    elsif ( $character eq 'v' ) { @tokens = @$von; }
+                    elsif ( $character eq 'j' ) { @tokens = @$jr; }
+                    elsif ( $character eq 'l' ) { @tokens = @$last; }
+                    else { return undef, 'Invalid name part: ' . $character; }
+
+                    # read the next part
                     $letter = $character;
-
-                    # check which part we have
-                    if ( $letter eq 'f' ) {
-                        @currp = @$first;
-                    }
-                    elsif ( $letter eq 'v' ) {
-                        @currp = @$von;
-                    }
-                    elsif ( $letter eq 'j' ) {
-                        @currp = @$jr;
-                    }
-                    elsif ( $letter eq 'l' ) {
-                        @currp = @$last;
-                    }
-                    else {
-                        return undef, 'Invalid name part: ' . $letter;
-                    }
-
-                    # read the next pattern
                     $character = shift(@characters);
                     return undef, 'Unexpected end of pattern'
                       unless defined($character);
@@ -463,36 +447,29 @@ sub formatName {
                     }
 
                     # now format the current part according to what we read.
-                    if ( scalar(@currp) eq 0 ) {
-                        $partresult = '';
+                    unless ( scalar(@tokens) eq 0 ) {
+                        $partresult = formatNameSubpattern( [@tokens], $short, $seperator, $partresult, $post );
                     }
                     else {
-                        my $r =
-                          formatNamePart( [@currp], $short, $seperator, $post );
-                        $partresult .= $r;
+                        $partresult = '';
                     }
                     last;
 
-                    # if we closed the part, without having anything alphabetic
-                    # then something weird is going on, so insert it literally.
                 }
                 elsif ( $character eq '}' ) {
+                    # If we closed the part without having anything alphabetic then something weird is going on.
+                    # Fallback to inserting literally
                     $partresult = '{' . $partresult . '}';
                     last;
-
-                    # if we do not have a letter
-                    # insert this part literally
                 }
                 else {
                     $partresult .= $character;
                 }
             }
             $result .= $partresult;
-
-            # outside of a group
-            # characters are inserted undonditionally
         }
         else {
+            # at the outer brace level, we insert characters unconditionally
             $result .= $character;
         }
     }

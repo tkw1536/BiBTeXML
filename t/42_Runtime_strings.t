@@ -1,5 +1,5 @@
 use BiBTeXML::Common::Test;
-use Test::More tests => 11;
+use Test::More tests => 12;
 
 subtest "requirements" => sub {
   plan tests => 1;
@@ -37,6 +37,38 @@ subtest "splitLetters" => sub {
   # zero characters don't break stuff
   IsSplitLetters('{\0a}', [['{\0a}'], [0]]);
 };
+
+subtest "textLength" => sub {
+  plan tests => 10;
+
+  sub IsTextLength {
+    my ($input, $expected) = @_;
+    is_deeply(textLength($input), $expected, $input);
+  }
+
+  IsTextLength('hello',   5);
+  IsTextLength('h{e}llo', 5);
+
+  IsTextLength('{hello} world', 11);
+  IsTextLength('{{ab}c}d{{e}}', 5);
+  IsTextLength('{{}}{a}', 1);
+
+  # un-balanced braces
+  IsTextLength('}world', 5);
+
+  # single accent
+  IsTextLength('{\ae} world', 7);
+
+  # not-an-accent
+  IsTextLength('{{\ae}} world', 9);
+
+  # empty
+  IsTextLength('{}', 0);
+
+  # zero characters don't break stuff
+  IsTextLength('{\0a}', 1);
+};
+
 
 subtest "parseAccent" => sub {
   plan tests => 7;

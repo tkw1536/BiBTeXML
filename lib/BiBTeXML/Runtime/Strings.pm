@@ -103,9 +103,9 @@ sub splitLetters {
                 $letters[-1] .= '{';
                 $levels[-1] = $level;
 
-                # else create a new opening element
             }
             else {
+                # create a new opening statement
                 shift(@letters) unless $hadLetter;
                 shift(@levels)  unless $hadLetter;
                 push( @letters, $char );
@@ -113,28 +113,27 @@ sub splitLetters {
                 $hadLetter = 1;
             }
 
-            # if we have a closing brace, just add it to the previous one
-            # and decrease the level (but never go negative)
         }
         elsif ( $char eq '}' ) {
+            # if we have a closing brace, just add it to the previous one
+            # and decrease the level (but never go negative)
             $letters[-1] .= '}';
             $hadLetter = 1;
             $level-- unless $level eq 0;
         }
-        else {
-            # if we had an opening brace, append to it
-            if ( $hadLetter && substr( $letters[-1], -1 ) eq '{' ) {
-                $letters[-1] .= $char;
 
+        elsif ($hadLetter && substr( $letters[-1], -1 ) eq '{' ) {
+            # if we had an opening brace, append to it
+            $letters[-1] .= $char;
+
+        }
+        else {
                 # else push a normal character
-            }
-            else {
-                shift(@letters) unless $hadLetter;
-                shift(@levels)  unless $hadLetter;
-                push( @letters, $char );
-                push( @levels,  $level );
-                $hadLetter = 1;
-            }
+            shift(@letters) unless $hadLetter;
+            shift(@levels)  unless $hadLetter;
+            push( @letters, $char );
+            push( @levels,  $level );
+            $hadLetter = 1;
         }
     }
 
@@ -397,10 +396,93 @@ sub getCase {
 # counts the text-length of a string
 # implements text.length$
 sub textLength {
-    my ($string) = @_;
 
-    my ( $letters, $levels ) = splitLetters($string);
-    return scalar(@$levels);
+    # This is an inline version of:
+    # my ( $letters, $levels ) = splitLetters($string);
+    # return scalar(@$levels);
+    # which saves on some memory and a second loop iteration
+
+    # split the string into characters
+    my ($string) = @_;
+    my @characters = split( //, $string );
+
+    # current letter and brace level
+    my ( $buffer, $hadLetter, $level ) = ( '', 0, 0 );
+    my @letters = ('');
+    my @levels  = (0);
+
+    my $char;
+    while ( defined( $char = shift(@characters) ) ) {
+        if ( $char eq '{' ) {
+            $level++;
+            if ( $level eq 1 ) {
+                # if the next character is a \, then we need to go into accent handling
+                # and read up until the end of the accent.
+                $char = shift(@characters);
+                if ( defined($char) && $char eq '\\' ) {
+                    $buffer = '{\\';
+
+                    # read characters until we are balanced again
+                    while ( defined( $char = shift(@characters) ) ) {
+                        $buffer .= $char;
+                        $level++ if $char eq '{';
+                        $level-- if $char eq '}';
+                        last     if $level eq 0;
+                    }
+
+                    # push the collected accent and go back into normal mode
+                    shift(@letters) unless $hadLetter;
+                    push( @letters, $buffer );
+                    $hadLetter = 1;
+                    next;
+                }
+                
+                unshift( @characters, $char ) if defined($char);
+                $char = '{';
+            }
+
+            # for nested opening braces
+            # add to the previous one
+            if ( $hadLetter && substr( $letters[-1], -1 ) eq '{' ) {
+                $letters[-1] .= '{';
+                $levels[-1] = $level;
+
+            }
+            else {
+                # create a new opening statement
+                shift(@letters) unless $hadLetter;
+                push( @letters, $char );
+                $hadLetter = 1;
+            }
+
+        }
+        elsif ( $char eq '}' ) {
+            # if we have a closing brace, just add it to the previous one
+            # and decrease the level (but never go negative)
+            $letters[-1] .= '}';
+            $hadLetter = 1;
+            $level-- unless $level eq 0;
+        }
+
+        elsif ($hadLetter && substr( $letters[-1], -1 ) eq '{' ) {
+            # if we had an opening brace, append to it
+            $letters[-1] .= $char;
+        }
+        else {
+            # else push a normal character
+            shift(@letters) unless $hadLetter;
+            push( @letters, $char );
+            $hadLetter = 1;
+        }
+    }
+
+    # iterate and skip over non-leading brace-only letters
+    my $letter;
+    my $count = 0;
+    while ( defined( $letter = shift(@letters) ) ) {
+        $count++ unless ( $letter =~ /^[\{\}]*$/ && ($count == 0 || scalar(@letters) == 0) );
+    }
+    return $count;
 }
 
 # returns the prefix of length $length of a string
