@@ -17,6 +17,7 @@ use base qw(Exporter);
 our @EXPORT = qw(
   &escapeString &startsWith
   &slurp &puts
+  &normalizeString
 );
 
 # escapes a string so that it can be used as a perl literal
@@ -50,5 +51,15 @@ sub puts {
     print $fh encode( 'utf-8', $content );
     close $fh;
 }
+
+
+# 'normalizeString' normalizes whitespace in string
+sub normalizeString {
+    my ($string) = @_;
+    $string =~ s/^\s+|\s+$//g; # trim on both sides
+    $string =~ s/\s+/ /g; # concat multiple whitespace into one
+    return $string;
+}
+
 
 1;

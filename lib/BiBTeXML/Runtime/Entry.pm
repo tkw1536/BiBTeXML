@@ -41,8 +41,7 @@ sub new {
           [ locationOf( $name, $entry ) ]
           unless scalar(@tags) eq 1;
         my $preamble = shift(@tags);
-        my $text     = $preamble->getContent->getValue;
-        $text =~ s/\s+/ /sg;
+        my $text     = normalizeString($preamble->getContent->getValue);
         return $text, [ ( $name, '', 'preamble' ) ];
     }
 
@@ -86,9 +85,8 @@ sub new {
             next;
         }
 
-        # BiBTeX concats multiple whitespace in the input file into one
-        $value =~ s/\s+/ /sg;
-        $values{$valueKey} = $value;
+        # BiBTeX normalizes values specifically
+        $values{$valueKey} = normalizeString($value);
     }
 
     my $self = bless {
