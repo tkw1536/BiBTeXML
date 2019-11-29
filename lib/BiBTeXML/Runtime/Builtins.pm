@@ -678,7 +678,7 @@ sub builtinTextLength {
     }
 
     my ( $str, $src ) = simplifyString( $strings, $sources );
-    $context->pushStack( 'INTEGER', length($str), $src );
+    $context->pushStack( 'INTEGER', textLength($str), $src );
 }
 
 # builtin function text.prefix$
