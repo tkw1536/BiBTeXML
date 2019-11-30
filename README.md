@@ -151,7 +151,7 @@ For documentation on BiBTeX Style Files, the following resources are helpful:
 * [Tame the BeaST](http://mirrors.ctan.org/info/bibtex/tamethebeast/ttb_en.pdf) -- in particular sections 3 + 4
 * [Designing BIBTEX Styles](http://mirrors.ctan.org/biblio/bibtex/base/btxhak.pdf) -- a.k.a `texdoc btxhak`
 * [Names in BibTEX and MlBibTEX](https://www.tug.org/TUGboat/tb27-2/tb87hufflen.pdf) -- for details on how exactly name parsing works
-
+* [The BiBTeX source code](https://github.com/MiKTeX/miktex/blob/master/Programs/Bibliography/bibtex/source/bibtex.web) -- useful for certain implementation details
 ## LICENSE
 
 BiBTeXML is free software and released into the public domain according to CC0, see also [LICENSE](LICENSE). 
