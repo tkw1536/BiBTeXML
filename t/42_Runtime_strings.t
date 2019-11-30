@@ -132,7 +132,7 @@ subtest "changeCase" => sub {
   # accents
   isChangeCase("{}{\\ae}",     "u", "{}{\\AE}");
   isChangeCase("{\\'a} world", "u", "{\\'A} WORLD");
-  isChangeCase("{}{\\ss}",     "u", "{}SS");           # special case
+  isChangeCase("{}{\\ss}",     "u", "{}{SS}");           # special case
 
   # not-an-accent
   isChangeCase("{\\0a} world", "u", "{\\0A} WORLD");
