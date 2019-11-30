@@ -1,0 +1,67 @@
+% change.case$ BiBTeX integration testcases
+@testcase{001, 
+  text    = {hello world},
+  case     = {u},
+  expected = {^HELLO WORLD$}
+}
+
+@testcase{002,
+  text     = {HeLlo},
+  case     = {u},
+  expected = {^HELLO$}
+}
+@testcase{003,
+  text     = {HeLlo}, 
+  case     = {l}, 
+  expected = {^hello$}
+}
+@testcase{004,
+  text     = {HeLlo}, 
+  case     = {t}, 
+  expected = {^Hello$}
+}
+@testcase{005,
+  text     = {HeLlo {WeIrD} world}, 
+  case     = {u}, 
+  expected = {^HELLO {WeIrD} WORLD$}
+}
+@testcase{006,
+  text     = {HeLlo {WeIrD} world}, 
+  case     = {l}, 
+  expected = {^hello {WeIrD} world$}
+}
+@testcase{007,
+  text     = {HeLlo {WeIrD} world}, 
+  case     = {t}, 
+  expected = {^Hello {WeIrD} world$}
+}
+@testcase{008,
+  text     = {a{b{c}}d}, 
+  case     = {u}, 
+  expected = {^A{b{c}}D$}
+}
+@testcase{009,
+  text     = {{}{\ae}},
+  case     = {u}, 
+  expected = {^{}{\AE}$}
+}
+@testcase{010,
+  text     = {{\'a} world}, 
+  case     = {u}, 
+  expected = {^{\'A} WORLD$}
+}
+@testcase{011,
+  text     = {{}{\ss}}, 
+  case     = {u}, 
+  expected = {^{}{SS}$}
+}
+@testcase{012,
+  text     = {{\0a} world}, 
+  case     = {u}, 
+  expected = {^{\0A} WORLD$}
+}
+@testcase{013,
+  text     = {{\relax von}}, 
+  case     = {u}, 
+  expected = {^{\relax VON}$}
+}

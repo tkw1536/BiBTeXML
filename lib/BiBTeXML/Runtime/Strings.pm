@@ -338,22 +338,13 @@ sub changeCase {
             # upper case (or first letter of t)
             if ( $spec eq 'u' or ( $spec eq 't' && $index eq 1 ) ) {
 
-          # special case: \ss is the only accent to be changed into a non-accent
-                if ( $isAccent && defined($command) && $command eq 'ss' ) {
-                    $result .= $oPrefix . 'SS' . $oSuffix;
-                }
-                else {
-                    $result .=
-                        $oPrefix
-                      . $iPrefix
-                      . ( uc $accent )
-                      . $iSuffix
-                      . $oSuffix;
-                }
+                # special case: \ss is the only accent to be changed into a non-accent
+                $iPrefix =~ s/\\$// if ( $isAccent && defined($command) && $command eq 'ss' );
+                $result .= $oPrefix . $iPrefix . ( uc $accent ) . $iSuffix . $oSuffix;
 
-                # lower case (or non-first letter of t)
             }
             else {
+                # lower case (or non-first letter of t)
                 $result .=
                   $oPrefix . $iPrefix . ( lc $accent ) . $iSuffix . $oSuffix;
             }
