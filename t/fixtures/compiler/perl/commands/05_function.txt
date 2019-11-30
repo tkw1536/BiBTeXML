@@ -1,4 +1,4 @@
-sub bst__chopZoword { 
+my sub bst__chopZoword { 
   my ($context, $config) = @_; 
   pushGlobalString($context, $config, 's', StyString('REFERENCE', 's', [(undef, 2, 2, 2, 4)])); 
   builtinZcZe($context, $config, StyString('LITERAL', ':=', [(undef, 2, 5, 2, 7)])); 

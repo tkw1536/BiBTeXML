@@ -183,7 +183,7 @@ sub escapeBstInlineBlock {
 # - $innerIndent:   the (generated) inner indent, for use in multi-line outputs
 sub bstFunctionDefinition {
     my ( $class, $name, $sourceString, $body, $outerIndent, $innerIndent ) = @_;
-    my $code = "sub " . $class->escapeFunctionName($name) . " { \n";
+    my $code = "my sub " . $class->escapeFunctionName($name) . " { \n";
     $code .=
       $innerIndent . 'my ($context, $config) = @_; ' . "\n";  # TODO: Fix indent
      # $code .= $innerIndent . 'print("Entering bst function " . ' . escapeString($class, $name) . " . \"\\n\"); \n";
