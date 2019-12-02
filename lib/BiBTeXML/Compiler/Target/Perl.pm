@@ -154,7 +154,14 @@ sub escapeInteger {
     return '' . $integer;    # just turn it into a string
 }
 
-# escapeFunctionReference($name) - escapes the reference to a bst-level function
+# escapeUsrFunctionReference($name) - escapes the reference to a usr-defined function
+# - $name:    the (escaped) name of the bst function to call
+sub escapeUsrFunctionReference {
+    my ( $class, $name ) = @_;
+    return '$' . $name;    # we need a perl function reference
+}
+
+# escapeBstFunctionReference($name) - escapes the reference to a bst-level (i.e. builtin) function reference
 # - $name:    the (escaped) name of the bst function to call
 sub escapeBstFunctionReference {
     my ( $class, $name ) = @_;
@@ -183,11 +190,11 @@ sub escapeBstInlineBlock {
 # - $innerIndent:   the (generated) inner indent, for use in multi-line outputs
 sub bstFunctionDefinition {
     my ( $class, $name, $sourceString, $body, $outerIndent, $innerIndent ) = @_;
-    my $code = "my sub " . $class->escapeFunctionName($name) . " { \n";
+    my $code = 'my $' . $class->escapeFunctionName($name) . " = sub { \n";
     $code .=
       $innerIndent . 'my ($context, $config) = @_; ' . "\n";  # TODO: Fix indent
      # $code .= $innerIndent . 'print("Entering bst function " . ' . escapeString($class, $name) . " . \"\\n\"); \n";
-    $code .= $body . $outerIndent . "} \n";
+    $code .= $body . $outerIndent . "}; \n";
 
     # perl-specific runtime-call
     $code .= $outerIndent
@@ -195,9 +202,19 @@ sub bstFunctionDefinition {
         'registerFunctionDefinition',
         $sourceString,
         $class->escapeString($name),
-        $class->escapeBstFunctionReference( $class->escapeFunctionName($name) )
+        $class->escapeUsrFunctionReference( $class->escapeFunctionName($name) )
       ) . "; ";
     return $code;
+}
+
+# usrFunctionCall($name, $sourceString, @arguments) - compiles a call to a user-defined function
+# - $name:          the name of the runtime function to call
+# - $sourceString:  the StyString this call was made from
+# - @arguments:     a set of appropriatly escaped arguments to give to the call
+sub usrFunctionCall {
+    my ( $class, $name, $sourceString, @arguments ) = @_;
+    my $call = join( ", ", @arguments, $sourceString->stringify );
+    return "\$$name->(\$context, \$config, " . $call . '); ';
 }
 
 # bstFunctionCall($name, $sourceString, @argument) - compiles a call to a bst-level function

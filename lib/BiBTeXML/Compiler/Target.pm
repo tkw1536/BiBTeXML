@@ -35,7 +35,11 @@ sub escapeString { die("Unimplemented"); }
 # - $integer:    the integer to be escaped
 sub escapeInteger { die("Unimplemented"); }
 
-# escapeFunctionReference($name) - escapes the reference to a bst-level function
+# escapeUsrFunctionReference($name) - escapes the reference to a usr-defined function
+# - $name:    the (escaped) name of the bst function to call
+sub escapeUsrFunctionReference { die("Unimplemented"); }
+
+# escapeBstFunctionReference($name) - escapes the reference to a bst-level (i.e. builtin) function reference
 # - $name:    the (escaped) name of the bst function to call
 sub escapeBstFunctionReference { die("Unimplemented"); }
 
@@ -53,6 +57,12 @@ sub escapeBstInlineBlock { die("Unimplemented"); }
 # - $outerIndent:   the (generated) outer indent, for use in multi-line outputs
 # - $innerIndent:   the (generated) inner indent, for use in multi-line outputs
 sub bstFunctionDefinition { die("Unimplemented"); }
+
+# usrFunctionCall($name, $sourceString, @arguments) - compiles a call to a user-defined function
+# - $name:          the name of the runtime function to call
+# - $sourceString:  the StyString this call was made from
+# - @arguments:     a set of appropriatly escaped arguments to give to the call
+sub usrFunctionCall { die("Unimplemented"); }
 
 # bstFunctionCall($name, $sourceString, @argument) - compiles a call to a bst-level function
 # - $name:          the name of the bst function to call
@@ -82,7 +92,7 @@ sub wrapProgram { die("Unimplemented"); }
 ###
 ### Runtimes are free to define additional parameters (like a global $context or $state) to
 ### pass to each function, however these should be handled with
-### bstFunctionCall, runtimeFunctionCall, bstFunctionDefinition and escapeBstInlineBlock
+### usrFunctionCall, bstFunctionCall, runtimeFunctionCall, bstFunctionDefinition and escapeBstInlineBlock
 ### accordingly.
 
 ###
