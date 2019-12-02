@@ -31,7 +31,7 @@ make install
 BiBTeXML is split into (roughly) four components:
 
 * [`BiBTeXML::BibStyle`](lib/BiBTeXML/BibStyle/) - a parser for `.bst` files
-* [`BiBTeXML::Compiler`](lib/BiBTeXML/Compiler/) - a compiler for `.bst` files into perl (and possibly other languages)
+* [`BiBTeXML::Compiler`](lib/BiBTeXML/Compiler/) - a compiler for `.bst` files into perl
 
 * [`BiBTeXML::Runtime`](lib/BiBTeXML/Runtime/) - a (perl only) runtime for the compiler-generated code
 * [`BiBTeXML::Bibliography`](lib/BiBTeXML/Bibliography/) - a parser for `.bib` files
@@ -73,10 +73,9 @@ In general, this can be done achieved using `bibtexmlc` ( *c* as in *compile*).
 It has the following syntax:
 
 ```
-bibtexmlc [--help] [--target $TARGET] [--destination $DEST] $BSTFILE 
+bibtexmlc [--help] [--destination $DEST] $BSTFILE 
 ```
 
-- `$TARGET` is the name of a specific target class to use. It defaults to `Perl`. The compiler assumes a Target class to be named `BiBTeXML::Compiler::Target::$TARGET`, however this can be overriden if `$TARGET` contains a `:`. 
 - `$DEST` is the name of the output file to write output to. If omitted, output is sent to `STDOUT`. 
 - `$BSTFILE` is the (absolute or relative to the working directory) path to the `.bst` file to compile. 
 
@@ -85,14 +84,13 @@ All messages and errors are written to STDERR.
 The executable has the following exit codes:
 - `0` if everything worked as normal
 - `1` if there was trouble parsing command line options
-- `2` if there was trouble finding the given target
 - `3` if there were problems finding the input file
 - `4` if there were problems parsing the file
 - `5` if there were problems compiling the file
 - `6` if there were was trouble writing the output file 
 
 
-For example, to compile a .bst file called `plain.bst` using the `Perl` target:
+For example, to compile a .bst file called `plain.bst` to STDOUT:
 
 ```
 bibtexmlc plain.bst --destination plain.bst.pl
@@ -102,7 +100,6 @@ bibtexmlc plain.bst --destination plain.bst.pl
 ### Running the runtime stage
 
 To run some compiled `.bst` code, you can use `bibtexmlr` ( *r* as in *run*). 
-This only works with code generated for the Perl Target. 
 It has the following syntax:
 
 ```

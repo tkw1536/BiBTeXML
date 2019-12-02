@@ -1,8 +1,8 @@
 use BiBTeXML::Common::Test;
 use Test::More tests => 11;
 
-my $target = "BiBTeXML::Compiler::Target::Perl";
-my $base = fixture(__FILE__, "compiler", "perl", "commands", "");
+my $target = "BiBTeXML::Compiler::Target";
+my $base = fixture(__FILE__, "compiler", "commands", "");
 
 sub doesCompileCommand {
   my ($kind, $name, $output, $input, @args) = @_;

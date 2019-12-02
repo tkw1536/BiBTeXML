@@ -21,10 +21,9 @@ use BiBTeXML::Common::StreamReader;
 sub main {
     shift(@_);    # remove the first argument
 
-    my ( $target, $output, $help ) = ( 'Perl', '', 0 );
+    my ( $output, $help ) = ( '', 0 );
     GetOptionsFromArray(
         \@_,
-        "target=s"      => \$target,
         "destination=s" => \$output,
         "help"          => \$help,
     ) or return usageAndExit(1);
@@ -45,9 +44,13 @@ sub main {
     $reader->openFile($bstfile);
 
     # compile the bst file
-    my ( $code, $compile ) = createCompile( $target, $reader, sub {
-        print STDERR @_;
-    }, $bstfile );
+    my ( $code, $compile ) = createCompile(
+        $reader,
+        sub {
+            print STDERR @_;
+        },
+        $bstfile
+    );
     return $code, undef if $code ne 0;
 
     # Write the output file
