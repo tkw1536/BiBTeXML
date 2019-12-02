@@ -46,7 +46,7 @@ sub main {
 
     # compile the bst file
     my ( $code, $compiled ) = createCompile(
-        'Perl', $reader,
+        $reader,
         sub {
             print STDERR @_;
         },

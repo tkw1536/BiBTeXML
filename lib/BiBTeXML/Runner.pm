@@ -19,6 +19,8 @@ use BiBTeXML::Runtime::Utils;
 use BiBTeXML::Common::StreamReader;
 use BiBTeXML::Runtime::Buffer;
 
+use BiBTeXML::Compiler::Target;
+
 use Time::HiRes qw(time);
 
 use Module::Load;
@@ -34,25 +36,12 @@ our @EXPORT = qw(
 # if not
 # - error + log messages are sent to the $logger sub
 # Error codes are:
-# - 2: Unable to load compilation target
-# - 3: (Unuused)
+# - 2: (Unused)
+# - 3: (Unused)
 # - 4: Unable to parse bst-file
 # - 5: Unable to compile bst-file
 sub createCompile {
-    my ( $target, $reader, $logger, $name ) = @_;
-
-    # load the target
-    $target =
-      ( index( $target, ':' ) != -1 )
-      ? $target
-      : "BiBTeXML::Compiler::Target::$target";
-    $target = eval {
-        load $target;
-        "$target";
-    } or do {
-        $logger->($@);
-        return 2, undef;
-    };
+    my ( $reader, $logger, $name ) = @_;
 
     # parse the file and print how long it took
     my $startParse = time;
@@ -75,7 +64,7 @@ sub createCompile {
     # compile the file and print how long it took
     my $startCompile = time;
     my ( $compile, $compileError ) =
-      eval { compileProgram( $target, $parsed, $name ) } or do {
+      eval { compileProgram( "BiBTeXML::Compiler::Target", $parsed, $name ) } or do {
         $logger->("Unable to compile $name. \n");
         $logger->($@);
         return 5, undef;

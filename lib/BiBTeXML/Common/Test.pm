@@ -84,21 +84,25 @@ sub integrationTestPaths {
     my ($path) = @_;
 
     # resolve the path to the test case
-    $path = File::Spec->catfile('t', 'fixtures', 'integration', $path);
+    $path = File::Spec->catfile( 't', 'fixtures', 'integration', $path );
 
     # read the citation specification file
-    my $citesIn = [grep { /\S/ } split(/\n/,slurp(File::Spec->catfile($path, 'input_citations.spec')))];
+    my $citesIn = [
+        grep { /\S/ } split(
+            /\n/, slurp( File::Spec->catfile( $path, 'input_citations.spec' ) )
+        )
+    ];
 
     # read the macro specification file
-    my $macroIn = slurp(File::Spec->catfile($path, 'input_macro.spec'));
+    my $macroIn = slurp( File::Spec->catfile( $path, 'input_macro.spec' ) );
     $macroIn =~ s/^\s+|\s+$//g;
     $macroIn = undef if $macroIn eq '';
 
     # hard-code input and output files
     # TODO: Alow multiple input files by having 'input_1.bib' etc using sorting
-    my $bstIn = File::Spec->catfile($path, 'input.bst');
-    my $bibfiles = [File::Spec->catfile($path, 'input.bib')];
-    my $resultOut = File::Spec->catfile($path, 'output.bbl');
+    my $bstIn = File::Spec->catfile( $path, 'input.bst' );
+    my $bibfiles = [ File::Spec->catfile( $path, 'input.bib' ) ];
+    my $resultOut = File::Spec->catfile( $path, 'output.bbl' );
 
     return $bstIn, $bibfiles, $citesIn, $macroIn, $resultOut;
 }
@@ -108,7 +112,8 @@ sub integrationTest {
     my ( $name, $path ) = @_;
 
     # resolve paths to input and output
-    my ($bstIn, $bibfiles, $citesIn, $macroIn, $resultOut) = integrationTestPaths($path);
+    my ( $bstIn, $bibfiles, $citesIn, $macroIn, $resultOut ) =
+      integrationTestPaths($path);
 
     return subtest "$name" => sub {
         plan tests => 4;
@@ -117,9 +122,8 @@ sub integrationTest {
         my $reader = BiBTeXML::Common::StreamReader->new();
         $reader->openFile($bstIn);
 
-        # compile it into the perl target
-        my ( $code, $compiled ) =
-          createCompile( 'Perl', $reader, \&note, $bstIn );
+        # compile it
+        my ( $code, $compiled ) = createCompile( $reader, \&note, $bstIn );
 
         # check that the code compiled without problems
         is( $code, 0, 'compilation went without problems' );
@@ -129,7 +133,7 @@ sub integrationTest {
         my ($output) = File::Temp->new( UNLINK => 1, SUFFIX => '.tex' );
         my ( $status, $runcode ) =
           createRun( $compiled, $bibfiles, $citesIn, $macroIn, \&note,
-            $output, 1);
+            $output, 1 );
 
         # check that preparing the run went ok
         is( $status, 0, 'run preparation went ok' );

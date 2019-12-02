@@ -1,6 +1,6 @@
 # /=====================================================================\ #
 # |  BiBTeXML::Compiler::Target                                         | #
-# | abstract base class for compiler targets                            | #
+# | Compilation Target Implementation                                   | #
 # |=====================================================================| #
 # | Part of BibTeXML                                                    | #
 # |---------------------------------------------------------------------| #
@@ -11,176 +11,249 @@ package BiBTeXML::Compiler::Target;
 use strict;
 use warnings;
 
-### A Compiler Target serves as an abstraction for the different kinds of output the bst AST can be compiled to.
-### This file does not do any compilation, instead it serves as documentation to implement your own.
-### all functions should return plain perl strings, that are concatinatable with newlines to produce the final output
+# This file contains reusable functions that translate the AST to Perl Code.
 
 # makeIndent($level) - make indent of a given level
 # - $indent:   integer, indicating level of indent to make
-sub makeIndent { die("Unimplemented"); }
+sub makeIndent { '  ' x $_[1]; }
+
+# character escapes for all the names
+# we use 'Z' as an escape character, and everything after it has special meaning
+our %ESCAPES = (
+
+    # numbers
+    '0' => '0',
+    '1' => '1',
+    '2' => '2',
+    '3' => '3',
+    '4' => '4',
+    '5' => '5',
+    '6' => '6',
+    '7' => '7',
+    '8' => '8',
+    '9' => '9',
+
+    # small letters
+    'a' => 'a',
+    'b' => 'b',
+    'c' => 'c',
+    'd' => 'd',
+    'e' => 'e',
+    'f' => 'f',
+    'g' => 'g',
+    'h' => 'h',
+    'i' => 'i',
+    'j' => 'j',
+    'k' => 'k',
+    'l' => 'l',
+    'm' => 'm',
+    'n' => 'n',
+    'o' => 'o',
+    'p' => 'p',
+    'q' => 'q',
+    'r' => 'r',
+    's' => 's',
+    't' => 't',
+    'u' => 'u',
+    'v' => 'v',
+    'w' => 'w',
+    'x' => 'x',
+    'y' => 'y',
+    'z' => 'zz',
+
+    # capital letters
+    'A' => 'A',
+    'B' => 'B',
+    'C' => 'C',
+    'D' => 'D',
+    'E' => 'E',
+    'F' => 'F',
+    'G' => 'G',
+    'H' => 'H',
+    'I' => 'I',
+    'J' => 'J',
+    'K' => 'K',
+    'L' => 'L',
+    'M' => 'M',
+    'N' => 'N',
+    'O' => 'O',
+    'P' => 'P',
+    'Q' => 'Q',
+    'R' => 'R',
+    'S' => 'S',
+    'T' => 'T',
+    'U' => 'U',
+    'V' => 'V',
+    'W' => 'W',
+    'X' => 'X',
+    'Y' => 'Y',
+    'Z' => 'ZZ',
+
+    # special characters
+    '_' => '_',
+    '.' => 'Zo',
+    '$' => 'Zs',
+    '>' => 'Zg',
+    '<' => 'Zl',
+    '=' => 'Ze',
+    '+' => 'Zp',
+    '-' => 'Zm',
+    '*' => 'Za',
+    ':' => 'Zc',
+);
+
+# escape the name of a function or variable for use as the name
+# of a subrutine in generated perl code
+sub escapeName {
+    my ( $class, $name ) = @_;
+    my $result = '';
+    my @chars = split( //, $name );
+    foreach my $char (@chars) {
+        if ( defined( $ESCAPES{$char} ) ) {
+            $result .= $ESCAPES{$char};
+        }
+        else {
+            $result .= 'Z' . ord($char) . 'Z';
+        }
+    }
+    return $result;
+}
 
 # escapeBuiltinName($name) - escapes the name of a built-in function
 # - $name:  the name of the function to be escaped
-sub escapeBuiltinName { die("Unimplemented"); }
+sub escapeBuiltinName {
+    my ( $class, $name ) = @_;
+
+    # we can remove some more relax encoding
+    # because we know that the symbols are going to be rather contained
+    $name =~ s/\$$//g;             # remove trailing '$'s
+    $name =~ s/\.(.)/uc($1)/ge;    # change period seperator to CamelCase
+    $name =~ s/^(.)/uc($1)/e;      # upper-case the first letter
+
+    # finally we still need to escape all our characters (just because)
+    'builtin' . escapeName( $class, $name );
+}
 
 # escapeFunctionName($name) - escapes the name of a user-defined function
 # - $name:  the name of the function to be escaped
-sub escapeFunctionName { die("Unimplemented"); }
+sub escapeFunctionName { 'bst__' . escapeName(@_); }
 
 # escapeString($string) - escapes a string constant
 # - $string:    the string to be escaped
-sub escapeString { die("Unimplemented"); }
+sub escapeString {
+    my ( $class, $string ) = @_;
+    $string =~ s/\\/\\\\/g;          # escape \ as \\
+    $string =~ s/'/\\'/g;            # escape ' as \'
+    return '\'' . $string . '\'';    #  surround in single quotes
+}
 
 # escapeInteger($name) - escapes an integer
 # - $integer:    the integer to be escaped
-sub escapeInteger { die("Unimplemented"); }
+sub escapeInteger {
+    my ( $class, $integer ) = @_;
+    return '' . $integer;    # just turn it into a string
+}
 
 # escapeUsrFunctionReference($name) - escapes the reference to a usr-defined function
 # - $name:    the (escaped) name of the bst function to call
-sub escapeUsrFunctionReference { die("Unimplemented"); }
+sub escapeUsrFunctionReference {
+    my ( $class, $name ) = @_;
+    return '$' . $name;    # we need a perl function reference
+}
 
 # escapeBstFunctionReference($name) - escapes the reference to a bst-level (i.e. builtin) function reference
 # - $name:    the (escaped) name of the bst function to call
-sub escapeBstFunctionReference { die("Unimplemented"); }
+sub escapeBstFunctionReference {
+    my ( $class, $name ) = @_;
+    return '\\&' . $name;    # we need a perl function reference
+}
 
 # escapeBstInlineBlock($block, $sourceString, $outerIndent, $innerIndent) - escapes the definition of a bst-inline block
 # - $block:         the (compiled) body of the block to define
 # - $sourceString:  the StyString this inline function was defined from
 # - $outerIndent:   the (generated) outer indent, for use in multi-line outputs
 # - $innerIndent:   the (generated) inner indent, for use in multi-line outputs
-sub escapeBstInlineBlock { die("Unimplemented"); }
+sub escapeBstInlineBlock {
+    my ( $class, $block, $sourceString, $outerIndent, $innerIndent ) = @_;
+    my $code = "sub { \n";
+    $code .=
+      $innerIndent . 'my ($context, $config) = @_; ' . "\n";  # TODO: Fix indent
+    $code .= $block . $outerIndent . '}';
+    return $code;
+}
 
-# bstFunctionDefinition($name, $sourceString, $body, $outerIndent, $innerIndent) - escapes the definition to a bst function
-# - $name:          the (escaped) name of the bst function to define
+# bstFunctionDefinition($name, $name, $sourceString, $body, $outerIndent, $innerIndent) - escapes the definition to a bst function
+# - $name:          the (unescaped) name of the bst function to define
 # - $sourceString:  the StyString this function was defined from
 # - $body:          the (compiled) body of the function to define
 # - $outerIndent:   the (generated) outer indent, for use in multi-line outputs
 # - $innerIndent:   the (generated) inner indent, for use in multi-line outputs
-sub bstFunctionDefinition { die("Unimplemented"); }
+sub bstFunctionDefinition {
+    my ( $class, $name, $sourceString, $body, $outerIndent, $innerIndent ) = @_;
+    my $code = 'my $' . $class->escapeFunctionName($name) . " = sub { \n";
+    $code .=
+      $innerIndent . 'my ($context, $config) = @_; ' . "\n";  # TODO: Fix indent
+     # $code .= $innerIndent . 'print("Entering bst function " . ' . escapeString($class, $name) . " . \"\\n\"); \n";
+    $code .= $body . $outerIndent . "}; \n";
+
+    # perl-specific runtime-call
+    $code .= $outerIndent
+      . $class->runtimeFunctionCall(
+        'registerFunctionDefinition',
+        $sourceString,
+        $class->escapeString($name),
+        $class->escapeUsrFunctionReference( $class->escapeFunctionName($name) )
+      ) . "; ";
+    return $code;
+}
 
 # usrFunctionCall($name, $sourceString, @arguments) - compiles a call to a user-defined function
 # - $name:          the name of the runtime function to call
 # - $sourceString:  the StyString this call was made from
 # - @arguments:     a set of appropriatly escaped arguments to give to the call
-sub usrFunctionCall { die("Unimplemented"); }
+sub usrFunctionCall {
+    my ( $class, $name, $sourceString, @arguments ) = @_;
+    my $call = join( ", ", @arguments, $sourceString->stringify );
+    return "\$$name->(\$context, \$config, " . $call . '); ';
+}
 
 # bstFunctionCall($name, $sourceString, @argument) - compiles a call to a bst-level function
 # - $name:          the name of the bst function to call
 # - $sourceString:  the StyString this call was made from
 # - @arguments:     a set of appropriatly escaped arguments to give to the call
-sub bstFunctionCall { die("Unimplemented"); }
+sub bstFunctionCall {
+    return runtimeFunctionCall(@_);
+}
 
 # runtimeFunctionCall($name, $sourceString, @arguments) - compiles a call to function in the runtime
 # - $name:          the name of the runtime function to call
 # - $sourceString:  the StyString this call was made from
 # - @arguments:     a set of appropriatly escaped arguments to give to the call
-sub runtimeFunctionCall { die("Unimplemented"); }
+sub runtimeFunctionCall {
+    my ( $class, $name, $sourceString, @arguments ) = @_;
+    my $call = join( ", ", @arguments, $sourceString->stringify );
+    return "$name(\$context, \$config, " . $call . '); ';
+}
 
 # wrapProgram($program, $name) - function used to wrap a compiled program
 # - $program:      the compiled program
 # - $name:         the (string escaped) file name of the program to be compiled
-sub wrapProgram { die("Unimplemented"); }
+sub wrapProgram {
+    my ( $class, $program, $name ) = @_;
 
-### Some general notes:
-### - references to entry fields + variables and global variables are always treated as strings
-### - references to functions (builtin + user-defined) are treated equally as target-language functions
-### - at any point behind a finished instruction, a newline might be added by the compiler
-### - the default indent level is indent level 0, however it is set to 1 inside the main program
+    my $code = "sub { \n";
+    $code .=
+      $class->makeIndent(1) . "# code automatically generated by BiBTeXML \n";
+    $code .= $class->makeIndent(1) . 'use BiBTeXML::Runtime; ' . "\n";
+    $code .= $class->makeIndent(1) . 'my ($context, $config) = @_; ' . "\n";
+    $code .= $class->makeIndent(1) . '$config->setName(' . $name . '); ' . "\n";
+    $code .= $program;
+    $code .= "\n\n";
+    $code .= $class->makeIndent(1) . 'return $context; ' . "\n";
+    $code .= $class->makeIndent(1) . "# end of automatically generated code \n";
+    $code .= "}";
 
-### A Compiler Runtime function is a function of the runtime that implements a specific behavior.
-### These are listed for completion here, but do not have any direct Compile::Target treatment
-###
-### Runtimes are free to define additional parameters (like a global $context or $state) to
-### pass to each function, however these should be handled with
-### usrFunctionCall, bstFunctionCall, runtimeFunctionCall, bstFunctionDefinition and escapeBstInlineBlock
-### accordingly.
-
-###
-### Definining things
-###
-
-# defineEntryField($name) -- defines a new entry field
-# - $name:     string containing name of the field to define
-
-# defineEntryInteger($name) -- defines a new entry integer
-# - $name:     string containing name of the integer to define
-
-# defineEntryString($name) -- defines a new entry string
-# - $name:     string containing name of the string to define
-
-# defineGlobalString($name) -- defines a new global string
-# - $name:     string containing name of the string to define
-
-# defineGlobalInteger($name) -- defines a new global integer
-# - $name:     string containing name of the integer to define
-
-# defineMacro($name, $value) -- defines a new macro
-# - $name:     string containing the name of the macro to define
-# - $value:    string containing the value of the macro to define
-
-###
-### Reading and iterating over items
-###
-
-# readEntries() -- reads all entries from the appropriate .bib file(s)
-
-# sortEntries() -- sorts (already read) entries
-
-# iterateFunction($function) -- iterates a function over all entries
-# - $function:  function reference to be iterated over all entries
-
-# reverseFunction($function) -- iterates a function (or builtin) over all (read) entries in reverse
-# - $function:  function reference to be iterated over all entries
-
-###
-### Pushing constants onto the stack
-###
-
-# pushString($string) -- pushes a string onto the stack
-# - $string: string to push onto the stack
-
-# pushInteger($integer) -- pushes an integer onto the stack
-# - $integer: integer to push onto the stack
-
-###
-### Pushing references to things onto the stack
-###
-
-# pushFunction($block) -- pushes a function (i.e. inline block) onto the stack
-# - $block:  inline block to push
-
-# pushGlobalString($name) -- pushes a global string onto the stack
-# - $name:  name of the global string to push
-
-# pushGlobalInteger($name) -- pushes a global integer onto the stack
-# - $name:  name of the global integer to push
-
-# pushEntryField($name) -- pushes an entry field onto the stack
-# - $name:  name of the entry field to push
-
-# pushEntryString($name) -- pushes an entry string onto the stack
-# - $name:  name of the entry string to push
-
-# pushEntryInteger($name) -- pushes an entry integer onto the stack
-# - $name:  name of the entry integer to push
-
-###
-### Pushing values of things onto the stack
-###
-
-# lookupGlobalString($name) -- pushes the value of a global string onto the stack
-# - $name:  name of the global string
-
-# lookupGlobalInteger($name) -- pushes the value of a integer onto the stack
-# - $name:  name of the global integer
-
-# lookupEntryField($name) -- pushes the value of an entry field onto the stack
-# - $name:  name of the entry field
-
-# lookupEntryString($name) -- pushes the value of an entry string onto the stack
-# - $name:  name of the entry string
-
-# lookupEntryInteger($name) -- pushes the value of an entry integer onto the stack
-# - $name:  name of the entry integer
+    return $code;
+}
 
 1;

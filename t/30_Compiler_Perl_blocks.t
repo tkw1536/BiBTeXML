@@ -1,8 +1,8 @@
 use BiBTeXML::Common::Test;
 use Test::More tests => 6;
 
-my $target = "BiBTeXML::Compiler::Target::Perl";
-my $base = fixture(__FILE__, "compiler", "perl", "blocks", "");
+my $target = "BiBTeXML::Compiler::Target";
+my $base = fixture(__FILE__, "compiler", "blocks", "");
 
 sub doesCompileBlock {
   my ($kind, $name, $output, $input, @args) = @_;
