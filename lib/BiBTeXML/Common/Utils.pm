@@ -56,7 +56,7 @@ sub puts {
 # 'normalizeString' normalizes whitespace in string
 sub normalizeString {
     my ($string) = @_;
-    $string =~ s/^\s+|\s+$//g; # trim on both sides
+    $string =~ s/^\s+|\s+$//g; # remove space on both sides
     $string =~ s/\s+/ /g; # concat multiple whitespace into one
     return $string;
 }

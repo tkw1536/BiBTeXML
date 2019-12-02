@@ -41,7 +41,7 @@ sub new {
           [ locationOf( $name, $entry ) ]
           unless scalar(@tags) eq 1;
         my $preamble = shift(@tags);
-        my $text     = normalizeString($preamble->getContent->getValue);
+        my $text     = $preamble->getContent->getValue =~ s/\s+/ /gr;
         return $text, [ ( $name, '', 'preamble' ) ];
     }
 
