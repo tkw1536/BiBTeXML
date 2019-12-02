@@ -306,56 +306,138 @@ sub isAccent {
 ### Changing case of a string
 ###
 
-# changes the case of $string according to spec
+# Changes the case of $string according to spec
 # - if $spec is 't', then upper-case the first character and lower-case the rest
 # - if $spec is 'u' then upper-case everything
 # - if $spec is 'l' then lower-case everything
-# handles accents, and ignores everything inside {s.
-# implements the change.case$ built-in
+# This implements the change.case$ built-in together with all the specialized functions below. 
 sub changeCase {
     my ( $string, $spec ) = @_;
 
-    # normalize the specification and split off letters
-    $spec = lc $spec;
-    my ( $letters, $levels ) = splitLetters($string);
+    # split into levels and letters
+    my ($letters, $levels) = splitLetters($string);
 
-    # things we will use
-    my $index = 1;
-    my ( $result, $letter, $level );
-    my ( $isAccent, $oPrefix, $iPrefix, $accent, $iSuffix, $oSuffix, $command );
+    # normalize the specification, and go into the appropriate sub-case
+    $spec = lc $spec;
+    if ($spec eq 'l') {
+        return changeCaseLower($letters, $levels);
+    } elsif ($spec eq 'u') {
+        return changeCaseUpper($letters, $levels);
+    } elsif ($spec eq 't') {
+        return changeCaseTitle($letters, $levels);
+    }
+
+    # something else => invalid format string
+    # so we do nothing
+    return;
+}
+
+# Changes the case of a splitLetters returned $letters and $levels to lower case. 
+# Implements change.case$ 'l' builtin
+sub changeCaseLower {
+    my ($letters, $levels) = @_;
+    my ( $accent, $command, $iPrefix, $isAccent, $iSuffix, $letter, $level, $oPrefix, $oSuffix, $result );
 
     # iterate over each level
     foreach $letter (@$letters) {
         $level = shift(@$levels);
 
-        # change case if we are on level 0
         if ( defined($level) && $level eq 0 ) {
+            # if we are on level 0, we change the case to lower
             (
                 $isAccent, $oPrefix, $iPrefix, $accent,
                 $iSuffix,  $oSuffix, $command
             ) = parseAccent($letter);
 
-            # upper case (or first letter of t)
-            if ( $spec eq 'u' or ( $spec eq 't' && $index eq 1 ) ) {
-
-                # special case: \ss is the only accent to be changed into a non-accent
-                $iPrefix =~ s/\\$// if ( $isAccent && defined($command) && $command eq 'ss' );
-                $result .= $oPrefix . $iPrefix . ( uc $accent ) . $iSuffix . $oSuffix;
-
-            }
-            else {
-                # lower case (or non-first letter of t)
-                $result .=
-                  $oPrefix . $iPrefix . ( lc $accent ) . $iSuffix . $oSuffix;
-            }
-
-            # do not touch anything
-            # of positive level
+            $result .= $oPrefix . $iPrefix . ( lc $accent ) . $iSuffix . $oSuffix;
         }
+
         else {
+            # do not touch anything of positive level
             $result .= $letter;
         }
-        $index++;
+    }
+
+    return $result;
+}
+
+# Changes the case of a splitLetters returned $letters and $levels to lower case. 
+# Implements change.case$ 'u' builtin
+sub changeCaseUpper {
+    my ($letters, $levels) = @_;
+    my ( $accent, $command, $iPrefix, $isAccent, $iSuffix, $letter, $level, $oPrefix, $oSuffix, $result );
+
+    # iterate over each level
+    foreach $letter (@$letters) {
+        $level = shift(@$levels);
+
+        if ( defined($level) && $level eq 0 ) {
+            # if we are on level 0, we change the case to lower
+            (
+                $isAccent, $oPrefix, $iPrefix, $accent,
+                $iSuffix,  $oSuffix, $command
+            ) = parseAccent($letter);
+
+            # special case: \ss is the only accent to be changed into a non-accent
+            # TODO: Is this for everything of length 2?
+            $iPrefix =~ s/\\$// if ( $isAccent && defined($command) && $command eq 'ss' );
+            $result .= $oPrefix . $iPrefix . ( uc $accent ) . $iSuffix . $oSuffix;
+        }
+
+        else {
+            # do not touch anything of positive level
+            $result .= $letter;
+        }
+    }
+
+    return $result;
+}
+
+# Changes the case of a splitLetters returned $letters and $levels to title case. 
+# Implements change.case$ 't' builtin
+sub changeCaseTitle {
+    my ($letters, $levels) = @_;
+    my ( $accent, $command, $iPrefix, $isAccent, $iSuffix, $letter, $level, $oPrefix, $oSuffix, $result );
+
+    my ($hadColon, $hadWhitespace) = (1, 1);
+
+    foreach $letter (@$letters) {
+        $level = shift(@$levels);
+
+        if ( defined($level) && $level eq 0 ) {
+
+            # we change all the letters to lower case except for:
+            # - the first character
+            # - a character immediatly following a ':' and a single whitespace
+            unless ($hadColon && $hadWhitespace) {
+                (
+                    $isAccent, $oPrefix, $iPrefix, $accent,
+                    $iSuffix,  $oSuffix, $command
+                ) = parseAccent($letter);
+                $result .= $oPrefix . $iPrefix . ( lc $accent ) . $iSuffix . $oSuffix;
+            
+            } else {
+                $result .= $letter;
+                $hadColon = 0;
+                $hadWhitespace = 0;
+            }
+
+            # if we had a colon before and had following whitespace
+            if ($hadColon && $letter =~ /^\s+$/) {
+                $hadWhitespace = 1;
+                $hadColon = 1;
+            } else {
+                $hadColon = $letter eq ':';
+                $hadWhitespace = 0;
+            }
+        }
+
+        else {
+            # do not touch anything of positive level
+            $result .= $letter;
+            $hadColon = 0;
+            $hadWhitespace = 0;
+        }
     }
 
     return $result;

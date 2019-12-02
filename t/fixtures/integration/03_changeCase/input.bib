@@ -65,3 +65,261 @@
   case     = {u}, 
   expected = {^{\relax VON}$}
 }
+
+@testcase{014,
+  text     = {Hello: World}, 
+  case     = {t}, 
+  expected = {^Hello: World$}
+}
+
+@testcase{015,
+  text     = {Hello : World}, 
+  case     = {t}, 
+  expected = {^Hello : World$}
+}
+
+@testcase{016,
+  text     = {hello: World}, 
+  case     = {t}, 
+  expected = {^hello: World$}
+}
+
+@testcase{017,
+  text     = {Hello : World}, 
+  case     = {t}, 
+  expected = {^Hello : World$}
+}
+
+@testcase{018,
+  text     = {hello : World}, 
+  case     = {t}, 
+  expected = {^hello : World$}
+}
+
+@testcase{019,
+  text     = {hello world}, 
+  case     = {t}, 
+  expected = {^hello world$}
+}
+
+@testcase{020,
+  text     = {Hello World}, 
+  case     = {t}, 
+  expected = {^Hello world$}
+}
+
+@testcase{021,
+  text     = {hello world},
+  case     = {l},
+  expected = {^hello world$}
+}
+
+@testcase{022,
+  text     = {hello world},
+  case     = {u},
+  expected = {^HELLO WORLD$}
+}
+
+@testcase{023,
+  text     = {hello world},
+  case     = {t},
+  expected = {^hello world$}
+}
+
+@testcase{024,
+  text     = {Hello world},
+  case     = {l},
+  expected = {^hello world$}
+}
+
+@testcase{025,
+  text     = {Hello world},
+  case     = {u},
+  expected = {^HELLO WORLD$}
+}
+
+@testcase{026,
+  text     = {Hello world},
+  case     = {t},
+  expected = {^Hello world$}
+}
+
+@testcase{027,
+  text     = {HeLlO WoRlD},
+  case     = {l},
+  expected = {^hello world$}
+}
+
+@testcase{028,
+  text     = {HeLlO WoRlD},
+  case     = {u},
+  expected = {^HELLO WORLD$}
+}
+
+@testcase{029,
+  text     = {HeLlO WoRlD},
+  case     = {t},
+  expected = {^Hello world$}
+}
+
+@testcase{030,
+  text     = {hello: world},
+  case     = {l},
+  expected = {^hello: world$}
+}
+
+@testcase{031,
+  text     = {hello: world},
+  case     = {u},
+  expected = {^HELLO: WORLD$}
+}
+
+@testcase{032,
+  text     = {hello: world},
+  case     = {t},
+  expected = {^hello: world$}
+}
+
+@testcase{033,
+  text     = {Hello: world},
+  case     = {l},
+  expected = {^hello: world$}
+}
+
+@testcase{034,
+  text     = {Hello: world},
+  case     = {u},
+  expected = {^HELLO: WORLD$}
+}
+
+@testcase{035,
+  text     = {Hello: world},
+  case     = {t},
+  expected = {^Hello: world$}
+}
+
+@testcase{036,
+  text     = {HeLlO: WoRlD},
+  case     = {l},
+  expected = {^hello: world$}
+}
+
+@testcase{037,
+  text     = {HeLlO: WoRlD},
+  case     = {u},
+  expected = {^HELLO: WORLD$}
+}
+
+@testcase{038,
+  text     = {HeLlO: WoRlD},
+  case     = {t},
+  expected = {^Hello: World$}
+}
+
+@testcase{039,
+  text     = {{HeLlO} WoRlD},
+  case     = {l},
+  expected = {^{HeLlO} world$}
+}
+
+@testcase{040,
+  text     = {{HeLlO} WoRlD},
+  case     = {u},
+  expected = {^{HeLlO} WORLD$}
+}
+
+@testcase{041,
+  text     = {{HeLlO} WoRlD},
+  case     = {t},
+  expected = {^{HeLlO} world$}
+}
+
+@testcase{042,
+  text     = {{HeLlO} world},
+  case     = {l},
+  expected = {^{HeLlO} world$}
+}
+
+@testcase{043,
+  text     = {{HeLlO} world},
+  case     = {u},
+  expected = {^{HeLlO} WORLD$}
+}
+
+@testcase{044,
+  text     = {{HeLlO} world},
+  case     = {t},
+  expected = {^{HeLlO} world$}
+}
+
+@testcase{045,
+  text     = {{HeLlO} WORLD},
+  case     = {l},
+  expected = {^{HeLlO} world$}
+}
+
+@testcase{046,
+  text     = {{HeLlO} WORLD},
+  case     = {u},
+  expected = {^{HeLlO} WORLD$}
+}
+
+@testcase{047,
+  text     = {{HeLlO} WORLD},
+  case     = {t},
+  expected = {^{HeLlO} world$}
+}
+
+@testcase{048,
+  text     = {{HeLlO}: WoRlD},
+  case     = {l},
+  expected = {^{HeLlO}: world$}
+}
+
+@testcase{049,
+  text     = {{HeLlO}: WoRlD},
+  case     = {u},
+  expected = {^{HeLlO}: WORLD$}
+}
+
+@testcase{050,
+  text     = {{HeLlO}: WoRlD},
+  case     = {t},
+  expected = {^{HeLlO}: World$}
+}
+
+@testcase{051,
+  text     = {{HeLlO}: world},
+  case     = {l},
+  expected = {^{HeLlO}: world$}
+}
+
+@testcase{052,
+  text     = {{HeLlO}: world},
+  case     = {u},
+  expected = {^{HeLlO}: WORLD$}
+}
+
+@testcase{053,
+  text     = {{HeLlO}: world},
+  case     = {t},
+  expected = {^{HeLlO}: world$}
+}
+
+@testcase{054,
+  text     = {{HeLlO}: WORLD},
+  case     = {l},
+  expected = {^{HeLlO}: world$}
+}
+
+@testcase{055,
+  text     = {{HeLlO}: WORLD},
+  case     = {u},
+  expected = {^{HeLlO}: WORLD$}
+}
+
+@testcase{056,
+  text     = {{HeLlO}: WORLD},
+  case     = {t},
+  expected = {^{HeLlO}: World$}
+}

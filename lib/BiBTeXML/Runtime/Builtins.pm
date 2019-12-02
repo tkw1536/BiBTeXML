@@ -302,7 +302,17 @@ sub builtinChangeCase {
     my ( $newStrings, $newSources ) = applyPatch(
         $strings, $sources,
         sub {
-            return changeCase( '' . $_[0], $spec );
+            my $result = changeCase( '' . $_[0], $spec );
+            unless (defined($result)) {
+                $config->log(
+                    'WARN',
+                    'Can not change.case$: Unknown format string'
+                    . $spec,
+                    $config->location($source)
+                );
+                return '' . $_[0];
+            }
+            return $result;
         },
         'inplace'
     );
