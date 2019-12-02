@@ -87,7 +87,7 @@ sub callIterateFunction {
     return $target->runtimeFunctionCall(
         'iterateFunction',
         $styString,
-        $target->escapeBstFunctionReference(
+        $target->escapeUsrFunctionReference(
             $target->escapeFunctionName( $styString->getValue )
         )
     );
@@ -111,7 +111,7 @@ sub callReverseFunction {
     return $target->runtimeFunctionCall(
         'reverseFunction',
         $styString,
-        $target->escapeBstFunctionReference(
+        $target->escapeUsrFunctionReference(
             $target->escapeFunctionName( $styString->getValue )
         )
     );
@@ -170,7 +170,7 @@ sub callPushEntryInteger {
 
 sub callCallFunction {
     my ( $target, $styString ) = @_;
-    return $target->bstFunctionCall(
+    return $target->usrFunctionCall(
         $target->escapeFunctionName( $styString->getValue ), $styString, );
 }
 
@@ -217,7 +217,7 @@ sub callPushFunction {
     return $target->runtimeFunctionCall(
         'pushFunction',
         $styString,
-        $target->escapeBstFunctionReference(
+        $target->escapeUsrFunctionReference(
             $target->escapeFunctionName( $styString->getValue )
         )
     );
