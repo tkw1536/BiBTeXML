@@ -73,8 +73,16 @@ sub write {
         $$self{buffer} = substr( $$self{buffer}, $index );
         $self->writeLineInternal($candidate);
 
-        # remove leading spaces, and add two spaces
-        $$self{buffer} =~ s/^\s+//;
+        # By default, we trim all the spaces from the next line. 
+        # However, there is a bug in the BiBTeX implementation, where this does not always work.
+        # When there are at least two spaces beginning at exactly the boundary between two lines, an additional space is left on the line.
+        unless ($$self{maxLineLength} == $index && $$self{buffer} =~ /^\s\s/) {
+            $$self{buffer} =~ s/^\s+//;
+        } else {
+            $$self{buffer} =~ s/^\s+/ /;
+        }
+
+        # and add two spaces to the next line
         $$self{buffer} = '  ' . $$self{buffer};
     }
 }
