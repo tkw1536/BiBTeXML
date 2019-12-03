@@ -34,6 +34,8 @@ subtest "synthetic wrapEnabled=0" => sub {
 
     feedBuffer($buffer, File::Spec->catfile( 't', 'fixtures', 'buffer', '01_synthetic', 'input.txt' ) );
 
+    # to generate the test cases
+    # puts(File::Spec->catfile( 't', 'fixtures', 'buffer', '01_synthetic', 'output_nowrap.txt' ), $text);
     is(
         $text,
         slurp(
@@ -52,6 +54,8 @@ subtest "synthetic wrapEnabled=1" => sub {
 
     feedBuffer($buffer, File::Spec->catfile( 't', 'fixtures', 'buffer', '01_synthetic', 'input.txt' ) );
 
+    # to generate the test cases
+    # puts(File::Spec->catfile( 't', 'fixtures', 'buffer', '01_synthetic', 'output_wrap.txt' ), $text);
     is(
         $text,
         slurp(
