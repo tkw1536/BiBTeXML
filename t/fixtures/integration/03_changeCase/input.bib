@@ -323,3 +323,39 @@
   case     = {t},
   expected = {^{HeLlO}: World$}
 }
+
+@testcase{057,
+  text     = {{\HeLlO World}},
+  case     = {l},
+  expected = {^{\HeLlO world}$}
+}
+
+@testcase{058,
+  text     = {{\HeLlO World}},
+  case     = {u},
+  expected = {^{\HeLlO WORLD}$}
+}
+
+@testcase{059,
+  text     = {{\HeLlO World}},
+  case     = {t},
+  expected = {^{\HeLlO World}$}
+}
+
+@testcase{060,
+  text     = {{\aB world}},
+  case     = {l},
+  expected = {^{\aB world}$}
+}
+
+@testcase{061,
+  text     = {{\aB World}},
+  case     = {u},
+  expected = {^{\aB WORLD}$}
+}
+
+@testcase{062,
+  text     = {{\aB World}},
+  case     = {t},
+  expected = {^{\aB World}$}
+}
