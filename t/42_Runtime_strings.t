@@ -82,12 +82,12 @@ subtest "parseAccent" => sub {
   IsParseAccent("{w", [0, '', '', "{w", '', '', undef, undef]);
 
   # well-known accents
-  IsParseAccent("{\\ae}",   [1, '', '{\\',  'ae', '}',  '', 'ae', '']);
-  IsParseAccent("{\\`a}",   [1, '', '{\\',  '`a', '}',  '', '`',  'a']);
-  IsParseAccent("{\\`{a}}", [1, '', '{\`{', 'a',  '}}', '', '`',  'a']);
+  IsParseAccent("{\\ae}",   [2, '', '{\\',  'ae', '}',  '', 'ae', '']);
+  IsParseAccent("{\\`a}",   [2, '', '{\\',  '`a', '}',  '', '`',  'a']);
+  IsParseAccent("{\\`{a}}", [2, '', '{\`{', 'a',  '}}', '', '`',  'a']);
 
   # custom accents
-  IsParseAccent("{\\ab}",            [1, '', '{\\',       'ab',     '}',  '', 'ab',    '']);
+  IsParseAccent("{\\ab}",            [2, '', '{\\',       'ab',     '}',  '', 'ab',    '']);
   IsParseAccent("{\\hello world}",   [1, '', '{\\hello ', 'world',  '}',  '', 'hello', 'world']);
   IsParseAccent("{\\hello{ thing}}", [1, '', '{\\hello{', ' thing', '}}', '', 'hello', ' thing']);
 };

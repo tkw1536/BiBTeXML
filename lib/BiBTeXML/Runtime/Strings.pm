@@ -84,15 +84,15 @@ sub splitLetters {
                         last     if $level eq 0;
                     }
 
-                    # push the collected accent and go back into normal mode
+                    # push the collected 'accent' and go back into normal mode
                     shift(@letters) unless $hadLetter;
                     shift(@levels)  unless $hadLetter;
                     push( @letters, $buffer );
-                    push( @levels,  0 );
+                    push( @levels, isAccent($buffer) ? 0 : 1 );
                     $hadLetter = 1;
                     next;
                 }
-                
+
                 unshift( @characters, $char ) if defined($char);
                 $char = '{';
             }
@@ -115,6 +115,7 @@ sub splitLetters {
 
         }
         elsif ( $char eq '}' ) {
+
             # if we have a closing brace, just add it to the previous one
             # and decrease the level (but never go negative)
             $letters[-1] .= '}';
@@ -122,13 +123,14 @@ sub splitLetters {
             $level-- unless $level eq 0;
         }
 
-        elsif ($hadLetter && substr( $letters[-1], -1 ) eq '{' ) {
+        elsif ( $hadLetter && substr( $letters[-1], -1 ) eq '{' ) {
+
             # if we had an opening brace, append to it
             $letters[-1] .= $char;
 
         }
         else {
-                # else push a normal character
+            # else push a normal character
             shift(@letters) unless $hadLetter;
             shift(@levels)  unless $hadLetter;
             push( @letters, $char );
@@ -172,8 +174,10 @@ sub splitLetters {
     return [@theletters], [@thelevels];
 }
 
-# checks if a balanced string is an accent,
-# and if so returns (1, $outerPrefix, $innerPrefix, $content, $innerSuffix, $outerSuffix, $command, $commandArgs)
+# Parses a string representing a single character that looks like and accent.
+# If the string begins with '{\', returns:
+# ($isAccent, $outerPrefix, $innerPrefix, $content, $innerSuffix, $outerSuffix, $command, $commandArgs)
+# - $isAccent is either 2 or 1. '2' implies that this is a real BiBTeX accent, 1 is that this is a control-sequence that only looks like a BiBTeX accent
 # - $outerPrefix is a string prefixing the accent, but not belonging to it at all
 # - $innerPrefix is the part of the accent that is not-case sensitive
 # - $content is the case-sensitive part of the accent
@@ -188,7 +192,8 @@ sub parseAccent {
     my ($string) = @_;
 
     # an accent has to start with {\\, else it is not actual accent
-    return 0, '', '', $string, '', '', undef, undef unless $string =~ /^[\{\}]*\{\\/;
+    return 0, '', '', $string, '', '', undef, undef
+      unless $string =~ /^[\{\}]*\{\\/;
 
     # strip off leading {}s
     my ( $outerPrefix, $accent ) = ( $string =~ /^([\{\}]*)\{\\(.*)/ );
@@ -213,7 +218,7 @@ sub parseAccent {
     # if we are at level 0, we had a closing brace
     # remove that from CONTENT
     if ( $level eq 0 ) {
-        $content = substr( $content, 0, -1 );
+        $content     = substr( $content, 0, -1 );
         $innerSuffix = '}';
     }
 
@@ -229,6 +234,8 @@ sub parseAccent {
         or $accent eq 'AE'
         or $accent eq 'aa'
         or $accent eq 'AA'
+        or $accent eq 'i'
+        or $accent eq 'j'
         or $accent eq 'o'
         or $accent eq 'O'
         or $accent eq 'l'
@@ -240,9 +247,9 @@ sub parseAccent {
         $commandArgs = '';
 
         # we need to keep track fo the prefix and suffix of it
-        if (length($accent) > 0) {
+        if ( length($accent) > 0 ) {
             $accent =~ m/^(\s*)([^\s](?:.*[^\s])?)(\s*)$/;
-            ($prefix, $accent, $suffix) = ($1, $2, $3);
+            ( $prefix, $accent, $suffix ) = ( $1, $2, $3 );
             $innerPrefix .= $prefix if defined($prefix);
             $innerSuffix = $suffix . $innerSuffix if defined($suffix);
         }
@@ -266,19 +273,18 @@ sub parseAccent {
         else {
             $accent = $content;
 
-    # if we have some non-alphabetical characters then those are the command
-            ( $command, $commandArgs ) =
-                ( $accent =~ m/^([^a-z]+)([a-z]+)$/i );
+        # if we have some non-alphabetical characters then those are the command
+            ( $command, $commandArgs ) = ( $accent =~ m/^([^a-z]+)([a-z]+)$/i );
             unless ( defined($command) ) {
                 $command     = $accent;
                 $commandArgs = '';
             }
         }
-        
-        # remove surrounding spaces 
-        if (length($accent) > 0) {
+
+        # remove surrounding spaces
+        if ( length($accent) > 0 ) {
             $accent =~ m/^(\s*)([^\s](?:.*[^\s])?)(\s*)$/;
-            ($prefix, $accent, $suffix) = ($1, $2, $3);
+            ( $prefix, $accent, $suffix ) = ( $1, $2, $3 );
             $innerPrefix .= $prefix if defined($prefix);
             $innerSuffix = $suffix . $innerSuffix if defined($suffix);
         }
@@ -292,11 +298,13 @@ sub parseAccent {
             $accent = substr( $accent, 1, -1 );
         }
     }
-    return 1, $outerPrefix, $innerPrefix, $accent, $innerSuffix,
-        $outerSuffix, $command, $commandArgs;
+
+    return ( length($command) < 3 ) ? 2 : 1, $outerPrefix, $innerPrefix,
+      $accent, $innerSuffix,
+      $outerSuffix, $command, $commandArgs;
 }
 
-# isAccent is like parseAccent, but only returns the first value
+# isAccent checks if a character is 'accent-like'
 sub isAccent {
     my ($string) = @_;
     return $string =~ /^[\{\}]*\{\\/;
@@ -310,21 +318,23 @@ sub isAccent {
 # - if $spec is 't', then upper-case the first character and lower-case the rest
 # - if $spec is 'u' then upper-case everything
 # - if $spec is 'l' then lower-case everything
-# This implements the change.case$ built-in together with all the specialized functions below. 
+# This implements the change.case$ built-in together with all the specialized functions below.
 sub changeCase {
     my ( $string, $spec ) = @_;
 
     # split into levels and letters
-    my ($letters, $levels) = splitLetters($string);
+    my ( $letters, $levels ) = splitLetters($string);
 
     # normalize the specification, and go into the appropriate sub-case
     $spec = lc $spec;
-    if ($spec eq 'l') {
-        return changeCaseLower($letters, $levels);
-    } elsif ($spec eq 'u') {
-        return changeCaseUpper($letters, $levels);
-    } elsif ($spec eq 't') {
-        return changeCaseTitle($letters, $levels);
+    if ( $spec eq 'l' ) {
+        return changeCaseLower( $letters, $levels );
+    }
+    elsif ( $spec eq 'u' ) {
+        return changeCaseUpper( $letters, $levels );
+    }
+    elsif ( $spec eq 't' ) {
+        return changeCaseTitle( $letters, $levels );
     }
 
     # something else => invalid format string
@@ -332,74 +342,85 @@ sub changeCase {
     return;
 }
 
-# Changes the case of a splitLetters returned $letters and $levels to lower case. 
+# Changes the case of a splitLetters returned $letters and $levels to lower case.
 # Implements change.case$ 'l' builtin
 sub changeCaseLower {
-    my ($letters, $levels) = @_;
-    my ( $accent, $command, $iPrefix, $isAccent, $iSuffix, $letter, $level, $oPrefix, $oSuffix, $result );
+    my ( $letters, $levels ) = @_;
+    my (
+        $accent, $command, $iPrefix, $isAccent, $iSuffix,
+        $letter, $level,   $oPrefix, $oSuffix,  $result
+    );
 
     # iterate over each level
     foreach $letter (@$letters) {
         $level = shift(@$levels);
 
         if ( defined($level) && $level eq 0 ) {
-            # if we are on level 0, we change the case to lower
             (
                 $isAccent, $oPrefix, $iPrefix, $accent,
                 $iSuffix,  $oSuffix, $command
             ) = parseAccent($letter);
 
-            $result .= $oPrefix . $iPrefix . ( lc $accent ) . $iSuffix . $oSuffix;
+            $result .=
+              $oPrefix . $iPrefix . ( lc $accent ) . $iSuffix . $oSuffix;
+            next;
         }
 
-        else {
-            # do not touch anything of positive level
-            $result .= $letter;
-        }
+        # and don't touch anything else
+        $result .= $letter;
     }
 
     return $result;
 }
 
-# Changes the case of a splitLetters returned $letters and $levels to lower case. 
+# Changes the case of a splitLetters returned $letters and $levels to lower case.
 # Implements change.case$ 'u' builtin
 sub changeCaseUpper {
-    my ($letters, $levels) = @_;
-    my ( $accent, $command, $iPrefix, $isAccent, $iSuffix, $letter, $level, $oPrefix, $oSuffix, $result );
+    my ( $letters, $levels ) = @_;
+    my (
+        $accent, $command, $iPrefix, $isAccent, $iSuffix,
+        $letter, $level,   $oPrefix, $oSuffix,  $result
+    );
 
     # iterate over each level
     foreach $letter (@$letters) {
         $level = shift(@$levels);
 
         if ( defined($level) && $level eq 0 ) {
+
             # if we are on level 0, we change the case to lower
             (
                 $isAccent, $oPrefix, $iPrefix, $accent,
                 $iSuffix,  $oSuffix, $command
             ) = parseAccent($letter);
 
-            # special case: \ss is the only accent to be changed into a non-accent
-            # TODO: Is this for everything of length 2?
-            $iPrefix =~ s/\\$// if ( $isAccent && defined($command) && $command eq 'ss' );
-            $result .= $oPrefix . $iPrefix . ( uc $accent ) . $iSuffix . $oSuffix;
+            #
+            $iPrefix =~ s/\\$//
+              if ( $isAccent
+                && defined($command)
+                && ( $command eq 'ss' || $command eq 'i' || $command eq 'j' ) );
+            $result .=
+              $oPrefix . $iPrefix . ( uc $accent ) . $iSuffix . $oSuffix;
+            next;
         }
 
-        else {
-            # do not touch anything of positive level
-            $result .= $letter;
-        }
+        # and don't touch everything else
+        $result .= $letter;
     }
 
     return $result;
 }
 
-# Changes the case of a splitLetters returned $letters and $levels to title case. 
+# Changes the case of a splitLetters returned $letters and $levels to title case.
 # Implements change.case$ 't' builtin
 sub changeCaseTitle {
-    my ($letters, $levels) = @_;
-    my ( $accent, $command, $iPrefix, $isAccent, $iSuffix, $letter, $level, $oPrefix, $oSuffix, $result );
+    my ( $letters, $levels ) = @_;
+    my (
+        $accent, $command, $changed, $iPrefix, $isAccent, $iSuffix,
+        $letter, $level,   $oPrefix, $oSuffix, $result
+    );
 
-    my ($hadColon, $hadWhitespace) = (1, 1);
+    my ( $hadColon, $hadWhitespace ) = ( 1, 1 );
 
     foreach $letter (@$letters) {
         $level = shift(@$levels);
@@ -409,25 +430,37 @@ sub changeCaseTitle {
             # we change all the letters to lower case except for:
             # - the first character
             # - a character immediatly following a ':' and a single whitespace
-            unless ($hadColon && $hadWhitespace) {
+            $changed = 0;
+            unless ( $hadColon && $hadWhitespace ) {
                 (
                     $isAccent, $oPrefix, $iPrefix, $accent,
                     $iSuffix,  $oSuffix, $command
                 ) = parseAccent($letter);
-                $result .= $oPrefix . $iPrefix . ( lc $accent ) . $iSuffix . $oSuffix;
-            
-            } else {
+                if ( $isAccent == 0 || $isAccent == 2 ) {
+                    $result .=
+                        $oPrefix
+                      . $iPrefix
+                      . ( lc $accent )
+                      . $iSuffix
+                      . $oSuffix;
+                    $changed = 1;
+                }
+            }
+
+            # leave other letters untouched
+            unless ($changed) {
                 $result .= $letter;
-                $hadColon = 0;
+                $hadColon      = 0;
                 $hadWhitespace = 0;
             }
 
             # if we had a colon before and had following whitespace
-            if ($hadColon && $letter =~ /^\s+$/) {
+            if ( $hadColon && $letter =~ /^\s+$/ ) {
                 $hadWhitespace = 1;
-                $hadColon = 1;
-            } else {
-                $hadColon = $letter eq ':';
+                $hadColon      = 1;
+            }
+            else {
+                $hadColon      = $letter eq ':';
                 $hadWhitespace = 0;
             }
         }
@@ -435,7 +468,7 @@ sub changeCaseTitle {
         else {
             # do not touch anything of positive level
             $result .= $letter;
-            $hadColon = 0;
+            $hadColon      = 0;
             $hadWhitespace = 0;
         }
     }
@@ -466,14 +499,13 @@ sub getCase {
 ### Text Length, Width and substring
 ###
 
-# counts the text-length of a string
-# implements text.length$
+# 'textLength' counts the text-length of a string and implements text.length$
 sub textLength {
 
-    # This is an inline version of:
-    # my ( $letters, $levels ) = splitLetters($string);
-    # return scalar(@$levels);
-    # which saves on some memory and a second loop iteration
+# This code is a somewhat optimized inline version of:
+# my ( $letters, $levels ) = splitLetters(@_);
+# return scalar(@$levels);
+# It saves on a second loop iteration and some parsing that is only needed for 'levels'
 
     # split the string into characters
     my ($string) = @_;
@@ -489,8 +521,9 @@ sub textLength {
         if ( $char eq '{' ) {
             $level++;
             if ( $level eq 1 ) {
-                # if the next character is a \, then we need to go into accent handling
-                # and read up until the end of the accent.
+
+         # if the next character is a \, then we need to go into accent handling
+         # and read up until the end of the accent.
                 $char = shift(@characters);
                 if ( defined($char) && $char eq '\\' ) {
                     $buffer = '{\\';
@@ -509,7 +542,7 @@ sub textLength {
                     $hadLetter = 1;
                     next;
                 }
-                
+
                 unshift( @characters, $char ) if defined($char);
                 $char = '{';
             }
@@ -530,6 +563,7 @@ sub textLength {
 
         }
         elsif ( $char eq '}' ) {
+
             # if we have a closing brace, just add it to the previous one
             # and decrease the level (but never go negative)
             $letters[-1] .= '}';
@@ -537,7 +571,8 @@ sub textLength {
             $level-- unless $level eq 0;
         }
 
-        elsif ($hadLetter && substr( $letters[-1], -1 ) eq '{' ) {
+        elsif ( $hadLetter && substr( $letters[-1], -1 ) eq '{' ) {
+
             # if we had an opening brace, append to it
             $letters[-1] .= $char;
         }
@@ -553,7 +588,9 @@ sub textLength {
     my $letter;
     my $count = 0;
     while ( defined( $letter = shift(@letters) ) ) {
-        $count++ unless ( $letter =~ /^[\{\}]*$/ && ($count == 0 || scalar(@letters) == 0) );
+        $count++
+          unless ( $letter =~ /^[\{\}]*$/
+            && ( $count == 0 || scalar(@letters) == 0 ) );
     }
     return $count;
 }
@@ -795,17 +832,17 @@ sub commandWidth {
 # implements substring$
 sub textSubstring {
     my ( $string, $start, $length ) = @_;
-    
+
     # if we have a non-negative start, the indexes are straightforward
-    return substr($string, $start - 1, $length) if $start > 0;
-    
+    return substr( $string, $start - 1, $length ) if $start > 0;
+
     # else we have a substring of length  ending at index $start
     $start = length($string) + $start - $length + 1;
-    if ($start < 0) {
+    if ( $start < 0 ) {
         $length += $start;
         $start = 0;
     }
-    return substr($string, $start, $length);
+    return substr( $string, $start, $length );
 }
 
 ###
@@ -845,6 +882,8 @@ sub textPurify {
                     or $command eq 'AE'
                     or $command eq 'aa'
                     or $command eq 'AA'
+                    or $command eq 'i'
+                    or $command eq 'j'
                     or $command eq 'o'
                     or $command eq 'O'
                     or $command eq 'l'
