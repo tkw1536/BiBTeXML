@@ -114,11 +114,12 @@ sub initContext {
     $context->defineVariable( 'crossref',  'ENTRY_FIELD' );
     $context->defineVariable( 'sort.key$', 'ENTRY_STRING' );
 
-    # TODO: These will be ignored at runtime
+    # set pre-defined variables to their defaults
+    # These can technically be re-defined, but one would have to re-compile BiBTeX for that. 
     $context->assignVariable( 'global.max$', 'GLOBAL_INTEGER',
-        [ 'INTEGER', 1000, undef ] );
+        [ 'INTEGER', 20000, undef ] );
     $context->assignVariable( 'entry.max$', 'GLOBAL_INTEGER',
-        [ 'INTEGER', 1000, undef ] );
+        [ 'INTEGER', 250, undef ] );
 
     # define all the built-in functions
     $context->assignVariable( '>', 'FUNCTION',
