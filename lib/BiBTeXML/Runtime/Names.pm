@@ -281,9 +281,9 @@ sub abbrevName {
     # we return the first character which either
     # - is an accent
     # - contains an alphabetical character
-    my ( $letter, $isAccent );
+    my ( $letter, $isSpecial );
     foreach $letter (@$letters) {
-        return $letter if isAccent($letter);
+        return $letter if isSpecial($letter);
 
         # else, return the first letter of it
         if ( $letter =~ /[a-z]/i ) {

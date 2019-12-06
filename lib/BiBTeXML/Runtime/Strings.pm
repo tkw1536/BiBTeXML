@@ -13,7 +13,7 @@ use warnings;
 use base qw(Exporter);
 our @EXPORT = qw(
   &addPeriod
-  &splitLetters &parseAccent &isAccent
+  &splitLetters &splitSpecial &isSpecial
   &changeCase &getCase
   &textSubstring
   &textLength
@@ -88,7 +88,7 @@ sub splitLetters {
                     shift(@letters) unless $hadLetter;
                     shift(@levels)  unless $hadLetter;
                     push( @letters, $buffer );
-                    push( @levels, isAccent($buffer) ? 0 : 1 );
+                    push( @levels, isSpecial($buffer) ? 0 : 1 );
                     $hadLetter = 1;
                     next;
                 }
@@ -174,138 +174,47 @@ sub splitLetters {
     return [@theletters], [@thelevels];
 }
 
-# Parses a string representing a single character that looks like and accent.
-# If the string begins with '{\', returns:
-# ($isAccent, $outerPrefix, $innerPrefix, $content, $innerSuffix, $outerSuffix, $command, $commandArgs)
-# - $isAccent is either 2 or 1. '2' implies that this is a real BiBTeX accent, 1 is that this is a control-sequence that only looks like a BiBTeX accent
-# - $outerPrefix is a string prefixing the accent, but not belonging to it at all
-# - $innerPrefix is the part of the accent that is not-case sensitive
-# - $content is the case-sensitive part of the accent
-# - $innerSuffix is a string following the accent, and belonging to it
-# - $outerSuffix is a string following the accent, but not belonging to it at all
-# - $command is the command used to built the accent (if any)
-# - $commandArgs is the arguments of the command (if any)
-# the following inequality holds:
-# $string eq $outerPrefix . $innerPrefix . $content . $innerSuffix . $outerSuffix
-# if not returns (0, '', '', $string, '', '', undef, undef)
-sub parseAccent {
+# 'splitSpecial' splits a string starting with a potentially special character and returns a 4-tuple ($isSpecial, $head, $tail, $command) where
+# - $isSpecial: 1 when the string starts with something that looks like a command sequence, 0 when not
+# - $head:     Part of the first letter of the string that is not affected by case-sensitivity. 
+# - $tail:     Part of the first letter which are affected by case-sensitivity and remaining letters.
+# - $command:  Either 'undef' or one of the special known accented command sequences.
+# For any input, $head . $tail will always equal $string. 
+sub splitSpecial {
     my ($string) = @_;
 
-    # an accent has to start with {\\, else it is not actual accent
-    return 0, '', '', $string, '', '', undef, undef
-      unless $string =~ /^[\{\}]*\{\\/;
+    # if we do not have an accent, don't parse it
+    return 0, '', $string, undef unless $string =~ /^[\{\}]*\{\\/;
 
-    # strip off leading {}s
-    my ( $outerPrefix, $accent ) = ( $string =~ /^([\{\}]*)\{\\(.*)/ );
-    my ( $innerPrefix, $innerSuffix ) = ( '{\\', '' );
+    # split into head + tail, but keep the command
+    my ($head, $tail, $command) = $string =~ m/^([\{\}]*\{\\)(([^\{\}\s]+).*)$/;
 
-    # read content as the balanced substring
-    my ( $char, $content, $outerSuffix ) = ( '', '', '' );
-    my ( $level, $passedContent ) = ( 1, 0 );
-    my @characters = split( //, $accent );
-    foreach $char (@characters) {
-        unless ($passedContent) {
-            $content .= $char;
-            $level++ if $char eq '{';
-            $level-- if $char eq '}';
-            $passedContent = 1 if $level eq 0;
-        }
-        else {
-            $outerSuffix .= $char;
-        }
+    $command =~ s/[^a-zA-Z]//g;
+    unless ($command eq "i" ||
+        $command eq "j" ||
+        $command eq "oe" ||
+        $command eq "OE" ||
+        $command eq "ae" ||
+        $command eq "AE" ||
+        $command eq "aa" ||
+        $command eq "AA" ||
+        $command eq "o" ||
+        $command eq "O" ||
+        $command eq "l" ||
+        $command eq "L" ||
+        $command eq "ss"
+    ) {
+        # We do not have a known command sequence, hence it should not change case and be a part of the 'head'
+        ($command, $tail) = $tail =~ m/^([a-zA-Z]*[\s\{\}]*)(.*)$/; # split off leading command sequence
+        $head .= $command;
+        $command = undef;
     }
 
-    # if we are at level 0, we had a closing brace
-    # remove that from CONTENT
-    if ( $level eq 0 ) {
-        $content     = substr( $content, 0, -1 );
-        $innerSuffix = '}';
-    }
-
-    # accent = trim both ends of $conent
-    $accent = $content;
-    $accent =~ s/^\s+|\s+$//g;
-
-    my ( $prefix, $suffix, $command, $commandArgs );
-
-    # if we have one of the special accents
-    if (   $accent eq 'OE'
-        or $accent eq 'ae'
-        or $accent eq 'AE'
-        or $accent eq 'aa'
-        or $accent eq 'AA'
-        or $accent eq 'i'
-        or $accent eq 'j'
-        or $accent eq 'o'
-        or $accent eq 'O'
-        or $accent eq 'l'
-        or $accent eq 'L'
-        or $accent eq 'ss' )
-    {
-        # hey, we know this command
-        $command     = $accent;
-        $commandArgs = '';
-
-        # we need to keep track fo the prefix and suffix of it
-        if ( length($accent) > 0 ) {
-            $accent =~ m/^(\s*)([^\s](?:.*[^\s])?)(\s*)$/;
-            ( $prefix, $accent, $suffix ) = ( $1, $2, $3 );
-            $innerPrefix .= $prefix if defined($prefix);
-            $innerSuffix = $suffix . $innerSuffix if defined($suffix);
-        }
-
-        # else take either
-    }
-    else {
-
-        # the first character after a space or opening bracket
-        ( $prefix, $accent ) = ( $content =~ m/^([^\s\{]*)([\s\{].*)$/ );
-        if ( defined($accent) ) {
-            $innerPrefix .= $prefix if defined($prefix);
-            $command = $prefix if defined($prefix);
-
-            $commandArgs = $accent;
-            $commandArgs =~ s/^\s+|\s+$//g;
-            $commandArgs =~ s/\{(.*)\}/$1/g;
-
-            # everything if we do not have any spaces or brackets
-        }
-        else {
-            $accent = $content;
-
-        # if we have some non-alphabetical characters then those are the command
-            ( $command, $commandArgs ) = ( $accent =~ m/^([^a-z]+)([a-z]+)$/i );
-            unless ( defined($command) ) {
-                $command     = $accent;
-                $commandArgs = '';
-            }
-        }
-
-        # remove surrounding spaces
-        if ( length($accent) > 0 ) {
-            $accent =~ m/^(\s*)([^\s](?:.*[^\s])?)(\s*)$/;
-            ( $prefix, $accent, $suffix ) = ( $1, $2, $3 );
-            $innerPrefix .= $prefix if defined($prefix);
-            $innerSuffix = $suffix . $innerSuffix if defined($suffix);
-        }
-
-        # remove the surrounding braces
-        if (   substr( $accent, 0, 1 ) eq '{'
-            && substr( $accent, -1, 1 ) eq '}' )
-        {
-            $innerPrefix .= '{';
-            $innerSuffix .= '}';
-            $accent = substr( $accent, 1, -1 );
-        }
-    }
-
-    return ( length($command) < 3 ) ? 2 : 1, $outerPrefix, $innerPrefix,
-      $accent, $innerSuffix,
-      $outerSuffix, $command, $commandArgs;
+    return 1, $head, $tail, $command;
 }
 
-# isAccent checks if a character is 'accent-like'
-sub isAccent {
+# isSpecial checks if a character is 'special' according to the 'splitSpecial function'.
+sub isSpecial {
     my ($string) = @_;
     return $string =~ /^[\{\}]*\{\\/;
 }
@@ -347,8 +256,8 @@ sub changeCase {
 sub changeCaseLower {
     my ( $letters, $levels ) = @_;
     my (
-        $accent, $command, $iPrefix, $isAccent, $iSuffix,
-        $letter, $level,   $oPrefix, $oSuffix,  $result
+        $isSpecial, $head, $tail,
+        $letter, $level, $result
     );
 
     # iterate over each level
@@ -357,12 +266,10 @@ sub changeCaseLower {
 
         if ( defined($level) && $level eq 0 ) {
             (
-                $isAccent, $oPrefix, $iPrefix, $accent,
-                $iSuffix,  $oSuffix, $command
-            ) = parseAccent($letter);
+                $isSpecial, $head, $tail
+            ) = splitSpecial($letter);
 
-            $result .=
-              $oPrefix . $iPrefix . ( lc $accent ) . $iSuffix . $oSuffix;
+            $result .=  $head . ( lc $tail );
             next;
         }
 
@@ -378,8 +285,8 @@ sub changeCaseLower {
 sub changeCaseUpper {
     my ( $letters, $levels ) = @_;
     my (
-        $accent, $command, $iPrefix, $isAccent, $iSuffix,
-        $letter, $level,   $oPrefix, $oSuffix,  $result
+        $isSpecial, $head, $tail, $command,
+        $letter, $level, $result
     );
 
     # iterate over each level
@@ -388,19 +295,13 @@ sub changeCaseUpper {
 
         if ( defined($level) && $level eq 0 ) {
 
-            # if we are on level 0, we change the case to lower
             (
-                $isAccent, $oPrefix, $iPrefix, $accent,
-                $iSuffix,  $oSuffix, $command
-            ) = parseAccent($letter);
-
-            #
-            $iPrefix =~ s/\\$//
-              if ( $isAccent
-                && defined($command)
-                && ( $command eq 'ss' || $command eq 'i' || $command eq 'j' ) );
-            $result .=
-              $oPrefix . $iPrefix . ( uc $accent ) . $iSuffix . $oSuffix;
+                $isSpecial, $head, $tail, $command
+            ) = splitSpecial($letter);
+            
+            # special case: handle 'ss', 'i' and 'j' seperatly as they don't have uppercase variants
+            $head =~ s/\\$// if (defined($command) && ($command eq 'ss' || $command eq 'i' || $command eq 'j'));
+            $result .= $head . uc($tail);
             next;
         }
 
@@ -416,8 +317,8 @@ sub changeCaseUpper {
 sub changeCaseTitle {
     my ( $letters, $levels ) = @_;
     my (
-        $accent, $command, $changed, $iPrefix, $isAccent, $iSuffix,
-        $letter, $level,   $oPrefix, $oSuffix, $result
+        $isSpecial, $head, $tail,
+        $letter, $level, $result, $changed
     );
 
     my ( $hadColon, $hadWhitespace ) = ( 1, 1 );
@@ -433,18 +334,10 @@ sub changeCaseTitle {
             $changed = 0;
             unless ( $hadColon && $hadWhitespace ) {
                 (
-                    $isAccent, $oPrefix, $iPrefix, $accent,
-                    $iSuffix,  $oSuffix, $command
-                ) = parseAccent($letter);
-                if ( $isAccent == 0 || $isAccent == 2 ) {
-                    $result .=
-                        $oPrefix
-                      . $iPrefix
-                      . ( lc $accent )
-                      . $iSuffix
-                      . $oSuffix;
-                    $changed = 1;
-                }
+                    $isSpecial, $head, $tail
+                ) = splitSpecial($letter);
+                $result .= $head . lc($tail);
+                $changed = 1;
             }
 
             # leave other letters untouched
@@ -476,23 +369,37 @@ sub changeCaseTitle {
     return $result;
 }
 
-# gets the 'case' of a single letter of a name in a BiBTeX sense
-# i.e. either 'u' or 'l'. If no alphabetic character exists, returns lower-case.
+# 'getCase' gets the case of word, that it returns either 'l' for lowercase or 'u' for uppercase. 
+# If no character exists, returns 'l'.
 sub getCase {
-    my ($string) = @_;
+    my ($string, $isSpecial, $head, $tail, $command) = @_;
+    
+    # keep working on the first letter of the string
+    while(length($string) > 0) {
+        # if we have a letter in the front, work with it
+        return 'u' if($string =~ /^[A-Z]/);
+        return 'l' if ($string =~ /^[a-z]/);
+        
+        # if we have a special character, ignore the head
+        ($isSpecial, $head, $tail, $command) = splitSpecial($string);
+        if ($isSpecial) {
+            $string = $tail;
+            next;
+        }
 
-    # parse the accent
-    my ( $isAccent, $oPrefix, $iPrefix, $search, $iSuffix, $oSuffix ) =
-      parseAccent($string);
+        # parse a non-accent braced string
+        ($head, $tail) = $string =~ m/^{([^}]+)\}(.*)$/;
+        if(defined($head) || defined($tail)) {
+            return 'u' if(defined($head) && $head =~ /[a-zA-Z]/); # if it has some letters, we have an uppercase character
+            $string = $tail; # else skip it
+            next;
+        }
+        
+        $string = substr($string, 1); # ignore this character, it's not a letter
+    }
 
-    # if it is not an accent, but starts with '{', then it is upper-case
-    return 'u' if substr( $string, 0, 1 ) eq '{' && !$isAccent;
-
-    # else find the first alphabetic character in it
-    $search .= $iSuffix . $oSuffix;
-    ($search) = ( $search =~ /([a-z])/i );
-    return 'l' unless $search;
-    return ( $search =~ /[A-Z]/ ) ? 'u' : 'l';
+    # there were no letters at all
+    return 'l';
 }
 
 ###
@@ -619,72 +526,6 @@ sub textPrefix {
     return $result;
 }
 
-# compute the width of text in hundredths of a point, as specified by the June 1987 version of the cmr10 font
-# implements width$
-sub textWidth {
-    my ($string) = @_;
-    my ( $letters, $levels ) = splitLetters($string);
-
-    # iterate over each of the letters
-    my $width = 0;
-    my @characters;
-    my (
-        $isAccent, $oPrefix, $iPrefix,     $accent, $iSuffix,
-        $oSuffix,  $command, $commandArgs, $letter, $level
-    );
-    foreach $letter (@$letters) {
-        $level = shift(@$levels);
-
-        # on level 0, check for accents
-        if ( defined($level) && $level eq 0 ) {
-
-            # parse the accent
-            (
-                $isAccent, $oPrefix, $iPrefix, $accent,
-                $iSuffix,  $oSuffix, $command, $commandArgs
-            ) = parseAccent($letter);
-
-            # if we have a command in $accent, add the width of that 'character'
-            if ( defined($command) ) {
-                $width += commandWidth( $command, $commandArgs );
-
-                # and add the length of the outer prefix and suffix
-                @characters = split( //, $oPrefix );
-                $width += characterWidth($_) foreach (@characters);
-
-                @characters = split( //, $oSuffix );
-                $width += characterWidth($_) foreach (@characters);
-
-                # if it's not a command
-                # just count the length of the content, outer prefix and suffix
-            }
-            elsif ($isAccent) {
-                @characters = split( //, $accent );
-                $width += characterWidth($_) foreach (@characters);
-
-                @characters = split( //, $oPrefix );
-                $width += characterWidth($_) foreach (@characters);
-
-                @characters = split( //, $oSuffix );
-                $width += characterWidth($_) foreach (@characters);
-
-                # if it is not an accent, count each letter individually
-            }
-            else {
-                @characters = split( //, $letter );
-                $width += characterWidth($_) foreach (@characters);
-            }
-
-       # on level 1+, we need to add up the width of each character individually
-        }
-        else {
-            @characters = split( //, $letter );
-            $width += characterWidth($_) foreach (@characters);
-        }
-    }
-    return $width;
-}
-
 # table adpoted from
 # https://metacpan.org/source/NODINE/Text-BibTeX-BibStyle-0.03/lib/Text/BibTeX/BibStyle.pm
 # contains widths of accents and basic characters
@@ -805,26 +646,43 @@ our %WIDTHS = (
     '!`' => 278,
 );
 
-# computes the width of a single character
-sub characterWidth {
-    my ($char) = @_;
+# compute the width of text in hundredths of a point, as specified by the June 1987 version of the cmr10 font
+# implements width$
+sub textWidth {
+    my ($string) = @_;
+    my ( $letters, $levels ) = splitLetters($string);
 
-    return $WIDTHS{ ord $char } || 500;
-}
+    # iterate over each of the letters
+    my $width = 0;
+    my @characters;
+    my (
+        $isSpecial, $head, $tail, $command,
+        $letter, $level
+    );
 
-# computes the width of a command call
-sub commandWidth {
-    my ( $command, $args ) = @_;
+    foreach $letter (@$letters) {
+        $level = shift(@$levels);
 
-    # if it is a known command, return the width of that command
-    my $width = $WIDTHS{$command};
-    return $width if defined($width);
 
-    # else return the width of each character
-    # and add them up
-    $width = 0;
-    my @characters = split( //, $args );
-    $width += characterWidth($_) foreach (@characters);
+        # on level 0 we want to check for special characters
+        if ( defined($level) && $level eq 0 ) {
+            (
+                $isSpecial, $head, $tail, $command
+            ) = splitSpecial($letter);
+
+            if(defined($command)) {
+                $width += $WIDTHS{$command} || 0;
+                next;
+            }
+            if($isSpecial) {
+                $tail =~ s/\}$//;
+                $letter = $tail;
+            }
+        }
+        
+        # for all other cases, we add up the width of each character in the letters
+        $width += ($WIDTHS{ord $_} || 500) foreach (split( //, $letter ));
+    }
     return $width;
 }
 
@@ -859,8 +717,8 @@ sub textPurify {
     my $purified = '';
     my @characters;
     my (
-        $isAccent, $oPrefix, $iPrefix,     $accent, $iSuffix,
-        $oSuffix,  $command, $commandArgs, $letter, $level
+        $isSpecial, $head, $tail, $command,
+        $letter, $level
     );
     foreach $letter (@$letters) {
         $level = shift(@$levels);
@@ -870,38 +728,34 @@ sub textPurify {
 
             # parse the accent
             (
-                $isAccent, $oPrefix, $iPrefix, $accent,
-                $iSuffix,  $oSuffix, $command, $commandArgs
-            ) = parseAccent($letter);
+                $isSpecial, $head, $tail, $command
+            ) = splitSpecial($letter);
 
- # if we have one of the known command, transfer those into the appropriate ones
-            if (
-                defined($command)
-                && (   $command eq 'OE'
-                    or $command eq 'ae'
-                    or $command eq 'AE'
-                    or $command eq 'aa'
-                    or $command eq 'AA'
-                    or $command eq 'i'
-                    or $command eq 'j'
-                    or $command eq 'o'
-                    or $command eq 'O'
-                    or $command eq 'l'
-                    or $command eq 'L'
-                    or $command eq 'ss' )
-              )
-            {
-                $purified .= $command;
+            # if we have one of the known command, transfer those into the appropriate ones
+            if (defined($command)){
+                # if it is one of the special commands, use their complete commands
+                if(
+                    $command eq 'oe' ||
+                    $command eq 'OE' ||
+                    $command eq 'ae' ||
+                    $command eq 'AE' ||
+                    $command eq 'ss'
+                ) {
+                    $purified .= $command;
+                
+                # else just use the first one
+                } else {
+                    $purified .= substr($command, 0, 1);
+                }
 
-                # if we had a command, but it was not one of the ones we knew
-                # then just reproduce the argument
+            # if we had a command, but it was not one of the ones we knew
+            # then just reproduce the argument
             }
-            elsif ($isAccent) {
-                $commandArgs =~ s/[\s\-~]//g;
-                $commandArgs =~ s/[^a-z0-9 ]//ig;
-                $purified .= $commandArgs;
+            elsif ($isSpecial) {
+                $tail =~ s/[^a-z0-9 ]//ig; # side-effect: lowercase everything
+                $purified .= $tail;
 
-                # else replace as if we were on level 1
+            # else replace as if we were on level 1
             }
             else {
                 $letter =~ s/[\s\-~]/ /g;
