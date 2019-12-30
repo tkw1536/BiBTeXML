@@ -84,6 +84,8 @@ sub splitLetters {
                         last     if $level eq 0;
                     }
 
+                    # TODO: On level 1, 
+
                     # push the collected 'accent' and go back into normal mode
                     shift(@letters) unless $hadLetter;
                     shift(@levels)  unless $hadLetter;
@@ -174,6 +176,7 @@ sub splitLetters {
     return [@theletters], [@thelevels];
 }
 
+
 # 'splitSpecial' splits a string starting with a potentially special character and returns a 4-tuple ($isSpecial, $head, $tail, $command) where
 # - $isSpecial: 1 when the string starts with something that looks like a command sequence, 0 when not
 # - $head:     Part of the first letter of the string that is not affected by case-sensitivity. 
@@ -223,150 +226,218 @@ sub isSpecial {
 ### Changing case of a string
 ###
 
-# Changes the case of $string according to spec
+# known accent control sequences
+my %ACCENT_SEQUENCES = (
+    'i' => 1, 
+    'j' => 1, 
+    'oe' => 1, 
+    'OE' => 1, 
+    'ae' => 1, 
+    'AE' => 1, 
+    'aa' => 1, 
+    'AA' => 1, 
+    'o' => 1, 
+    'O' => 1, 
+    'l' => 1, 
+    'L' => 1, 
+    'ss' => 1
+);
+
+
+# Changes the case of $string according to $spec
 # - if $spec is 't', then upper-case the first character and lower-case the rest
 # - if $spec is 'u' then upper-case everything
 # - if $spec is 'l' then lower-case everything
-# This implements the change.case$ built-in together with all the specialized functions below.
+# This implements the change.case$ built-in.
+
 sub changeCase {
-    my ( $string, $spec ) = @_;
+    my ($string, $conversion_type) = @_;
 
-    # split into levels and letters
-    my ( $letters, $levels ) = splitLetters($string);
+    # This code has been roughly adapted from 'bibtex.web', and in principle works as follows: 
+    # 1. split() the string into a character array
+    # 2. Iterate through the array of characters
+    # 3. Convert the values in the array in place
+    # 4. join() the array back into a single string
 
-    # normalize the specification, and go into the appropriate sub-case
-    $spec = lc $spec;
-    if ( $spec eq 'l' ) {
-        return changeCaseLower( $letters, $levels );
-    }
-    elsif ( $spec eq 'u' ) {
-        return changeCaseUpper( $letters, $levels );
-    }
-    elsif ( $spec eq 't' ) {
-        return changeCaseTitle( $letters, $levels );
-    }
-
-    # something else => invalid format string
-    # so we do nothing
-    return;
-}
-
-# Changes the case of a splitLetters returned $letters and $levels to lower case.
-# Implements change.case$ 'l' builtin
-sub changeCaseLower {
-    my ( $letters, $levels ) = @_;
-    my (
-        $isSpecial, $head, $tail,
-        $letter, $level, $result
+    # check that we have one of the three known conversion types
+    $conversion_type = lc $conversion_type;
+    return unless (
+        $conversion_type eq 'l' ||
+        $conversion_type eq 'u' ||
+        $conversion_type eq 't'
     );
 
-    # iterate over each level
-    foreach $letter (@$letters) {
-        $level = shift(@$levels);
+    my @chars = split( //, $string ); # array of characters (ex_buf in the original source)
+    my $char_ptr = 0;   # current index into the character array (ex_buf_ptr in the original source)
+    my $chars_xptr = 0; # beginning of control sequence (not always set, ex_buf_xptr in the original source)
+    my $chars_length = scalar(@chars); # number of chars (ex_buf_len in the original source)
 
-        if ( defined($level) && $level eq 0 ) {
-            (
-                $isSpecial, $head, $tail
-            ) = splitSpecial($letter);
+    my $brace_level = 0; # the current brace_level
+    my $prev_colon = 0; # are we following a colon (only relevant for 't' case)
 
-            $result .=  $head . ( lc $tail );
-            next;
-        }
+    # Iterate over the character array
+    while($char_ptr < $chars_length) {
 
-        # and don't touch anything else
-        $result .= $letter;
-    }
+        if($chars[$char_ptr] eq '{') {
 
-    return $result;
-}
+            $brace_level++;
 
-# Changes the case of a splitLetters returned $letters and $levels to lower case.
-# Implements change.case$ 'u' builtin
-sub changeCaseUpper {
-    my ( $letters, $levels ) = @_;
-    my (
-        $isSpecial, $head, $tail, $command,
-        $letter, $level, $result
-    );
+            # When opening a new brace the brace level increases and we need to consider accents and commands. 
+            # This large if statement checks that all the conditions for an 'accent' or 'command' are fullfilled
+            if(
+                ($brace_level != 1) || # only on level 1!
+                (($char_ptr + 4 > $chars_length) || ($chars[$char_ptr+1] ne '\\')) || # we don't have anything that could be a command
 
-    # iterate over each level
-    foreach $letter (@$letters) {
-        $level = shift(@$levels);
-
-        if ( defined($level) && $level eq 0 ) {
-
-            (
-                $isSpecial, $head, $tail, $command
-            ) = splitSpecial($letter);
-            
-            # special case: handle 'ss', 'i' and 'j' seperatly as they don't have uppercase variants
-            $head =~ s/\\$// if (defined($command) && ($command eq 'ss' || $command eq 'i' || $command eq 'j'));
-            $result .= $head . uc($tail);
-            next;
-        }
-
-        # and don't touch everything else
-        $result .= $letter;
-    }
-
-    return $result;
-}
-
-# Changes the case of a splitLetters returned $letters and $levels to title case.
-# Implements change.case$ 't' builtin
-sub changeCaseTitle {
-    my ( $letters, $levels ) = @_;
-    my (
-        $isSpecial, $head, $tail,
-        $letter, $level, $result, $changed
-    );
-
-    my ( $hadColon, $hadWhitespace ) = ( 1, 1 );
-
-    foreach $letter (@$letters) {
-        $level = shift(@$levels);
-
-        if ( defined($level) && $level eq 0 ) {
-
-            # we change all the letters to lower case except for:
-            # - the first character
-            # - a character immediatly following a ':' and a single whitespace
-            $changed = 0;
-            unless ( $hadColon && $hadWhitespace ) {
+                # in title case, we need to be at the beginning of the string or following a colon
                 (
-                    $isSpecial, $head, $tail
-                ) = splitSpecial($letter);
-                $result .= $head . lc($tail);
-                $changed = 1;
+                    ($conversion_type eq 't') &&
+                    (($char_ptr == 0) || (($prev_colon) && ($chars[$char_ptr-1] =~ /\s/)))
+                )
+            ) {
+                # In the original source this is handled with a goto ok_pascal_i_give_up. 
+                # To be slightly cleaner we inline the code. 
+                $prev_colon = 0;
+                $char_ptr++;
+                next;
             }
+            $char_ptr++;
+            
+            # All the conditions are fullfilled, we can now convert the control sequence or special character. 
+            while (($char_ptr < $chars_length) && ($brace_level > 0)) {
+                
+                # the control sequence starts here, but we can skip the '\'
+                $char_ptr++;
+                $chars_xptr = $char_ptr;
 
-            # leave other letters untouched
-            unless ($changed) {
-                $result .= $letter;
-                $hadColon      = 0;
-                $hadWhitespace = 0;
-            }
+                # scan the title of the control sequence (with alphabetical characters)
+                my $ctrl_sequence = '';
+                while (($char_ptr < $chars_length) && ($chars[$char_ptr] =~ /[a-zA-Z]/)) {
+                    $ctrl_sequence .= $chars[$char_ptr];
+                    $char_ptr++;
+                }
 
-            # if we had a colon before and had following whitespace
-            if ( $hadColon && $letter =~ /^\s+$/ ) {
-                $hadWhitespace = 1;
-                $hadColon      = 1;
+                # If the control sequence is a special 'accented' control sequence
+                # convert the accented or foreign character            
+                if(defined($ACCENT_SEQUENCES{$ctrl_sequence})) {
+
+                    # 'l' || 't' => convert the upper accents to lower ones
+                    # leave the rest of them alone. 
+                    unless($conversion_type eq 'u') {
+                        if(
+                            $ctrl_sequence eq 'L'  ||
+                            $ctrl_sequence eq 'O'  ||
+                            $ctrl_sequence eq 'OE' ||
+                            $ctrl_sequence eq 'AE' ||
+                            $ctrl_sequence eq 'AA') {
+                                foreach my $i ($chars_xptr..$char_ptr-1) {
+                                    $chars[$i] = lc($chars[$i]);
+                                }
+                        }
+                    # 'u'
+                    } else {
+
+                        # these sequences have an uppercase equivalent
+                        if(
+                            $ctrl_sequence eq 'l'  ||
+                            $ctrl_sequence eq 'o'  ||
+                            $ctrl_sequence eq 'oe' ||
+                            $ctrl_sequence eq 'ae' ||
+                            $ctrl_sequence eq 'aa') {
+                                foreach my $i ($chars_xptr..$char_ptr-1) {
+                                    $chars[$i] = uc($chars[$i]);
+                                }
+                        # these sequences do not have an uppercase equivalent
+                        # hence convert, then remove the control sequence
+                        } elsif(
+                            $ctrl_sequence eq 'i'  ||
+                            $ctrl_sequence eq 'j'  ||
+                            $ctrl_sequence eq 'ss') {
+
+                                # convert it to uppercase
+                                foreach my $i ($chars_xptr..$char_ptr-1) {
+                                    $chars[$i] = uc($chars[$i]);
+                                }
+
+                                # remove the '\\'
+                                $chars[$chars_xptr-1] = '';
+                                $chars_xptr = $char_ptr - 1;
+
+                                # remove any trailing spaces
+                                while (($char_ptr < $chars_length) && ($chars[$char_ptr] =~ /\s/)) {
+                                    $chars[$char_ptr] = '';
+                                    $char_ptr++;
+                                }
+
+                                # and reset $char_ptr
+                                $char_ptr = $chars_xptr;
+                        }
+                    }
+                }
+
+                $chars_xptr = $char_ptr;
+                
+                # scan until the next control sequence
+                while (($char_ptr < $chars_length) && ($brace_level > 0) && ($chars[$char_ptr] ne '\\')) {
+                    if ($chars[$char_ptr] eq '}') {
+                        $brace_level--;
+                    } elsif ($chars[$char_ptr] eq '{') {
+                        $brace_level++;
+                    }
+                    $char_ptr++;   
+                }
+
+                # and convert it
+                unless ($conversion_type eq 'u') {
+                    foreach my $i ($chars_xptr..$char_ptr-1) {
+                        $chars[$i] = lc($chars[$i]);
+                    }
+                } else {
+                    foreach my $i ($chars_xptr..$char_ptr-1) {
+                        $chars[$i] = uc($chars[$i]);
+                    }
+                }
             }
-            else {
-                $hadColon      = $letter eq ':';
-                $hadWhitespace = 0;
+            
+            # unskip the right closing '}'
+            $char_ptr--;
+            $prev_colon = 0;
+        
+        # whenever we have a closing brace, decrease the level
+        } elsif ($chars[$char_ptr] eq '}' ) {
+            $brace_level-- unless $brace_level eq 0;
+            $prev_colon = 0;
+        
+        } elsif ($brace_level == 0) {
+            # Now convert a brace_level = 0 character
+            if ($conversion_type eq 't') {
+
+                # for 't', we need to convert to lowercase
+                # if we are either at the first character, or we are following a colon + whitespace
+                unless (
+                    ($char_ptr == 0) ||
+                    ($prev_colon) && ($chars[$char_ptr-1] =~ /\s/)
+                ) {
+                    $chars[$char_ptr] = lc($chars[$char_ptr]);
+                }
+
+                # for the next iteration, we need to know if there was a ':'. 
+                if ($chars[$char_ptr] eq ':') {
+                    $prev_colon = 1
+                
+                # reset the flag only if we didn't have any whitespace
+                } elsif (!($chars[$char_ptr] =~ /\s/)) {
+                    $prev_colon = 0;
+                }
+            } elsif ($conversion_type eq 'l') {
+                $chars[$char_ptr] = lc($chars[$char_ptr]);
+            } elsif ($conversion_type eq 'u') {
+                $chars[$char_ptr] = uc($chars[$char_ptr]);
             }
         }
-
-        else {
-            # do not touch anything of positive level
-            $result .= $letter;
-            $hadColon      = 0;
-            $hadWhitespace = 0;
-        }
+        $char_ptr++;
     }
-
-    return $result;
+    
+    return join('', @chars);
 }
 
 # 'getCase' gets the case of word, that it returns either 'l' for lowercase or 'u' for uppercase. 
