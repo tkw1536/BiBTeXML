@@ -1,8 +1,8 @@
 ===============
 Summary: PASS
 ===============
-PASS: 62/62
-FAIL: 00/62
+PASS: 68/68
+FAIL: 00/68
 
 testcase 001: PASS
 
@@ -127,4 +127,16 @@ testcase 060: PASS
 testcase 061: PASS
 
 testcase 062: PASS
+
+testcase 063: PASS
+
+testcase 064: PASS
+
+testcase 065: PASS
+
+testcase 066: PASS
+
+testcase 067: PASS
+
+testcase 068: PASS
 

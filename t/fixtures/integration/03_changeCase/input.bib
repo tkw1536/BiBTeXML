@@ -359,3 +359,36 @@
   case     = {t},
   expected = {^{\aB World}$}
 }
+
+@testcase{063,
+  text     = {\texttt{cmathml.sty}: A {\TeX/\LaTeX}-based syntax for content},
+  case     = {t},
+  expected = {^\texttt{cmathml.sty}: A {\TeX/\LaTeX}-based syntax for content$}
+}
+@testcase{064,
+  text     = {\texttt{cmathml.sty}: A {\TeX/\LaTeX}-based syntax for content},
+  case     = {u},
+  expected = {^\TEXTTT{cmathml.sty}: A {\TeX/\LaTeX}-BASED SYNTAX FOR CONTENT$}
+}
+@testcase{065,
+  text     = {\texttt{cmathml.sty}: A {\TeX/\LaTeX}-based syntax for content},
+  case     = {l},
+  expected = {^\texttt{cmathml.sty}: a {\TeX/\LaTeX}-based syntax for content$}
+}
+
+@testcase{066,
+  text     = {\tHiNga stuff {\tHiNgb mOrE stuff \tHiNgc \tHiNgD} more \ThIngE},
+  case     = {t},
+  expected = {^\thinga stuff {\tHiNgb more stuff \tHiNgc \tHiNgD} more \thinge$}
+}
+@testcase{067,
+  text     = {\tHiNga stuff {\tHiNgb mOrE stuff \tHiNgc \tHiNgD} more \ThIngE},
+  case     = {u},
+  expected = {^\THINGA STUFF {\tHiNgb MORE STUFF \tHiNgc \tHiNgD} MORE \THINGE$}
+}
+
+@testcase{068,
+  text     = {\tHiNga stuff {\tHiNgb mOrE stuff \tHiNgc \tHiNgD} more \ThIngE},
+  case     = {u},
+  expected = {^\THINGA STUFF {\tHiNgb MORE STUFF \tHiNgc \tHiNgD} MORE \THINGE$}
+}
