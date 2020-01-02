@@ -85,7 +85,7 @@ subtest "splitNameWords" => sub {
 };
 
 subtest "splitNameParts" => sub {
-  plan tests => 13;
+  plan tests => 14;
 
   sub isSplitNameParts {
     my ($input, $expected) = @_;
@@ -110,6 +110,7 @@ subtest "splitNameParts" => sub {
   # complete real-life examples
   isSplitNameParts('Charles Louis Xavier Joseph de la Vall{\`e}e Poussin', [['Charles ', 'Louis ', 'Xavier ', 'Joseph '], ['de ', 'la '], [], ['Vall{\`e}e ', 'Poussin']]);
   isSplitNameParts('Freely, I.P.', [['I.P.'], [], [], ['Freely']]);
+  isSplitNameParts('Freely,I.P.', [['I.P.'], [], [], ['Freely']]);
 };
 
 subtest "formatNameSubpattern" => sub {
