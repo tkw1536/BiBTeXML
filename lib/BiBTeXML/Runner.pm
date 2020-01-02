@@ -83,7 +83,7 @@ sub createCompile {
 # which can be called parameter-less. This callable returns either 0 (everything ok) or 6 (something went wrong). 
 # Takes the following parameters:
 # - $code: A sub (or callable) representing the compiled code as e.g. returned by 'createCompile'
-# - $bibfiles: A reference to a list of filenames representing the loaded '.bib' files. [TODO: Make this an array of BiBTeXML::Common::StreamReader s]
+# - $bibfiles: A reference to a list of BiBTeXML::Common::StreamReader representing the loaded '.bib' files. 
 # - $cites: A reference to an array of cited keys. This may contain the special key '*' which indicates all keys should be cited. 
 # - $macro: A macro to wrap all source references in, or undef if no such macro should be used. 
 # - $logger: A sub (or callable) taking a single string parameter used to output info and warning messages
@@ -91,6 +91,9 @@ sub createCompile {
 # - $wrapEnabled: When set to 1, enable emulating BiBTeXs output wrapping. 
 sub createRun {
     my ( $code, $bibfiles, $cites, $macro, $logger, $output, $wrapEnabled ) = @_;
+
+    # ensure that utf-8 works
+    binmode($output, ":utf8");
 
     # create an output buffer
     my $buffer = BiBTeXML::Runtime::Buffer->new( $output, $wrapEnabled, $macro );
