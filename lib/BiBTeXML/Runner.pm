@@ -92,6 +92,9 @@ sub createCompile {
 sub createRun {
     my ( $code, $bibfiles, $cites, $macro, $logger, $output, $wrapEnabled ) = @_;
 
+    # ensure that utf-8 works
+    binmode($output, ":utf8");
+
     # create an output buffer
     my $buffer = BiBTeXML::Runtime::Buffer->new( $output, $wrapEnabled, $macro );
 
