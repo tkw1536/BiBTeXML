@@ -818,14 +818,14 @@ sub textPurify {
             # then just reproduce the argument
             }
             elsif ($isSpecial) {
-                $tail =~ s/[^a-z0-9 ]//ig; # side-effect: lowercase everything
+                $tail =~ s/[^a-zA-Z0-9 ]//g; # side-effect: lowercase everything
                 $purified .= $tail;
 
             # else replace as if we were on level 1
             }
             else {
                 $letter =~ s/[\s\-~]/ /g;
-                $letter =~ s/[^a-z0-9 ]//ig;
+                $letter =~ s/[^a-zA-Z0-9 ]//g;
                 $purified .= $letter;
             }
 
@@ -833,7 +833,7 @@ sub textPurify {
         }
         else {
             $letter =~ s/[\s\-~]/ /g;
-            $letter =~ s/[^a-z0-9 ]//ig;
+            $letter =~ s/[^a-zA-Z0-9 ]//g;
             $purified .= $letter;
         }
     }
