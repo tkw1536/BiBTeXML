@@ -423,6 +423,7 @@ sub buildEntryList {
                 ]
             );
             push( @locations, [ locationOf($entry) ] );
+            $entry->clearCrossReference();
             next;
         }
 

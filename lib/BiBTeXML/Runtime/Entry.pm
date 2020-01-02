@@ -129,6 +129,12 @@ sub inlineCrossReference {
     delete $$self{values}{crossref} if $clearCrossRefValue;
 }
 
+# clears the cross-reference (if any) by this entry
+sub clearCrossReference {
+    my ( $self ) = @_;
+    delete $$self{values}{crossref};
+}
+
 # gets the cross-referenced entry
 # and returns a pair ($key, $crossref)
 sub resolveCrossReference {
@@ -138,7 +144,20 @@ sub resolveCrossReference {
     my $crossref = $$self{values}{crossref};
     return undef, undef unless defined($crossref);
 
-    return $crossref, $entryHash->{$crossref};
+    # if is exists case-senstive, return it!
+    my $xref = $entryHash->{$crossref};
+    return $crossref, $xref if defined($xref);
+
+    # if resolution failed, try searching case-insensitivly
+    foreach my $key (keys %$entryHash) {
+        if(lc $key eq lc $crossref) {
+            $$self{values}{crossref} = $key; # update to the correct case!
+            return $key, $entryHash->{$key};
+        }
+    }
+
+    # else we failed completly
+    return $crossref, undef;
 }
 
 sub getName {
