@@ -181,6 +181,11 @@ sub splitNameParts {
 sub splitNameWords {
     my ($string) = @_;
 
+    # HACK HACK HACK we want to support things without a comma
+    # for now we forcibly add a comma between them. 
+    # TODO: Do this later on fo
+    $string =~ s/,(?!\s)/, /g;
+
     my $level  = 0;
     my $buffer = '';
     my @result = ('');
