@@ -933,6 +933,7 @@ FUNCTION {sort.format.names}
         'skip$
       if$
       s nameptr "{vv{ } }{ll{ }}{  ff{ }}{  jj{ }}" format.name$ 't :=
+      "name is <" t * ">" * warning$
       nameptr numnames = t "others" = and
         { "et al" * }
         { t sortify * }
@@ -955,16 +956,7 @@ FUNCTION {sort.format.title}
 }
 
 FUNCTION {author.sort}
-{ author empty$
-    { key empty$
-        { "to sort, need author or key in " cite$ * warning$
-          ""
-        }
-        { key sortify }
-      if$
-    }
-    { author sort.format.names }
-  if$
+{ author sort.format.names
 }
 
 FUNCTION {author.editor.sort}
@@ -1019,30 +1011,7 @@ FUNCTION {editor.organization.sort}
 }
 
 FUNCTION {presort}
-{ type$ "book" =
-  type$ "inbook" =
-  or
-    'author.editor.sort
-    { type$ "proceedings" =
-        'editor.organization.sort
-        { type$ "manual" =
-            'author.organization.sort
-            'author.sort
-          if$
-        }
-      if$
-    }
-  if$
-  "    "
-  *
-  year field.or.null sortify
-  *
-  "    "
-  *
-  title field.or.null
-  sort.format.title
-  *
-  #1 entry.max$ substring$
+{ author.sort
   'sort.key$ :=
 }
 
@@ -1083,15 +1052,24 @@ FUNCTION {begin.bib}
   "\begin{thebibliography}{"  longest.label  * "}" * write$ newline$
 }
 
-EXECUTE {begin.bib}
+% EXECUTE {begin.bib}
 
 EXECUTE {init.state.consts}
 
-ITERATE {call.type$}
+% ITERATE {call.type$}
 
 FUNCTION {end.bib}
 { newline$
   "\end{thebibliography}" write$ newline$
 }
 
-EXECUTE {end.bib}
+FUNCTION {test}
+{
+  cite$ write$ newline$
+  sort.key$ write$ newline$
+  newline$ newline$
+}
+
+ITERATE {test}
+
+% EXECUTE {end.bib}

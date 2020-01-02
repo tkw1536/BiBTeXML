@@ -1,0 +1,606 @@
+4d3
+< 
+8d6
+< 
+12d9
+< 
+16d12
+< 
+20d15
+< 
+24d18
+< 
+28d21
+< 
+32d24
+< 
+36d27
+< 
+40d30
+< 
+44d33
+< 
+48d36
+< 
+52d39
+< 
+56d42
+< 
+60d45
+< 
+2405,2413d2389
+< LPPL
+<  project    2007     project public license
+< 
+< 
+< SQLMMSpatial02
+< 13249 32002 fdis  isoiec    2002    information technology    database
+<   languages    sql multimedia and application packages    part 3 spatial
+< 
+< 
+2754c2730
+<    xsparql traveling between the xml and rdf worlds    and avoiding the xslt
+---
+>      xsparql traveling between the xml and rdf worlds    and avoiding the xslt
+2788c2764
+<    verdejo  felisa   yacef  kalina    2003    aied2003     supplementary
+---
+>     verdejo  felisa   yacef  kalina    2003    aied2003     supplementary
+2795c2771
+<    verdejo  felisa   yacef  kalina    2003    aied2003     supplementary
+---
+>     verdejo  felisa   yacef  kalina    2003    aied2003     supplementary
+2802c2778
+<    describing linked datasets with the void vocabulary
+---
+>     describing linked datasets with the void vocabulary
+2807c2783
+<    describing linked datasets with the void vocabulary
+---
+>     describing linked datasets with the void vocabulary
+3083c3059
+<    automating higher order logics
+---
+>     automating higher order logics
+3123c3099
+<    two cultures mashing up web 20 and the semantic web
+---
+>      two cultures mashing up web 20 and the semantic web
+3159c3135
+<    kosmadakis  dimitris   kritsotakis  manolis   lilis  giannis
+---
+>     kosmadakis  dimitris   kritsotakis  manolis   lilis  giannis
+3374c3350
+<    kagal  lalana   noy  natasha fridman   blomqvist  eva    2011    semantic
+---
+>     kagal  lalana   noy  natasha fridman   blomqvist  eva    2011    semantic
+3408c3384
+< arxmliv        arxmliv showcase demo page
+---
+> arxmliv        arxmlivshowcasedemopage
+3412c3388
+< arxmliv        arxmliv showcase demo page
+---
+> arxmliv        arxmlivshowcasedemopage
+3416c3392
+< arxmliv        arxmliv showcase demo page
+---
+> arxmliv        arxmlivshowcasedemopage
+3420c3396
+< arxmliv        arxmliv translating the math archives to xmlmathml
+---
+> arxmliv        arxmlivtranslatingthematharchivestoxmlmathml
+3424c3400
+< arxmliv        arxmliv translating the math archives to xmlmathml
+---
+> arxmliv        arxmlivtranslatingthematharchivestoxmlmathml
+3428c3404
+< arxmliv        arxmliv translating the math archives to xmlmathml
+---
+> arxmliv        arxmlivtranslatingthematharchivestoxmlmathml
+3528c3504
+<    2007    user interaction with the matita proof assistant
+---
+>      2007    user interaction with the matita proof assistant
+3560c3536
+<    proof general in eclipse
+---
+>      proof general in eclipse
+3619c3595
+< auer  sren    2018    towards an open research knowledge graph
+---
+> auer  sören    2018    towards an open research knowledge graph
+4021c3997
+<    proceedings of the 21st international conference on automated planning and
+---
+>     proceedings of the 21st international conference on automated planning and
+4095c4071
+<    basic paramodulation and superposition
+---
+>     basic paramodulation and superposition
+4100c4076
+<    basic paramodulation and superposition
+---
+>     basic paramodulation and superposition
+4105c4081
+<    basic paramodulation and superposition
+---
+>     basic paramodulation and superposition
+4110c4086
+<    basic paramodulation and superposition
+---
+>     basic paramodulation and superposition
+4197c4173
+<    classsheets    model based object oriented design of spreadsheet
+---
+>      classsheets    model based object oriented design of spreadsheet
+4246c4222
+<    2009    semantic wiki based light weight web application model
+---
+>     2009    semantic wiki based light weight web application model
+4552c4528
+<    proceedings of the ijcai 03 workshop on knowledge representation and
+---
+>     proceedings of the ijcai 03 workshop on knowledge representation and
+4635c4611
+<    gamble  matthew   goble  carole   michaelides  danius   missier  paolo
+---
+>     gamble  matthew   goble  carole   michaelides  danius   missier  paolo
+4842c4818
+<    huang  xiaorong   kerber  manfred   kohlhase  michael   konrad  karsten
+---
+>     huang  xiaorong   kerber  manfred   kohlhase  michael   konrad  karsten
+4934c4910,4911
+<    proof expansion and transformation with a parameterisable inference machine
+---
+>      proof expansion and transformation with a parameterisable inference
+>   machine
+4939c4916,4917
+<    proof transformation and expansion with a parameterizable inference machine
+---
+>      proof transformation and expansion with a parameterizable inference
+>   machine
+5216,5217c5194,5195
+<    miles  alistair   passant  alexandre   polleres  axel   polo  luis    2010
+<    sioc core ontol
+---
+>     miles  alistair   passant  alexandre   polleres  axel   polo  luis    2010
+>     sioc core ontol
+5282c5260
+<    a case study
+---
+>     a case study
+5534c5512
+<    linked data on the web ldow
+---
+>     linked data on the web ldow
+5553c5531
+<    cade 23 23rd international conference on automated deduction
+---
+>      cade 23 23rd international conference on automated deduction
+5596c5574
+<    automated theorem proving for natural language understanding
+---
+>     automated theorem proving for natural language understanding
+5601c5579
+<    inference and computational semantics
+---
+>     inference and computational semantics
+5606c5584
+<    inference and computational semantics
+---
+>     inference and computational semantics
+5611c5589
+<    inference and computational semantics
+---
+>     inference and computational semantics
+5616c5594
+<    inference and computational semantics
+---
+>     inference and computational semantics
+5927,5928c5905,5906
+< bos  bert   celik  tantek   hickson  ian   lie  hokon wium    2009    cascading
+<   style sheets level 2 revision 1 css 21 specification
+---
+> bos  bert   celik  tantek   hickson  ian   lie  hoakon wium    2009
+>   cascading style sheets level 2 revision 1 css 21 specification
+6101c6079
+<    reasoning about the elementary functions of complex analysis
+---
+>     reasoning about the elementary functions of complex analysis
+6106c6084
+<    reasoning about the elementary functions of complex analysis
+---
+>     reasoning about the elementary functions of complex analysis
+6277,6278c6255,6256
+<    social data on the web sdow workshop at the 7textsuperscriptth international
+<   semantic web conference
+---
+>     social data on the web sdow workshop at the 7textsuperscriptth
+>   international semantic web conference
+6283,6284c6261,6262
+<    social data on the web sdow workshop at the 8textsuperscriptth international
+<   semantic web conference
+---
+>     social data on the web sdow workshop at the 8textsuperscriptth
+>   international semantic web conference
+6639c6617
+<    1993    ripplinga heuristic for guiding inductive proofs
+---
+>      1993    ripplinga heuristic for guiding inductive proofs
+7021c6999
+<    2000    using openmath servers for distributing mathematical computations
+---
+>      2000    using openmath servers for distributing mathematical computations
+7617c7595
+<    storing and querying multiversion xml documents using durable node numbers
+---
+>     storing and querying multiversion xml documents using durable node numbers
+7622c7600
+<    efficient complex query support for multiversion xml documents
+---
+>     efficient complex query support for multiversion xml documents
+8167c8145
+<    2004    siette a web based tool for adaptive teaching
+---
+>      2004    siette a web based tool for adaptive teaching
+8450c8428
+<    lecture notes in informatics
+---
+>      lecture notes in informatics
+8757c8735,8736
+<    2007    developing ontologies for collaborative engineering in mechatronics
+---
+>      2007    developing ontologies for collaborative engineering in
+>   mechatronics
+8877c8856
+<    joint proceedings of the 24textsuperscriptth openmath workshop the
+---
+>     joint proceedings of the 24textsuperscriptth openmath workshop the
+9254c9233
+<    open source for education in europe research and practise
+---
+>     open source for education in europe research and practise
+9314c9293
+<    lelievre  samuel   muller  dennis   pfeiffer  markus   rabe  florian
+---
+>     lelievre  samuel   muller  dennis   pfeiffer  markus   rabe  florian
+9321c9300
+<    lelievre  samuel   muller  dennis   pfeiffer  markus   rabe  florian
+---
+>     lelievre  samuel   muller  dennis   pfeiffer  markus   rabe  florian
+9328c9307
+<    lelievre  samuel   muller  dennis   pfeiffer  markus   rabe  florian
+---
+>     lelievre  samuel   muller  dennis   pfeiffer  markus   rabe  florian
+9590c9569
+<    proceedings of the 33rd annual german conference on artificial intelligence
+---
+>     proceedings of the 33rd annual german conference on artificial intelligence
+10666c10645
+<   users manual
+---
+>   user’s manual
+10693a10673,10677
+> SQLMMSpatial02
+> fdis  isoiec 13249 32002    2002    information technology    database
+>   languages    sql multimedia and application packages    part 3 spatial
+> 
+> 
+11274c11258
+<    ontological semantics of standards and plm repositories in the product
+---
+>     ontological semantics of standards and plm repositories in the product
+11280c11264
+<    multilingual open content signal processing laboratories in connexions
+---
+>     multilingual open content signal processing laboratories in connexions
+11643c11627
+<    proceedings of the eighth international conference fois 2014
+---
+>     proceedings of the eighth international conference fois 2014
+11651,11655d11634
+< GS:DeLP2014
+< garca  alejandro j   simari  guillermo r    2014    defeasible logic
+<   programming delp servers contextual queries and explanations for answers
+< 
+< 
+11687c11666
+<    2011    proceedings of the 1textsuperscriptst workshop on semantic
+---
+>     2011    proceedings of the 1textsuperscriptst workshop on semantic
+11700c11679
+<    proceedings of the 1textsuperscriptst workshop on ontology and semantic web
+---
+>     proceedings of the 1textsuperscriptst workshop on ontology and semantic web
+11725a11705,11709
+> GS:DeLP2014
+> garcía  alejandro j   simari  guillermo r    2014    defeasible logic
+>   programming delp servers contextual queries and explanations for answers
+> 
+> 
+11921c11905
+<    2007    user profiles for personalized information access
+---
+>     2007    user profiles for personalized information access
+12261c12245
+<    hitzler  pascal    2010    ai mashup challenge
+---
+>     hitzler  pascal    2010    ai mashup challenge
+12384c12368
+<    an institutional view on categorical logic
+---
+>     an institutional view on categorical logic
+12684c12668
+<    2011    hecate managing authorization with restful xml
+---
+>      2011    hecate managing authorization with restful xml
+12712c12696
+<    2005    owl experiences and directions owled
+---
+>     2005    owl experiences and directions owled
+13106c13090
+<    2003    soap 12 part 1 messaging framework
+---
+>     2003    soap 12 part 1 messaging framework
+13111c13095
+<    2003    soap 12 part 2 adjuncts
+---
+>     2003    soap 12 part 2 adjuncts
+13691c13675
+<    wissen    adaptivitat
+---
+>      wissen    adaptivitat
+13857c13841
+<    specifying strategies for exercises
+---
+>     specifying strategies for exercises
+14280c14264
+<    2001    distributed information services in physics
+---
+>     2001    distributed information services in physics
+14423c14407
+<    2003    building structures of reusable educational content based on lom
+---
+>      2003    building structures of reusable educational content based on lom
+14769c14753
+<    towards an atlas of logics
+---
+>      towards an atlas of logics
+15070c15054
+<    test for evaluating the practical usefulness of deduction systems
+---
+>     test for evaluating the practical usefulness of deduction systems
+15118c15102
+<    interactive proof construction at the task level
+---
+>      interactive proof construction at the task level
+15874,15875c15858,15859
+< jeditoqmath:web
+< jeditoqmath        emphjeditoqmath
+---
+> jeditoqmath:on
+> jeditoqmath        jeditoqmath
+15878c15862
+< jeditoqmath:on
+---
+> jeditoqmath:web
+16137c16121
+<    semantically enabled business process discovery
+---
+>     semantically enabled business process discovery
+17693c17677
+< kohlhase  michael    2004    semantic markup for latex
+---
+> kohlhase  michael    2004    semantic markup for
+18107c18091
+< kohlhase  michael    2018    stex semantic markup in latex
+---
+> kohlhase  michael    2018    stex semantic markup in
+18111c18095
+< kohlhase  michael    2018    stex semantic markup in latex
+---
+> kohlhase  michael    2018    stex semantic markup in
+18115c18099
+< kohlhase  michael    2018    stex semantic markup in latex
+---
+> kohlhase  michael    2018    stex semantic markup in
+18119c18103
+< kohlhase  michael    2018    textttcmathmlsty a latex based syntax for content
+---
+> kohlhase  michael    2018    textttcmathmlsty a  based syntax for content
+18124c18108
+< kohlhase  michael    2018    textttcmathmlsty a latex based syntax for content
+---
+> kohlhase  michael    2018    textttcmathmlsty a  based syntax for content
+18129c18113
+< kohlhase  michael    2018    textttcmathmlsty a latex based syntax for content
+---
+> kohlhase  michael    2018    textttcmathmlsty a  based syntax for content
+18210c18194
+<   physml in latex
+---
+>   physml in
+18215c18199
+<   physml in latex
+---
+>   physml in
+18220c18204
+<   physml in latex
+---
+>   physml in
+18988c18972
+<    1995    genericity an introduction
+---
+>     1995    genericity an introduction
+19223a19208,19217
+> KML:Hyperontologies10
+> kutz  oliver   mossakowski  till   lucke  dominik    2010
+>   carnapgoguenandthehyperontologieslogicalpluralismandheterogeneousstructuringinontologydesign
+> 
+> 
+> KNMW:ChineseWhispers10
+> kutz  oliver   normann  immanuel   mossakowski  till   walther  dirk    2010
+>   chinese whispers and connected alignments
+> 
+> 
+19528c19522
+<    joint proceedings o
+---
+>      joint proceedings o
+19903c19897
+<    producing and using
+---
+>     producing and using
+19912c19906
+< lectora        emphlectora
+---
+> lectora        lectora
+20207c20201
+<    interactive exercises in the activemath learning environment
+---
+>     interactive exercises in the activemath learning environment
+20521c20515
+<    a graph based approach towards discerning inherent structures in a digital
+---
+>     a graph based approach towards discerning inherent structures in a digital
+20527c20521
+<    adessowiki on line collaborative scientific programming platform
+---
+>      adessowiki on line collaborative scientific programming platform
+20567,20572d20560
+< KML:Hyperontologies10
+< lucke  oliver kutz and till mossakowski and dominik    2010    carnap goguen
+<   and the hyperontologies logical pluralism and heterogeneous structuring in
+<   ontology design
+< 
+< 
+20867c20855
+<    wiris om tools a semantic formula editor
+---
+>      wiris om tools a semantic formula editor
+21258c21246
+<    pentney  william   verma  deepak   vlasseva  stani    2003    mangrove
+---
+>     pentney  william   verma  deepak   vlasseva  stani    2003    mangrove
+21802c21790
+<    dbpedia spotlight shedding light on the web of documents
+---
+>     dbpedia spotlight shedding light on the web of documents
+22147c22135
+< MKM-IG-Meetings:web
+---
+> MKM-IG-Meetings:online
+22152,22154c22140,22141
+< MKM-IG-Meetings:online
+< mkm ig meetings        meetings and conferences on mathematical knowledge
+<   management
+---
+> MKM-IG-Meetings:web
+> mkm ig meetings        meetingsandconferencesonmathematicalknowledgemanagement
+22577d22563
+< 
+22953c22939
+<    obo flat file format 14 syntax and semantics working draft
+---
+>      obo flat file format 14 syntax and semantics working draft
+23376c23362
+< neverilov a  zuzana    2010    implementing dynamic visualization as an
+---
+> neverilova  zuzana    2010    implementing dynamic visualization as an
+23566c23552
+<    a proof assistant for higher order logic
+---
+>      a proof assistant for higher order logic
+24070c24056
+< oqmath        emphoqmath
+---
+> oqmath        oqmath
+24110c24096
+<    2006    annotation and navigation in semantic wikis
+---
+>      2006    annotation and navigation in semantic wikis
+24867c24853
+<    2003    mooshka a system for the management of multidimensional gene
+---
+>     2003    mooshka a system for the management of multidimensional gene
+25006c24992
+<   simulation  bridging the gap between informal pde theory and simulations
+---
+>   simulation – bridging the gap between informal pde theory and simulations
+25208a25195,25198
+> LPPL
+> project      2007     project public license
+> 
+> 
+25926c25916
+<    towards a semantics for xml markup
+---
+>     towards a semantics for xml markup
+26097c26087
+<    proceedings of the 18th international conference on automated planning and
+---
+>     proceedings of the 18th international conference on automated planning and
+26234c26224
+<    workshop on empirical methods for tutorial dialogue systems
+---
+>       workshop on empirical methods for tutorial dialogue systems
+26732c26722
+<    2004    formale konsistenzsicherung in informellen software spezifikationen
+---
+>     2004    formale konsistenzsicherung in informellen software spezifikationen
+27395c27385
+<    franke  andreas   horacek  helmut   kohlhase  michael   meier  andreas
+---
+>     franke  andreas   horacek  helmut   kohlhase  michael   meier  andreas
+27981c27971
+<    rdfa api
+---
+>          rdfa api
+27986c27976
+<    rdfa api
+---
+>          rdfa api
+28799c28789
+<    socio technical ontology development for modelling sensemaking in
+---
+>      socio technical ontology development for modelling sensemaking in
+29476c29466
+<    2005
+---
+>      2005
+29710c29700
+<    integrating planning and learning the prodigy architecture
+---
+>     integrating planning and learning the prodigy architecture
+29881c29871
+<    semantic wiki state of the art paper    ontoworld
+---
+>          semantic wiki state of the art paper    ontoworld
+30000c29990
+<    2010    semantics of governmental statistics data
+---
+>      2010    semantics of governmental statistics data
+30263,30267d30252
+< KNMW:ChineseWhispers10
+< walther  oliver kutz and immanuel normann and till mossakowski and dirk    2010
+<    chinese whispers and connected alignments
+< 
+< 
+30505c30490
+< weitl  franz   jaksi c  mirjana   freitag  burkhard    2009    towards the
+---
+> weitl  franz   jaksic  mirjana   freitag  burkhard    2009    towards the
+30575c30560
+<    nipkow  tobias
+---
+>     nipkow  tobias
+30759c30744,30745
+< wikipedia        curryhoward correspondence     wikipedia the free encyclopedia
+---
+> wikipedia        curry–howard correspondence     wikipedia the free
+>   encyclopedia
+31064c31050
+<    bringing design to software
+---
+>     bringing design to software

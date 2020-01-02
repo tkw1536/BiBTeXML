@@ -818,7 +818,7 @@ sub textPurify {
             # then just reproduce the argument
             }
             elsif ($isSpecial) {
-                $tail =~ s/[^a-zA-Z0-9 ]//g; # side-effect: lowercase everything
+                $tail =~ s/[^a-zA-Z0-9 ]//g;
                 $purified .= $tail;
 
             # else replace as if we were on level 1
