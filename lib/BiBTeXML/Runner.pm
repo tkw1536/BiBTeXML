@@ -31,26 +31,26 @@ our @EXPORT = qw(
   &createRun
 );
 
-# compiles a given bst file
-# returns 0, <compiled_code> if successfull or error code, undef
-# if not
-# - error + log messages are sent to the $logger sub
-# Error codes are:
-# - 2: (Unused)
-# - 3: (Unused)
+# 'createCompile' compiles a '.bst' file and returns a pair $status, $compiledCode where:
+# - $status indicates the compile status code
+# - $compiledCode is a  string representing compiled code, or undef if compilation failed. 
+# Status is one of:
+# - 0: Everything ok
 # - 4: Unable to parse bst-file
 # - 5: Unable to compile bst-file
+# Takes the following parameters:
+# - $reader: An instance of 'BiBTeXML::Common::StreamReader' representing the stream to be read
+# - $logger: A sub (or callable) taking a single string parameter used to output info and warning messages
+# - $name: Name of the input file -- used only for log messages. 
 sub createCompile {
     my ( $reader, $logger, $name ) = @_;
 
-    # parse the file and print how long it took
-    my $startParse = time;
+    # parse the file
     my ( $parsed, $parseError ) = eval { readFile($reader) } or do {
         $logger->("Unable to parse $name. \n");
         $logger->($@);
         return 4;
     };
-    my $durationParse = time - $startParse;
     $reader->finalize;
 
     # throw an error, or a message how long it took
@@ -59,17 +59,14 @@ sub createCompile {
         $logger->($parseError);
         return 4, undef;
     }
-    $logger->("Parsed   $name in $durationParse seconds. \n");
 
-    # compile the file and print how long it took
-    my $startCompile = time;
+    # compile the file
     my ( $compile, $compileError ) =
       eval { compileProgram( "BiBTeXML::Compiler::Target", $parsed, $name ) } or do {
         $logger->("Unable to compile $name. \n");
         $logger->($@);
         return 5, undef;
       };
-    my $durationCompile = time - $startCompile;
 
     # throw an error, or a message how long it took
     if ( defined($compileError) ) {
@@ -77,65 +74,26 @@ sub createCompile {
         $logger->($compileError);
         return 5, undef;
     }
-    $logger->("Compiled $name in $durationCompile seconds. \n");
 
     # return the parsed code
     return 0, $compile;
 }
 
-# creates a sub that can be called to execute a given input file
-# and directs output to a given output file or stdout
-# returns 0, <code> if successfull or error code, undef if not
-# - error + log messages are sent to the $logger sub
-# - output is printed into the file OUTPUT, or STDOUT if undef.
-# Error codes are:
-# - 2: Unable to find compiled bstfile
-# - 3: Error in compiled bstfile
-# - 4: Unable to find bibfile
-# - 5: Error opening outfile
-# - 6: something went wrong at runtime
+# 'createRun' prepares to run a compiled bst-file with a specific set of parameters. Returns a single value $callable
+# which can be called parameter-less. This callable returns either 0 (everything ok) or 6 (something went wrong). 
+# Takes the following parameters:
+# - $code: A sub (or callable) representing the compiled code as e.g. returned by 'createCompile'
+# - $bibfiles: A reference to a list of filenames representing the loaded '.bib' files. [TODO: Make this an array of BiBTeXML::Common::StreamReader s]
+# - $cites: A reference to an array of cited keys. This may contain the special key '*' which indicates all keys should be cited. 
+# - $macro: A macro to wrap all source references in, or undef if no such macro should be used. 
+# - $logger: A sub (or callable) taking a single string parameter used to output info and warning messages
+# - $output: A writeable file handle to print output into. 
+# - $wrapEnabled: When set to 1, enable emulating BiBTeXs output wrapping. 
 sub createRun {
-    my ( $code, $bibfiles, $cites, $macro, $logger, $output, $wrapEnabled ) =
-      @_;
-
-    # run the code in the input
-    $code = eval $code;
-    unless ( defined($code) ) {
-        $logger->($@);
-        return 3, undef;
-    }
-
-    # check that all input files exist
-    my $bf;
-    foreach $bf (@$bibfiles) {
-        unless ( -e $bf ) {
-            $logger->("Unable to find bibfile $bf");
-            return 4, undef;
-        }
-    }
-
-    # create stream readers
-    my $reader;
-    my @readers = ();
-    foreach $bf (@$bibfiles) {
-        $reader = BiBTeXML::Common::StreamReader->new();
-        $reader->openFile($bf);
-        push( @readers, $reader );
-    }
+    my ( $code, $bibfiles, $cites, $macro, $logger, $output, $wrapEnabled ) = @_;
 
     # create an output buffer
-    my $ofh;
-    if ( defined($output) ) {
-        open( $ofh, ">", $output );
-    }
-    else {
-        $ofh = *STDOUT;
-    }
-    unless ( defined($ofh) ) {
-        $logger->("Unable to find $output");
-        return 5, undef;
-    }
-    my $buffer = BiBTeXML::Runtime::Buffer->new( $ofh, $wrapEnabled, $macro );
+    my $buffer = BiBTeXML::Runtime::Buffer->new( $output, $wrapEnabled, $macro );
 
     # Create a configuration that optionally wraps things inside a macro
     my $config = BiBTeXML::Runtime::Config->new(
@@ -143,7 +101,7 @@ sub createRun {
         sub {
             $logger->( fmtLogMessage(@_) . "\n" );
         },
-        [@readers],
+        [@$bibfiles],
         [@$cites]
     );
 

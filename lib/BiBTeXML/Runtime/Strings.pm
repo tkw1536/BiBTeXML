@@ -84,8 +84,6 @@ sub splitLetters {
                         last     if $level eq 0;
                     }
 
-                    # TODO: On level 1, 
-
                     # push the collected 'accent' and go back into normal mode
                     shift(@letters) unless $hadLetter;
                     shift(@levels)  unless $hadLetter;

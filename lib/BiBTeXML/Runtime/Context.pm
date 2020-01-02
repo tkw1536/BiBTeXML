@@ -341,7 +341,6 @@ sub readEntries {
         $key = $entry->getKey;
         if ( defined( $entryHash{$key} ) ) {
 
-            # TODO: Do newer keys overwrite older ones?
             push( @warnings,  "Skipping duplicate entry for key $key" );
             push( @locations, $$entry{entry}->getSource );
             next;
@@ -369,10 +368,6 @@ sub buildEntryList {
     }
 
     my ( @warnings, @locations ) = ();
-
-    # TODO: Check for cross-refs inside cross-refs and spit out a warning
-    # TODO: Use a large hashmap for everything that resolves entries
-    # this might be a lot faster
 
     my ($citeKey);    # current cite key the user requested
     my %citedKeys = ();    # same as citeList, but key => 1 mapping
@@ -404,7 +399,6 @@ sub buildEntryList {
         $entry = $entryMap{$citeKey};
         unless ( defined($entry) ) {
 
-            # TODO: Better error message string
             push( @warnings,
                 ["I didn't find a database entry for \"$citeKey\""] );
             push( @locations, undef );
@@ -444,7 +438,6 @@ sub buildEntryList {
 
     # iterate over everything that was cross-referenced
     # and either inline or add it to the citation list
-    # TODO: When we have already
     my ( $value, $reference, $related, $exists, $hideCrossref, @references );
     foreach $value (@xrefed) {
         @references = @{ $refmap{$value} };

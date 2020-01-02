@@ -116,7 +116,7 @@ sub readEntries {
         my $warning;
         foreach $warning (@$warnings) {
             $config->log( 'WARN', $warning, shift(@$locations) )
-              ;    # TODO: Prefix file name here!
+              ;
         }
     }
     elsif ( $status eq 1 ) {
@@ -128,7 +128,7 @@ sub readEntries {
     }
     else {
         $config->log( 'ERROR', 'Did not read entries: ' . $warnings,
-            $locations );    # TODO: Prefix file name here!
+            $locations );
     }
 }
 

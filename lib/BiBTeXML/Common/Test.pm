@@ -99,12 +99,11 @@ sub integrationTestPaths {
     $macroIn = undef if $macroIn eq '';
 
     # hard-code input and output files
-    # TODO: Alow multiple input files by having 'input_1.bib' etc using sorting
     my $bstIn = File::Spec->catfile( $path, 'input.bst' );
-    my $bibfiles = [ File::Spec->catfile( $path, 'input.bib' ) ];
+    my $bibIn = File::Spec->catfile( $path, 'input.bib' );
     my $resultOut = File::Spec->catfile( $path, 'output.bbl' );
 
-    return $bstIn, $bibfiles, $citesIn, $macroIn, $resultOut;
+    return $bstIn, $bibIn, $citesIn, $macroIn, $resultOut;
 }
 
 # represents a full test of the BiBTeXML steps
@@ -112,35 +111,36 @@ sub integrationTest {
     my ( $name, $path ) = @_;
 
     # resolve paths to input and output
-    my ( $bstIn, $bibfiles, $citesIn, $macroIn, $resultOut ) =
+    my ( $bstIn, $bibIn, $citesIn, $macroIn, $resultOut ) =
       integrationTestPaths($path);
 
     return subtest "$name" => sub {
         plan tests => 4;
 
         # create a reader for the bst file
-        my $reader = BiBTeXML::Common::StreamReader->new();
-        $reader->openFile($bstIn);
+        my $bst = BiBTeXML::Common::StreamReader->newFromFile($bstIn);
+        my $bib = BiBTeXML::Common::StreamReader->newFromFile($bibIn);
 
         # compile it
-        my ( $code, $compiled ) = createCompile( $reader, \&note, $bstIn );
+        my ( $code, $compiled ) = createCompile( $bst, \&note, $bstIn );
 
         # check that the code compiled without problems
         is( $code, 0, 'compilation went without problems' );
         return if $code ne 0;
 
-        # create a run
-        my ($output) = File::Temp->new( UNLINK => 1, SUFFIX => '.tex' );
-        my ( $status, $runcode ) =
-          createRun( $compiled, $bibfiles, $citesIn, $macroIn, \&note,
-            $output, 1 );
+        # execute the compiled code
+        $compiled = eval $compiled;
+        is( ref $compiled, 'CODE', 'compilation produced CODE' );
 
-        # check that preparing the run went ok
-        is( $status, 0, 'run preparation went ok' );
-        return if $code ne 0;
+        # create a temporary file for the output
+        my ($output) = File::Temp->new( UNLINK => 1, SUFFIX => '.tex' );
+        open( my $handle, ">", $output );
+        
+        # and create the run
+        my $runcode =  createRun( $compiled, [$bib], $citesIn, $macroIn, \&note, $handle, 1 );
 
         # run the run
-        $status = &{$runcode}();
+        my $status = &{$runcode}();
         is( $status, 0, 'running went ok' );
 
         # check that we compiled the expected output

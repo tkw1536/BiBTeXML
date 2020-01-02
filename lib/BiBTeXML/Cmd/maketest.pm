@@ -22,14 +22,14 @@ sub main {
     return usageAndExit(1) if scalar(@_) ne 1;
 
     # figure out paths
-    my ( $bstIn, $bibfiles, $citesIn, $macroIn, $resultOut ) =
+    my ( $bstIn, $bibIn, $citesIn, $macroIn, $resultOut ) =
       integrationTestPaths( shift(@_) );
 
     # prepare makebbl args
     my @makebbl = (
         '--cites', join( ',', @{$citesIn} ),
         '--destination', $resultOut . '.org',
-        $bstIn, @{$bibfiles}
+        $bstIn, $bibIn
     );
 
     # run makebbl
@@ -40,7 +40,7 @@ sub main {
     # prepare bibtexml args
     my @bibtexml = (
         '--wrap', '--cites', join( ',', @{$citesIn} ),
-        '--destination', $resultOut, $bstIn, @{$bibfiles}
+        '--destination', $resultOut, $bstIn, $bibIn,
     );
     push( @bibtexml, '--macro', $macroIn ) if defined($macroIn);
 
