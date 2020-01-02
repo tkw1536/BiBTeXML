@@ -177,7 +177,7 @@ sub escapeBstInlineBlock {
     my ( $class, $block, $sourceString, $outerIndent, $innerIndent ) = @_;
     my $code = "sub { \n";
     $code .=
-      $innerIndent . 'my ($context, $config) = @_; ' . "\n";  # TODO: Fix indent
+      $innerIndent . 'my ($context, $config) = @_; ' . "\n";
     $code .= $block . $outerIndent . '}';
     return $code;
 }
@@ -192,8 +192,7 @@ sub bstFunctionDefinition {
     my ( $class, $name, $sourceString, $body, $outerIndent, $innerIndent ) = @_;
     my $code = 'my $' . $class->escapeFunctionName($name) . " = sub { \n";
     $code .=
-      $innerIndent . 'my ($context, $config) = @_; ' . "\n";  # TODO: Fix indent
-     # $code .= $innerIndent . 'print("Entering bst function " . ' . escapeString($class, $name) . " . \"\\n\"); \n";
+      $innerIndent . 'my ($context, $config) = @_; ' . "\n";
     $code .= $body . $outerIndent . "}; \n";
 
     # perl-specific runtime-call

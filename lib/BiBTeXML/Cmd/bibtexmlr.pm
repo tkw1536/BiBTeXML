@@ -38,24 +38,50 @@ sub main {
     my ( $input, @bibfiles ) = @_;
 
     # read the the compiled code
-    my $compiled = slurp($input);
+    my $compiled = eval slurp($input);
+    unless(ref $compiled eq 'CODE') {
+        print STDERR "Compilation error: Expected CODE but got '" . ref $compiled . "'";
+        return 3;
+    }
+
+    # create a reader for the bib files
+    my $reader;
+    my (@bibreaders);
+
+    foreach my $bibfile (@bibfiles) {
+        $reader = BiBTeXML::Common::StreamReader->newFromFile($bibfile);
+        unless(defined($reader)) {
+            print STDERR "Unable to find bibfile $bibfile\n";
+            return 4;
+        }
+        push( @bibreaders, $reader );
+    }
+
+    # prepare the output file
+    my $ofh;
+    if ( defined($output) ) {
+        open( $ofh, ">", $output );
+    } else {
+        $ofh = *STDOUT;
+    }
+    unless ( defined($ofh) ) {
+        print STDERR "Unable to find $output";
+        return 5;
+    }
 
     # create a run
     my @citations = split( /,/, $cites );
-    my ( $status, $runcode ) = createRun(
+    my $runcode = createRun(
         $compiled,
-        [@bibfiles],
+        [@bibreaders],
         [@citations],
         $macro,
         sub {
             print STDERR @_;
         },
-        $output,
+        $ofh,
         $wrap,
     );
-    if ( $status ne 0 ) {
-        return $status;
-    }
 
     # and run the code
     return &{$runcode}();

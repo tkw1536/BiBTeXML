@@ -33,43 +33,70 @@ sub main {
     return usageAndExit(0) if ($help);
     return usageAndExit(1) if scalar(@_) le 1;
 
-    # check that the bst file exists
     my ( $bstfile, @bibfiles ) = @_;
-    unless ( -e $bstfile ) {
+
+    # create a reader for the bib files
+    my $reader;
+    my (@bibreaders);
+
+    foreach my $bibfile (@bibfiles) {
+        $reader = BiBTeXML::Common::StreamReader->newFromFile($bibfile);
+        unless(defined($reader)) {
+            print STDERR "Unable to find bibfile $bibfile\n";
+            return 4;
+        }
+        push( @bibreaders, $reader );
+    }
+
+    # create a reader for the bst file
+    $reader = BiBTeXML::Common::StreamReader->newFromFile($bstfile);
+    unless (defined($reader)) {
         print STDERR "Unable to find bstfile $bstfile\n";
         return 3;
     }
 
-    # create a reader for it
-    my $reader = BiBTeXML::Common::StreamReader->new();
-    $reader->openFile($bstfile);
+    # prepare the output file
+    my $ofh;
+    if ( defined($output) ) {
+        open( $ofh, ">", $output );
+    } else {
+        $ofh = *STDOUT;
+    }
+    unless ( defined($ofh) ) {
+        print STDERR "Unable to find $output";
+        return 5, undef;
+    }
 
     # compile the bst file
-    my ( $code, $compiled ) = createCompile(
+    my ( $status, $compiled ) = createCompile(
         $reader,
         sub {
             print STDERR @_;
         },
         $bstfile
     );
-    return $code, undef if $code ne 0;
+    return $status, undef if $status ne 0;
+
+    # eval the code
+    $compiled = eval $compiled;
+    unless(ref $compiled eq 'CODE') {
+        print STDERR "Compilation error: Expected 'CODE' but got '" . ref($compiled) . "'. ";
+        return 3;
+    } 
 
     # create a run
     my @citations = split( /,/, $cites );
-    my ( $status, $runcode ) = createRun(
+    my $runcode = createRun(
         $compiled,
-        [@bibfiles],
+        [@bibreaders],
         [@citations],
         $macro,
         sub {
             print STDERR @_;
         },
-        $output,
+        $ofh,
         $wrap,
     );
-    if ( $status ne 0 ) {
-        return $status;
-    }
 
     # and run the code
     return &{$runcode}();

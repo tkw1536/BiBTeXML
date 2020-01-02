@@ -115,7 +115,6 @@ sub new {
 }
 
 # inlines a cross-refed entry '$xref' into this entry
-# TODO: Copy over full physical source references
 sub inlineCrossReference {
     my ( $self, $xref, $clearCrossRefValue ) = @_;
 
@@ -168,7 +167,6 @@ sub getVariable {
 
     # If we have an entry field
     # we need to take special care of where it comes from
-    # TODO: Do we need to support integers here?
     if ( $type eq 'ENTRY_FIELD' ) {
         my $field = $$self{values}{ lc $name };
 

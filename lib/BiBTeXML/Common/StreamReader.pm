@@ -13,6 +13,7 @@ use warnings;
 
 use Encode;
 
+# 'new' creates a new StreamReader
 sub new {
     my ($class) = @_;
     return bless {
@@ -33,6 +34,17 @@ sub new {
         # pushback, contains ($char, $line, $col, $eof)
         pushback => undef
     }, $class;
+}
+
+# 'newFromFile' creates a new StreamReader from a file. 
+# Roughly equivalent to:
+# my $reader = BiBTeXML::Common::StreamReader->new();
+# $reader->openFile(@_);
+sub newFromFile {
+    my ($class, $filename, $encoding) = @_;
+    my $reader = $class->new();
+    return undef unless $reader->openFile($filename, $encoding);
+    return $reader;
 }
 
 # ===================================================================== #
@@ -157,8 +169,6 @@ sub readChar {
     $$self{lineno}++;
     $$self{colno} = 1;
 
-    # TODO: this substr does not deal with unicode well
-    # but we can expect those charact er
     return substr( $line, 0, 1 ), $lineNo, $colNo, $eof;
 }
 
