@@ -438,8 +438,8 @@ sub buildEntryList {
 
     # iterate over everything that was cross-referenced
     # and either inline or add it to the citation list
-    my ( $value, $reference, $related, $exists, $hideCrossref, @references );
-    foreach $value (@xrefed) {
+    my ( $related, $exists, $hideCrossref, @references );
+    foreach my $value (@xrefed) {
         @references = @{ $refmap{$value} };
         $related    = $entryMap{$value};
         $exists     = exists( $citedKeys{$value} );
@@ -448,7 +448,7 @@ sub buildEntryList {
 # When the number of references to a specific entry is small enough we remove the 'crossref' key.
         $hideCrossref = !$exists && scalar @references < $numCrossRefs;
 
-        foreach $reference (@references) {
+        foreach my $reference (@references) {
             $reference->inlineCrossReference( $related, $hideCrossref );
         }
 

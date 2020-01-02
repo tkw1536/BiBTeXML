@@ -17,8 +17,7 @@ sub makeBuffer {
 sub feedBuffer {
     my ($buffer, $file) = @_;
     my @lines = split(/^/, slurp($file));
-    my ($line);
-    foreach $line (@lines) {
+    foreach my $line (@lines) {
         chomp($line);
         $buffer->write($line);
         $buffer->writeLn;

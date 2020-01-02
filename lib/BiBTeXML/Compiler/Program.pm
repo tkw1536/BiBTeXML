@@ -78,8 +78,8 @@ sub compileProgram {
     );
 
     # compile each of the commands
-    my ( $command, $result, $error, $location );
-    foreach $command (@$program) {
+    my ( $result, $error, $location );
+    foreach my $command (@$program) {
         ( $result, $error, $location, %context ) =
           compileCommand( $target, $command, 1, %context );
         return $result, $error, $location if defined($error);
@@ -145,8 +145,8 @@ sub compileEntry {
     my ( $fields, $integers, $strings ) = @{ $entry->getArguments };
 
     # define entry fields
-    my ( $field, $name );
-    foreach $field ( @{ $fields->getValue } ) {
+    my ( $name );
+    foreach my $field ( @{ $fields->getValue } ) {
         $name = lc( $field->getValue );
         return undef, 'unable to define entry field ' . $name, $field->getSource
           if defined( $context{$name} );
@@ -156,8 +156,7 @@ sub compileEntry {
     }
 
     # define entry fields
-    my ($integer);
-    foreach $integer ( @{ $integers->getValue } ) {
+    foreach my $integer ( @{ $integers->getValue } ) {
         $name = $integer->getValue;
         return undef, 'unable to define entry integer ' . $name,
           $integer->getSource
@@ -168,8 +167,7 @@ sub compileEntry {
     }
 
     # define entry strings
-    my ($string);
-    foreach $string ( @{ $strings->getValue } ) {
+    foreach my $string ( @{ $strings->getValue } ) {
         $name = $string->getValue;
         return undef, 'unable to define entry string ' . $name,
           $string->getSource
@@ -192,8 +190,8 @@ sub compileStrings {
     my ($args) = @{ $strings->getArguments };
 
     # define global strings
-    my ( $string, $name );
-    foreach $string ( @{ $args->getValue } ) {
+    my ( $name );
+    foreach my $string ( @{ $args->getValue } ) {
         $name = $string->getValue;
         return undef, 'unable to define global string ' . $name,
           $string->getSource
@@ -216,8 +214,8 @@ sub compileIntegers {
     my ($args) = @{ $integers->getArguments };
 
     # define global integers
-    my ( $integer, $name );
-    foreach $integer ( @{ $args->getValue } ) {
+    my ( $name );
+     foreach my $integer ( @{ $args->getValue } ) {
         $name = $integer->getValue;
         return undef, 'unable to define global integer ' . $name,
           $integer->getSource

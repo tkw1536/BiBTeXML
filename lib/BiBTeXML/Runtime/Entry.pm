@@ -54,12 +54,12 @@ sub new {
     return undef, [ 'Expected non-empty key', [ locationOf( $name, $entry ) ] ]
       unless $key;
 
-    my ( $tag, $value, $valueKey );
+    my ( $value, $valueKey );
     my %values      = ();
     my (@warnings)  = ();
     my (@locations) = ();
 
-    foreach $tag (@tags) {
+    foreach my $tag (@tags) {
         $valueKey = $tag->getName;
         $value    = $tag->getContent->getValue;
 

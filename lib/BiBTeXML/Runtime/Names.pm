@@ -281,8 +281,8 @@ sub abbrevName {
     # we return the first character which either
     # - is an accent
     # - contains an alphabetical character
-    my ( $letter, $isSpecial );
-    foreach $letter (@$letters) {
+    my ( $isSpecial );
+    foreach my $letter (@$letters) {
         return $letter if isSpecial($letter);
 
         # else, return the first letter of it
@@ -304,11 +304,11 @@ sub formatNameSubpattern {
 
     # If no explicit seperator was provided, we need to insert the default one.
     unless (defined($seperator)) {
-        my ( $part, $seperator, $isDefaultSeperator, $index ) = ( '', '', 0, 0 );
+        my ( $seperator, $isDefaultSeperator, $index ) = ( '', '', 0, 0 );
         my $lastIndex = scalar(@$tokens) - 1;
 
         # iterate through all the names and fetch the seperators from the tokens themselves
-        foreach $part (@$tokens) {
+        foreach my $part (@$tokens) {
             # cleanup this part of the name and seperator
             ($seperator) = ( $part =~ m/([\s~-])$/ );
             $part =~ s/([\s~-]+)$//;
