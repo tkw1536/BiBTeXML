@@ -66,8 +66,8 @@ sub simplifyString {
 
     # return the first 'defined' source
     # i.e. one that comes from a source file.
-    my ( $source, $asource );
-    foreach $asource (@$sources) {
+    my ( $source );
+    foreach my $asource (@$sources) {
         $source = $asource;
         last if defined($source);
     }

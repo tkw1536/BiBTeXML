@@ -44,8 +44,7 @@ sub evaluate {
     $$self{type}->normalizeValue;
 
     my @tags = @{ $$self{tags} };
-    my $tag;
-    foreach $tag (@tags) {
+    foreach my $tag (@tags) {
         $tag->evaluate(%context);
     }
 }

@@ -112,14 +112,13 @@ sub readEntries {
     my ( $status, $warnings, $locations ) =
       $context->readEntries( [@readers], [@cites] );
 
-    if ( $status eq 0 ) {
-        my $warning;
-        foreach $warning (@$warnings) {
+    if ( $status == 0 ) {
+        foreach my $warning (@$warnings) {
             $config->log( 'WARN', $warning, shift(@$locations) )
               ;
         }
     }
-    elsif ( $status eq 1 ) {
+    elsif ( $status == 1 ) {
         $config->log(
             'WARN',
             'Can not read entries: Already read entries',
@@ -149,8 +148,8 @@ sub sortEntries {
     }
 
     # determine their purified key
-    my ( $entry, $tp, $key );
-    foreach $entry (@$entries) {
+    my ( $tp, $key );
+    foreach my $entry (@$entries) {
 
         # get the sort.key$ variable
         ( $tp, $key ) = $entry->getVariable('sort.key$');
@@ -181,20 +180,20 @@ sub iterateFunction {
             'Can not iterate entries: No entries have been read',
             $config->location($styString)
         );
+        return;
     }
-    else {
-        my $entry;
-        foreach $entry (@$entries) {
-            $context->setEntry($entry);
-            &{$function}( $context, $config );
-            $config->log(
-                "WARN",
-                "Stack is not empty for entry " . $entry->getKey,
-                $config->location($styString)
-            ) unless $context->stackEmpty;
-        }
-        $context->leaveEntry;
+    
+    
+    foreach my $entry (@$entries) {
+        $context->setEntry($entry);
+        &{$function}( $context, $config );
+        $config->log(
+            "WARN",
+            "Stack is not empty for entry " . $entry->getKey,
+            $config->location($styString)
+        ) unless $context->stackEmpty;
     }
+    $context->leaveEntry;
 }
 
 # reverseFunction($function) -- iterates a function (or builtin) over all (read) entries in reverse
@@ -208,20 +207,19 @@ sub reverseFunction {
             'Can not iterate entries: No entries have been read',
             $config->location($styString)
         );
+        return;
     }
-    else {
-        my $entry;
-        foreach $entry (reverse(@$entries)) {
-            $context->setEntry($entry);
-            &{$function}( $context, $config );
-            $config->log(
-                "WARN",
-                "Stack is not empty for entry " . $entry->getKey,
-                $config->location($styString)
-            ) unless $context->stackEmpty;
-        }
-        $context->leaveEntry;
+    
+    foreach my $entry (reverse(@$entries)) {
+        $context->setEntry($entry);
+        &{$function}( $context, $config );
+        $config->log(
+            "WARN",
+            "Stack is not empty for entry " . $entry->getKey,
+            $config->location($styString)
+        ) unless $context->stackEmpty;
     }
+    $context->leaveEntry;
 }
 
 ###

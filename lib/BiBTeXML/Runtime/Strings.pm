@@ -580,8 +580,7 @@ sub textPrefix {
     # read a prefix of the string
     my $index  = 0;
     my $result = '';
-    my $letter;
-    foreach $letter (@$letters) {
+    foreach my $letter (@$letters) {
         $result .= $letter;
         $index++;
         last if $index eq $length;
@@ -725,11 +724,10 @@ sub textWidth {
     my $width = 0;
     my @characters;
     my (
-        $isSpecial, $head, $tail, $command,
-        $letter, $level
+        $isSpecial, $head, $tail, $command, $level
     );
 
-    foreach $letter (@$letters) {
+    foreach my $letter (@$letters) {
         $level = shift(@$levels);
 
 
@@ -786,10 +784,9 @@ sub textPurify {
     my $purified = '';
     my @characters;
     my (
-        $isSpecial, $head, $tail, $command,
-        $letter, $level
+        $isSpecial, $head, $tail, $command, $level
     );
-    foreach $letter (@$letters) {
+    foreach my $letter (@$letters) {
         $level = shift(@$levels);
 
         # on level 0, check for accents

@@ -59,8 +59,7 @@ sub evaluate {
     # evaluate and append each content item
     # from the ones that we have
     # DOES NOT DO ANY TYPE CHECKING
-    my $cont;
-    foreach $cont (@content) {
+    foreach my $cont (@content) {
         push( @failed, $cont ) unless $cont->evaluate(%context);
         $item->append($cont);
     }
