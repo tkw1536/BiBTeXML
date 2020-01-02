@@ -80,8 +80,7 @@ sub new {
                   . ': Tag '
                   . $valueKey
                   . ' already defined. ' );
-            push( @locations,
-                locationOf( $name, $tag->getContent->getSource ) );
+            push( @locations, locationOf( $name, $tag->getContent ) );
             next;
         }
 
